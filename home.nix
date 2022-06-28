@@ -36,6 +36,7 @@
     reattach-to-user-namespace
     ctop
     kcat
+    gnupg
 
     # System admin stuff
     ncdu

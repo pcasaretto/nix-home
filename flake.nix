@@ -62,6 +62,7 @@
         git-config       = import ./topics/git.nix;
         kitty-config     = import ./topics/kitty.nix;
         tmux-config      = import ./topics/tmux.nix;
+        zsh-config       = import ./topics/zsh.nix;
       };
 
       overlays = {
