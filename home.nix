@@ -37,6 +37,7 @@
     ctop
     kcat
     gnupg
+    babashka
 
     # System admin stuff
     ncdu
