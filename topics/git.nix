@@ -89,6 +89,7 @@ in
       "mergetool \"vimdiff\"".cmd = "nvim -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'";
       help.autocorrect            = "1";
       push.default                = "simple";
+      init.defaultBranch          = "main";
     };
 
     userName = "pcasaretto";
