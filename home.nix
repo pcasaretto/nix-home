@@ -38,6 +38,8 @@
     kcat
     gnupg
     babashka
+    peco
+    unixtools.watch
 
     # System admin stuff
     ncdu
