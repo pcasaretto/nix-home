@@ -40,6 +40,7 @@
     babashka
     peco
     unixtools.watch
+    rlwrap
 
     # System admin stuff
     ncdu
