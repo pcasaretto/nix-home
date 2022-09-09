@@ -29,18 +29,18 @@
     # Dev stuff
     # (agda.withPackages (p: [ p.standard-library ]))
     google-cloud-sdk
-    jq
-    ripgrep
-    fzf
-    mosh
-    reattach-to-user-namespace
-    ctop
-    kcat
+    jq                         # for handling json
+    ripgrep                    # searching files fast
+    fzf                        # fast fuzzy file finder
+    mosh                       # persistent shells
+    reattach-to-user-namespace # tmux helper
+    ctop                       # top for containers
+    kcat                       # cat for kafka
     gnupg
-    babashka
-    peco
-    unixtools.watch
-    rlwrap
+    babashka                   # clojure scripting
+    peco                       # choose options in cli scripts
+    unixtools.watch            # repeat commands and monitor their outputs
+    rlwrap                     # wrap commands with a sane CLI
 
     # System admin stuff
     ncdu
