@@ -41,6 +41,7 @@
     peco                       # choose options in cli scripts
     unixtools.watch            # repeat commands and monitor their outputs
     rlwrap                     # wrap commands with a sane CLI
+    curlie                     # curl helper
 
     # System admin stuff
     ncdu
