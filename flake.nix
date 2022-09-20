@@ -15,6 +15,9 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     emacs-overlay.url = "github:nix-community/emacs-overlay/da2f552d133497abd434006e0cae996c0a282394";
+
+    dotenv.url = "github:pcasaretto/dotenv";
+    dotenv.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs = {
@@ -23,6 +26,7 @@
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
+    dotenv,
     ...
   }@inputs:
   let
@@ -48,6 +52,7 @@
           {
             nixpkgs = nixpkgsConfig;
             # `home-manager` config
+            home-manager.extraSpecialArgs = { dotenv = dotenv; };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.pcasaretto = {

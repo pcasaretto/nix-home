@@ -21,6 +21,26 @@
         "type": "github"
       }
     },
+    "dotenv": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1663625325,
+        "narHash": "sha256-yxEJE5ICoTaewEnlvzhKiiCEKob7qbhLmXq1A1wF/7w=",
+        "owner": "pcasaretto",
+        "repo": "dotenv",
+        "rev": "4c85e105202f43daae904d866cfd6d77c632fc4f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pcasaretto",
+        "repo": "dotenv",
+        "type": "github"
+      }
+    },
     "emacs-overlay": {
       "locked": {
         "lastModified": 1644575200,
@@ -92,6 +112,7 @@
     "root": {
       "inputs": {
         "darwin": "darwin",
+        "dotenv": "dotenv",
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",

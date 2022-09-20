@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, dotenv, ... }:
 {
   home.stateVersion = "22.05";
 
@@ -32,8 +32,7 @@
     jq                         # for handling json
     ripgrep                    # searching files fast
     fzf                        # fast fuzzy file finder
-    mosh                       # persistent shells
-    reattach-to-user-namespace # tmux helper
+    mosh                       # persistent ssh sessions
     ctop                       # top for containers
     kcat                       # cat for kafka
     gnupg
@@ -42,6 +41,7 @@
     unixtools.watch            # repeat commands and monitor their outputs
     rlwrap                     # wrap commands with a sane CLI
     curlie                     # curl helper
+    dotenv                     # change env using a file for one off commands
 
     # System admin stuff
     ncdu
@@ -51,5 +51,6 @@
 
   ] ++ lib.optionals stdenv.isDarwin [
     m-cli # useful macOS CLI commands
+    reattach-to-user-namespace # tmux helper
   ];
 }
