@@ -16,8 +16,8 @@
 
     emacs-overlay.url = "github:nix-community/emacs-overlay/da2f552d133497abd434006e0cae996c0a282394";
 
-    dotenv.url = "github:pcasaretto/dotenv";
-    dotenv.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    dotenvFlake.url = "github:pcasaretto/dotenv";
+    dotenvFlake.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs = {
@@ -26,7 +26,7 @@
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
-    dotenv,
+    dotenvFlake,
     ...
   }@inputs:
   let
@@ -40,9 +40,13 @@
     overlays = attrValues self.overlays;
   };
 
+  specialArgs = {system}:{
+    dotenv = dotenvFlake.packages.${system}.default;
+  };
+
   in
   {
-      darwinConfigurations.overdose = darwin.lib.darwinSystem {
+      darwinConfigurations.overdose = darwin.lib.darwinSystem rec {
         system = "aarch64-darwin";
         modules = attrValues self.darwinModules ++ [
           # Main `nix-darwin` config
@@ -52,7 +56,7 @@
           {
             nixpkgs = nixpkgsConfig;
             # `home-manager` config
-            home-manager.extraSpecialArgs = { dotenv = dotenv; };
+            home-manager.extraSpecialArgs = specialArgs { inherit system; };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.pcasaretto = {
