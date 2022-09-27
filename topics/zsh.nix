@@ -4,7 +4,7 @@
 
   programs.zsh = {
     defaultKeymap = "viins";
-    enable = false;
+    enable = true;
     enableAutosuggestions = true;
     enableCompletion = true;
     shellAliases = {
@@ -12,28 +12,30 @@
       gst = "git status";
     };
 
-    initExtra = ''
-    typeset -u config_files
-    config_files=(/Users/pcasaretto/src/github.com/pcasaretto/dotfiles/zsh/*.zsh)
+    # initExtra = ''
+    # typeset -u config_files
+    # config_files=(/Users/pcasaretto/src/github.com/pcasaretto/dotfiles/zsh/*.zsh)
 
-    for file in ''${(M)config_files:#*/path.zsh}
-    do
-      source $file
-    done
+    # for file in ''${(M)config_files:#*/path.zsh}
+    # do
+    #   source $file
+    # done
 
-    # use .localrc for SUPER SECRET CRAP that you don't
-    # want in your public, versioned repo.
-    if [[ -a ~/.localrc ]]
-    then
-      source ~/.localrc
-    fi
+    # # use .localrc for SUPER SECRET CRAP that you don't
+    # # want in your public, versioned repo.
+    # if [[ -a ~/.localrc ]]
+    # then
+    #   source ~/.localrc
+    # fi
 
-    # load everything but the path and completion files
-    for file in ''${''${config_files:#*/path.zsh}:#*/completion.zsh}
-    do
-      source $file
-    done
-    '';
+    # # load everything but the path and completion files
+    # for file in ''${''${config_files:#*/path.zsh}:#*/completion.zsh}
+    # do
+    #   source $file
+    # done
+
+    # unset config_files
+    # '';
 
     plugins = with pkgs; [
       {

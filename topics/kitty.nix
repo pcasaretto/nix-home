@@ -12,6 +12,8 @@ programs.kitty = {
     };
     settings = {
       clipboard_control = "write-clipboard write-primary read-clipboard read-primary";
+      sync_to_monitor = "yes";
+      repaint_delay = 5;
     };
 
     keybindings = {
