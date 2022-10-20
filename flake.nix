@@ -14,8 +14,6 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
-    emacs-overlay.url = "github:nix-community/emacs-overlay/da2f552d133497abd434006e0cae996c0a282394";
-
     dotenvFlake.url = "github:pcasaretto/dotenv";
     dotenvFlake.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
@@ -75,8 +73,6 @@
       };
 
       overlays = {
-        emacs-overlay = (import self.inputs.emacs-overlay);
-
         # Overlay useful on Macs with Apple Silicon
         apple-silicon = final: prev: optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
           # Add access to x86 packages system is running Apple Silicon
