@@ -82,11 +82,11 @@ in
       };
       core.excludesfile           = toString gitignore;
       apply.whitespace            = "nowarn";
-      merge.tool                  = "vimdiff";
-      mergetool.prompt            = "true";
-      diftool.prompt              = "true";
+      diff.tool                   = "vscode";
+      "difftool \"vscode\"".cmd   = "code --wait --diff $LOCAL $REMOTE";
+      merge.tool                  = "vscode";
+      "mergetool \"vscode\"".cmd  = "code --wait $MERGED";
       mergetool.keepBackup        = "false";
-      "mergetool \"vimdiff\"".cmd = "nvim -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'";
       help.autocorrect            = "1";
       push.default                = "simple";
       init.defaultBranch          = "main";

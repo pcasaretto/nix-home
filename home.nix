@@ -14,7 +14,7 @@
   programs.htop.settings.show_program_path = true;
 
   home.sessionVariables = {
-    VISUAL = "emacs -nw";
+    VISUAL = "code --wait";
     EDITOR = "${config.home.sessionVariables.VISUAL}";
     LC_ALL = "en_US.UTF-8";
     LANG   = "en_US.UTF-8";
