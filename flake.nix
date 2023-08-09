@@ -15,7 +15,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     dotenvFlake.url = "github:pcasaretto/dotenv";
-    dotenvFlake.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
+    devenv.url = "github:cachix/devenv/latest";
   };
 
   outputs = {
@@ -25,6 +26,7 @@
     nixpkgs-unstable,
     home-manager,
     dotenvFlake,
+    devenv,
     ...
   }@inputs:
   let
@@ -40,6 +42,7 @@
 
   specialArgs = {system}:{
     dotenv = dotenvFlake.packages.${system}.default;
+    devenv = devenv.packages.${system}.devenv;
   };
 
   in

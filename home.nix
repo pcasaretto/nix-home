@@ -1,4 +1,4 @@
-{ config, pkgs, lib, dotenv, ... }:
+{ config, pkgs, lib, dotenv, devenv, ... }:
 {
   home.stateVersion = "22.05";
 
@@ -29,21 +29,24 @@
 
     # Dev stuff
     # (agda.withPackages (p: [ p.standard-library ]))
+    fd                         # fast find
+    babashka                   # clojure scripting
+    ctop                       # top for containers
+    coreutils                  # GNU coreutils
+    curlie                     # curl helper
+    devenv                     # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
+    dotenv                     # change env using a file for one off commands
+    dbeaver                    # db client
+    fzf                        # fast fuzzy file finder
+    gnupg
     google-cloud-sdk
     jq                         # for handling json
-    ripgrep                    # searching files fast
-    fzf                        # fast fuzzy file finder
-    mosh                       # persistent ssh sessions
-    ctop                       # top for containers
     kcat                       # cat for kafka
-    gnupg
-    babashka                   # clojure scripting
+    mosh                       # persistent ssh sessions
     peco                       # choose options in cli scripts
-    unixtools.watch            # repeat commands and monitor their outputs
+    ripgrep                    # searching files fast
     rlwrap                     # wrap commands with a sane CLI
-    curlie                     # curl helper
-    dotenv                     # change env using a file for one off commands
-
+    unixtools.watch            # repeat commands and monitor their outputs
     # System admin stuff
     ncdu
 
