@@ -29,20 +29,21 @@
 
     # Dev stuff
     # (agda.withPackages (p: [ p.standard-library ]))
-    fd                         # fast find
     babashka                   # clojure scripting
-    ctop                       # top for containers
     coreutils                  # GNU coreutils
+    ctop                       # top for containers
     curlie                     # curl helper
+    dbeaver                    # db client
     devenv                     # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
     dotenv                     # change env using a file for one off commands
-    dbeaver                    # db client
+    fd                         # fast find
     fzf                        # fast fuzzy file finder
     gnupg
     google-cloud-sdk
     jq                         # for handling json
     kcat                       # cat for kafka
     mosh                       # persistent ssh sessions
+    nodejs_20                  # dependency for emacs Github Copilot
     peco                       # choose options in cli scripts
     ripgrep                    # searching files fast
     rlwrap                     # wrap commands with a sane CLI
