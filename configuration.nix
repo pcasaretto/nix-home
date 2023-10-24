@@ -30,6 +30,9 @@
   # Add ability to used TouchID for sudo authentication
   security.pam.enableSudoTouchIdAuth = true;
 
+  # https://github.com/nix-community/home-manager/issues/4026
+  users.users.pcasaretto.home = "/Users/pcasaretto";
+
   system.defaults = {
     # Finder preferences
     finder = {

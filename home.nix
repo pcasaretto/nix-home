@@ -1,6 +1,6 @@
 { config, pkgs, lib, dotenv, devenv, ... }:
 {
-  home.stateVersion = "22.05";
+  home.stateVersion = "23.05";
 
   # Direnv, load and unload environment variables depending on the current directory.
   # https://direnv.net
