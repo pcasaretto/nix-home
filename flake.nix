@@ -51,7 +51,7 @@
         system = "aarch64-darwin";
         modules = [
           # Main `nix-darwin` config
-          ./configuration.nix
+          ./hosts/overdose
           # `home-manager` module
           home-manager.darwinModules.home-manager
           {
@@ -60,19 +60,8 @@
             home-manager.extraSpecialArgs = specialArgs { inherit system; };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.pcasaretto = {
-              imports = attrValues self.homeManagerModules;
-            };
           }
         ];
-      };
-
-      homeManagerModules = {
-        base-config      = import ./home.nix;
-        git-config       = import ./topics/git.nix;
-        kitty-config     = import ./topics/kitty.nix;
-        tmux-config      = import ./topics/tmux.nix;
-        zsh-config       = import ./topics/zsh.nix;
       };
 
       overlays = {

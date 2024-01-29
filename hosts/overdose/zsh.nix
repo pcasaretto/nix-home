@@ -4,12 +4,11 @@
 let
   customZshStuff = builtins.concatStringsSep "\n"
     (map builtins.readFile [
-    ./zsh/completion.zsh
-    ./zsh/correction.zsh
     ./zsh/functions/current_branch.zsh
     ./zsh/functions/current_repository.zsh
-    ./zsh/functions/git_functions.zsh
     ./zsh/functions/e.zsh
+    ./zsh/functions/git_functions.zsh
+    ./zsh/correction.zsh
     ./zsh/history.zsh
     ./zsh/theme.zsh
     ./zsh/vi-mode.zsh
@@ -33,7 +32,7 @@ in
         src = fetchFromGitHub {
           owner = "zsh-users";
           repo = "zsh-syntax-highlighting";
-          rev = "0.6.0";
+          rev = "0.8.0";
           sha256 = "0zmq66dzasmr5pwribyh4kbkk23jxbpdw4rjxx0i7dx8jjp2lzl4";
         };
         file = "zsh-syntax-highlighting.zsh";

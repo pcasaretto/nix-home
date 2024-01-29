@@ -1,6 +1,14 @@
 { pkgs, lib, programs, ... }:
 {
-  # Nix configuration ------------------------------------------------------------------------------
+  home-manager.users.pcasaretto = {
+    imports = [
+      ./home.nix
+      ./git.nix
+      ./kitty.nix
+      ./tmux.nix
+      ./zsh.nix
+    ];
+  };
 
   # Enable experimental nix command and flakes
   # nix.package = pkgs.nixUnstable;
@@ -17,8 +25,7 @@
   # Apps
   # `home-manager` currently has issues adding them to `~/Applications`
   # Issue: https://github.com/nix-community/home-manager/issues/1341
-  environment.systemPackages = with pkgs; [
-  ];
+  environment.systemPackages = with pkgs; [];
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
