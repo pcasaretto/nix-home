@@ -26,37 +26,49 @@
     # Some basics
     coreutils
     curl
-    zsh
+
+    # GNU flavored basic tools
+    gawk
+    gnused
+    gnugrep
+    gnutar
 
     # Dev stuff
     # (agda.withPackages (p: [ p.standard-library ]))
-    babashka                   # clojure scripting
-    coreutils                  # GNU coreutils
     ctop                       # top for containers
     curlie                     # curl helper
+    docker                     # container runtime
     dbeaver                    # db client
     devenv                     # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
     dotenv                     # change env using a file for one off commands
     fd                         # fast find
-    fzf                        # fast fuzzy file finder
-    gnupg
-    google-cloud-sdk
+    fira-code-nerdfont         # favorite dev font
+    gnupg                      # gpg
+    google-cloud-sdk           # gcloud
     jq                         # for handling json
-    kcat                       # cat for kafka
     mosh                       # persistent ssh sessions
-    nodejs_20                  # dependency for emacs Github Copilot
+    nodejs_20                  # dependency for emacs Github Copilot (TODO: move)
     peco                       # choose options in cli scripts
     ripgrep                    # searching files fast
     rlwrap                     # wrap commands with a sane CLI
     unixtools.watch            # repeat commands and monitor their outputs
-    # System admin stuff
-    ncdu
+    ncdu                       # disk usage
 
-    # Useful nix related tools
-    # comma # run software from without installing it
-
-  ] ++ lib.optionals stdenv.isDarwin [
-    m-cli # useful macOS CLI commands
+    # caffeine                   # prevent mac from sleeping
+    cyberduck                  # sftp client
+    discord                    # chat
+    hexfiend                   # hex editor
+    m-cli                      # useful macOS CLI commands
+    musescore                  # music notation
+    # postman                    # api client
     reattach-to-user-namespace # tmux helper
+    rectangle                  # window manager
+    spotify                    # music
+    slack                      # chat
+    transmission               # torrent client
+    vscode                     # code editor
+    # vlc                        # media player
+    zoom-us                    # video conferencing
+    _1password                 # password manager
   ];
 }
