@@ -7,7 +7,7 @@
 programs.kitty = {
     enable = true;
     font = {
-      name = "Fira Code";
+      name = "FiraCode Nerd Font Mono";
       size = 18;
     };
     settings = {

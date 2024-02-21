@@ -43,7 +43,7 @@
         "type": "github"
       }
     },
-    "dotenvFlake": {
+    "dotenv": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
       },
@@ -371,7 +371,7 @@
       "inputs": {
         "darwin": "darwin",
         "devenv": "devenv",
-        "dotenvFlake": "dotenvFlake",
+        "dotenv": "dotenv",
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_4",

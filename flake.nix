@@ -14,7 +14,7 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
-    dotenvFlake.url = "github:pcasaretto/dotenv";
+    dotenv.url = "github:pcasaretto/dotenv";
 
     devenv.url = "github:cachix/devenv/latest";
 
@@ -27,23 +27,22 @@
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
-    dotenvFlake,
+    dotenv,
     devenv,
     ...
   }@inputs:
   let
 
-  inherit (darwin.lib) darwinSystem;
-  inherit (inputs.nixpkgs-unstable.lib) attrValues makeOverridable optionalAttrs singleton;
+  inherit (nixpkgs.lib) optionalAttrs;
 
   # Configuration for `nixpkgs`
   nixpkgsConfig = {
     config = { allowUnfree = true; };
-    overlays = attrValues self.overlays;
+    overlays = builtins.attrValues self.overlays;
   };
 
   specialArgs = {system}:{
-    dotenv = dotenvFlake.packages.${system}.default;
+    dotenv = dotenv.packages.${system}.default;
     devenv = devenv.packages.${system}.devenv;
   };
 
@@ -69,7 +68,7 @@
       overlays = {
         # Overlay useful on Macs with Apple Silicon
         apple-silicon = final: prev: optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
-          # Add access to x86 packages system is running Apple Silicon
+          # Add access to x86 packages when system is running Apple Silicon
           pkgs-x86 = import inputs.nixpkgs-unstable {
             system = "x86_64-darwin";
             inherit (nixpkgsConfig) config;
