@@ -1,79 +1,69 @@
 {
-  description = "pcasaretto's darwin system";
+  description = "Your new nix config";
 
   inputs = {
+    # Nixpkgs
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    # You can access packages and modules from different nixpkgs revs
+    # at the same time. Here's an working example:
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
-    # Package sets
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-23.11-darwin";
-    nixpkgs-unstable.url = github:NixOS/nixpkgs/nixpkgs-unstable;
+    # Home manager
+    home-manager.url = "github:nix-community/home-manager/release-23.11";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Environment/system management
     darwin.url = "github:lnl7/nix-darwin/master";
-    darwin.inputs.nixpkgs.follows = "nixpkgs-unstable";
-
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     dotenv.url = "github:pcasaretto/dotenv";
-
     devenv.url = "github:cachix/devenv/latest";
-
     emacs-overlay.url  = "github:nix-community/emacs-overlay";
   };
 
   outputs = {
     self,
-    darwin,
     nixpkgs,
-    nixpkgs-unstable,
     home-manager,
-    dotenv,
-    devenv,
     ...
-  }@inputs:
-  let
+  } @ inputs: let
+    inherit (self) outputs;
+    # Supported systems for your flake packages, shell, etc.
+    systems = [
+      "aarch64-darwin"
+      "x86_64-darwin"
+    ];
+    # This is a function that generates an attribute by calling a function you
+    # pass to it, with each system as an argument
+    forAllSystems = nixpkgs.lib.genAttrs systems;
+  in {
+    # Your custom packages
+    # Accessible through 'nix build', 'nix shell', etc
+    packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+    # Formatter for your nix files, available through 'nix fmt'
+    # Other options beside 'alejandra' include 'nixpkgs-fmt'
+    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
-  inherit (nixpkgs.lib) optionalAttrs;
+    # Your custom packages and modifications, exported as overlays
+    overlays = import ./overlays {inherit inputs;};
+    # Reusable nixos modules you might want to export
+    # These are usually stuff you would upstream into nixpkgs
+    nixosModules = import ./modules/nixos;
+    # Reusable home-manager modules you might want to export
+    # These are usually stuff you would upstream into home-manager
+    homeManagerModules = import ./modules/home-manager;
 
-  # Configuration for `nixpkgs`
-  nixpkgsConfig = {
-    config = { allowUnfree = true; };
-    overlays = builtins.attrValues self.overlays;
-  };
-
-  specialArgs = {system}:{
-    dotenv = dotenv.packages.${system}.default;
-    devenv = devenv.packages.${system}.devenv;
-  };
-
-  in
-  {
-      darwinConfigurations.overdose = darwin.lib.darwinSystem rec {
+    # NixOS configuration entrypoint
+    # Available through 'nixos-rebuild --flake .#your-hostname'
+    darwinConfigurations = {
+      overdose = inputs.darwin.lib.darwinSystem {
         system = "aarch64-darwin";
+        specialArgs = {inherit inputs outputs;};
         modules = [
-          # Main `nix-darwin` config
+          # > Our main nixos configuration file <
           ./hosts/overdose
-          # `home-manager` module
-          home-manager.darwinModules.home-manager
-          {
-            nixpkgs = nixpkgsConfig;
-            # `home-manager` config
-            home-manager.extraSpecialArgs = specialArgs { inherit system; };
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          }
         ];
       };
-
-      overlays = {
-        # Overlay useful on Macs with Apple Silicon
-        apple-silicon = final: prev: optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
-          # Add access to x86 packages when system is running Apple Silicon
-          pkgs-x86 = import inputs.nixpkgs-unstable {
-            system = "x86_64-darwin";
-            inherit (nixpkgsConfig) config;
-          };
-        };
-      };
     };
+  };
 }
