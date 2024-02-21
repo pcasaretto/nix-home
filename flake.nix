@@ -17,6 +17,8 @@
     dotenvFlake.url = "github:pcasaretto/dotenv";
 
     devenv.url = "github:cachix/devenv/latest";
+
+    emacs-overlay.url  = "github:nix-community/emacs-overlay";
   };
 
   outputs = {
