@@ -42,7 +42,7 @@
     devenv                     # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
     dotenv                     # change env using a file for one off commands
     fd                         # fast find
-    fira-code-nerdfont         # favorite dev font
+    fira-code-nerdfont          # favorite dev font
     gnupg                      # gpg
     google-cloud-sdk           # gcloud
     jq                         # for handling json
@@ -54,20 +54,20 @@
     unixtools.watch            # repeat commands and monitor their outputs
     ncdu                       # disk usage
 
-    # caffeine                   # prevent mac from sleeping
+    pkgs-x86.caffeine          # prevent mac from sleeping
     cyberduck                  # sftp client
     discord                    # chat
-    hexfiend                   # hex editor
+    hexfiend                    # hex editor
     m-cli                      # useful macOS CLI commands
     musescore                  # music notation
-    # postman                    # api client
+    # postman                  # api client
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
     spotify                    # music
     slack                      # chat
     transmission               # torrent client
     vscode                     # code editor
-    # vlc                        # media player
+    # vlc                      # media player
     zoom-us                    # video conferencing
     _1password                 # password manager
   ];
