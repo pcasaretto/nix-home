@@ -90,7 +90,7 @@
     # devenv                     # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
     # dotenv                     # change env using a file for one off commands
     fd                         # fast find
-    # fira-code-nerdfont         # favorite dev font
+    fira-code-nerdfont         # favorite dev font
     gnupg                      # gpg
     google-cloud-sdk           # gcloud
     jq                         # for handling json
@@ -115,5 +115,7 @@
     # vlc                      # media player
     zoom-us                    # video conferencing
     _1password                 # password manager
+
+    qemu
   ];
 }

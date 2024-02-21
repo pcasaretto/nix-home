@@ -59,7 +59,7 @@
     extraSpecialArgs = { inherit inputs outputs; };
     users = {
       # Import your home-manager configuration
-      pcasaretto = import ./home.nix;
+      pcasaretto = import ./home-manager;
     };
   };
 
