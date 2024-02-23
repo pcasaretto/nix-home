@@ -229,6 +229,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-pcasaretto": {
+      "locked": {
+        "lastModified": 1708696032,
+        "narHash": "sha256-E8OyzAwlfdZHpSq2csLA0VxO2kgA/h334BNY4J5feTU=",
+        "owner": "pcasaretto",
+        "repo": "nixpkgs",
+        "rev": "7c46044c8f36ffb063d7e7fe5b0ff3d39c88be42",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pcasaretto",
+        "ref": "immersed-vr-darwin",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-regression": {
       "locked": {
         "lastModified": 1643052045,
@@ -376,6 +392,7 @@
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_4",
+        "nixpkgs-pcasaretto": "nixpkgs-pcasaretto",
         "nixpkgs-unstable": "nixpkgs-unstable"
       }
     },

@@ -10,6 +10,10 @@
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });
+    pcasaretto = import inputs.nixpkgs-pcasaretto {
+      system = final.system;
+      config.allowUnfree = true;
+    };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
