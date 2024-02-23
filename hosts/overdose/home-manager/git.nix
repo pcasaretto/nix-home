@@ -83,9 +83,9 @@ in
       core.excludesfile           = toString gitignore;
       apply.whitespace            = "nowarn";
       diff.tool                   = "vscode";
-      "difftool \"vscode\"".cmd   = "code --wait --diff $LOCAL $REMOTE";
+      ''difftool "vscode"''.cmd   = "code --wait --diff $LOCAL $REMOTE";
       merge.tool                  = "vscode";
-      "mergetool \"vscode\"".cmd  = "code --wait $MERGED";
+      ''mergetool "vscode"''.cmd  = "code --wait $MERGED";
       mergetool.keepBackup        = "false";
       help.autocorrect            = "1";
       push.default                = "simple";
@@ -98,7 +98,6 @@ in
 
   # GitHub CLI
   # https://rycee.gitlab.io/home-manager/options.html#opt-programs.gh.enable
-  # Aliases config in ./gh-aliases.nix
   programs.gh.enable = true;
   programs.gh.settings.git_protocol = "ssh";
 }

@@ -50,7 +50,7 @@ in {
     ];
 
     home.sessionVariables = mkIf cfg.default rec {
-      EDITOR = ''emacsclient -t -a ""'';
+      EDITOR = ''emacsclient -t -a \"\"'';
       VISUAL = EDITOR;
     };
   };
