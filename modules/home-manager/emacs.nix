@@ -13,9 +13,11 @@ let cfg = config.modules.editors.emacs;
 in {
   options.modules.editors.emacs = {
     enable = mkBoolOpt false;
-    doom = rec {
-      enable = mkBoolOpt false;
-    };
+    default = mkBoolOpt false;
+    # TODO: auto install doom
+    # doom = rec {
+    #   enable = mkBoolOpt false;
+    # };
   };
 
   config = mkIf cfg.enable {
@@ -46,5 +48,10 @@ in {
       # :tools lookup & :lang org +roam
       sqlite
     ];
+
+    home.sessionVariables = mkIf cfg.default rec {
+      EDITOR = ''emacsclient -t -a ""'';
+      VISUAL = EDITOR;
+    };
   };
 }

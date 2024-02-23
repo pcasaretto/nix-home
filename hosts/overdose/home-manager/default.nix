@@ -58,13 +58,15 @@
   programs.htop.enable = true;
   programs.htop.settings.show_program_path = true;
 
-  modules.editors.emacs.enable = true;
+  modules.editors.emacs = {
+   enable = true;
+   default = true;
+  };
 
   home.sessionVariables = rec {
-    VISUAL = "code --wait";
-    EDITOR = VISUAL;
     LC_ALL = "en_US.UTF-8";
     LANG   = "en_US.UTF-8";
+    # use 1password agent for ssh
     SSH_AUTH_SOCK = "\$HOME/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock";
     WORKSPACE = "\$HOME/src";
   };
