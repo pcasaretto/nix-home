@@ -1,5 +1,11 @@
-{ inputs, outputs, config, pkgs, lib, ... }:
 {
+  inputs,
+  outputs,
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   home.stateVersion = "23.05";
 
   # You can import other home-manager modules here
@@ -59,18 +65,17 @@
   programs.htop.settings.show_program_path = true;
 
   modules.editors.emacs = {
-   enable = true;
-   default = true;
+    enable = true;
+    default = true;
   };
 
   home.sessionVariables = rec {
     LC_ALL = "en_US.UTF-8";
-    LANG   = "en_US.UTF-8";
+    LANG = "en_US.UTF-8";
     # use 1password agent for ssh
     SSH_AUTH_SOCK = "\$HOME/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock";
     WORKSPACE = "\$HOME/src";
   };
-
 
   home.packages = with pkgs; [
     # Some basics

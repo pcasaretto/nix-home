@@ -1,20 +1,22 @@
-{ config, lib, pkgs, ... }:
-
-
-let
-  customZshStuff = builtins.concatStringsSep "\n"
-    (map builtins.readFile [
-    ./zsh/functions/current_branch.zsh
-    ./zsh/functions/current_repository.zsh
-    ./zsh/functions/e.zsh
-    ./zsh/functions/git_functions.zsh
-    ./zsh/correction.zsh
-    ./zsh/history.zsh
-    ./zsh/theme.zsh
-    ./zsh/vi-mode.zsh
-  ]);
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  customZshStuff =
+    builtins.concatStringsSep "\n"
+    (map builtins.readFile [
+      ./zsh/functions/current_branch.zsh
+      ./zsh/functions/current_repository.zsh
+      ./zsh/functions/e.zsh
+      ./zsh/functions/git_functions.zsh
+      ./zsh/correction.zsh
+      ./zsh/history.zsh
+      ./zsh/theme.zsh
+      ./zsh/vi-mode.zsh
+    ]);
+in {
   programs.zsh = {
     defaultKeymap = "viins";
     enable = true;
@@ -54,5 +56,4 @@ in
     enable = true;
     enableZshIntegration = true;
   };
-
 }

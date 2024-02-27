@@ -1,10 +1,14 @@
-{ config, lib, pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   home.sessionVariables = {
-    TERMINAL="kitty";
+    TERMINAL = "kitty";
   };
 
-programs.kitty = {
+  programs.kitty = {
     enable = true;
     font = {
       name = "FiraCode Nerd Font Mono";
