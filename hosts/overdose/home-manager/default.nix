@@ -5,7 +5,11 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+let
+  dotenv = inputs.dotenv.packages.${pkgs.system}.default;
+  in
+{
   home.stateVersion = "23.05";
 
   # You can import other home-manager modules here
@@ -95,7 +99,7 @@
     docker                     # container runtime
     dbeaver                    # db client
     # devenv                   # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
-    inputs.dotenv.packages.${system}.default            # change env using a file for one off commands
+    dotenv                     # change env using a file for one off commands
     fd                         # fast find
     fira-code-nerdfont         # favorite dev font
     gnupg                      # gpg
