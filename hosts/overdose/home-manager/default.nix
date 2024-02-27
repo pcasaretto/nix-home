@@ -94,8 +94,8 @@
     curlie                     # curl helper
     docker                     # container runtime
     dbeaver                    # db client
-    # devenv                     # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
-    # dotenv                     # change env using a file for one off commands
+    # devenv                   # Fast, Declarative, Reproducible, and Composable Developer Environments using Nix
+    inputs.dotenv.packages.${system}.default            # change env using a file for one off commands
     fd                         # fast find
     fira-code-nerdfont         # favorite dev font
     gnupg                      # gpg

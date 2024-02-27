@@ -83,9 +83,9 @@ in
       core.excludesfile           = toString gitignore;
       apply.whitespace            = "nowarn";
       diff.tool                   = "vscode";
-      ''difftool "vscode"''.cmd   = "code --wait --diff $LOCAL $REMOTE";
+      "difftool \"vscode\"".cmd   = "code --wait --diff $LOCAL $REMOTE";
       merge.tool                  = "vscode";
-      ''mergetool "vscode"''.cmd  = "code --wait $MERGED";
+      "mergetool \"vscode\"".cmd  = "code --wait $MERGED";
       mergetool.keepBackup        = "false";
       help.autocorrect            = "1";
       push.default                = "simple";
