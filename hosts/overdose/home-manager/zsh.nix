@@ -6,16 +6,18 @@
 }: let
   customZshStuff =
     builtins.concatStringsSep "\n"
-    (map builtins.readFile [
+    (
+    ( map builtins.readFile [
       ./zsh/functions/current_branch.zsh
       ./zsh/functions/current_repository.zsh
       ./zsh/functions/e.zsh
       ./zsh/functions/git_functions.zsh
       ./zsh/correction.zsh
       ./zsh/history.zsh
-      ./zsh/theme.zsh
       ./zsh/vi-mode.zsh
-    ]);
+    ] ++
+      ["source ~/.p10k.zsh"]
+    ));
 in {
   programs.zsh = {
     defaultKeymap = "viins";
@@ -29,6 +31,11 @@ in {
     initExtra = customZshStuff;
 
     plugins = with pkgs; [
+      {
+        name = "powerlevel10k";
+        src = pkgs.zsh-powerlevel10k;
+        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      }
       {
         name = "zsh-syntax-highlighting";
         src = fetchFromGitHub {
