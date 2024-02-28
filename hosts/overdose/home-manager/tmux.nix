@@ -7,6 +7,7 @@
   programs.tmux = {
     enable = true;
     keyMode = "vi";
+    terminal = "tmux-256color";
     extraConfig = ''
       # Enable mouse movement
       set -g mouse on
