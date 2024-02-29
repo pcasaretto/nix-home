@@ -9,6 +9,8 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
+    nixpkgs-0cbf2bc9a.url = "github:nixos/nixpkgs/0cbf2bc9ad81af3993ce26a0cbd5ae7a1dbd1c34";
+
     nixpkgs-pcasaretto.url = "github:pcasaretto/nixpkgs/immersed-vr-darwin";
 
     # Home manager
@@ -66,5 +68,15 @@
         ];
       };
     };
+
+   nixosConfigurations = {
+     nixos = nixpkgs.lib.nixosSystem rec {
+        system = "aarch64-linux";
+        specialArgs = { inherit inputs outputs; };
+        modules = [
+          ./hosts/nixos
+        ];
+     };
+   };
   };
 }
