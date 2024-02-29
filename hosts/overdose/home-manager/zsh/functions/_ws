@@ -1,3 +1,0 @@
-#compdef ws
-
-_path_files -/W $WORKSPACE

@@ -31,7 +31,6 @@ let
 in
 {
   home.shellAliases = {
-    l    = "ls -lAh";
     gst  = "git status";
     gsw  = "git switch";
     gl   = "git pull --prune";
