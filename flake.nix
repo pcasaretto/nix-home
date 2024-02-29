@@ -9,8 +9,6 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
-    nixpkgs-0cbf2bc9a.url = "github:nixos/nixpkgs/0cbf2bc9ad81af3993ce26a0cbd5ae7a1dbd1c34";
-
     nixpkgs-pcasaretto.url = "github:pcasaretto/nixpkgs/immersed-vr-darwin";
 
     # Home manager
@@ -36,6 +34,8 @@
     systems = [
       "aarch64-darwin"
       "x86_64-darwin"
+      "aarch64-linux"
+      "x86_64-linux"
     ];
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
@@ -69,14 +69,14 @@
       };
     };
 
-   nixosConfigurations = {
-     nixos = nixpkgs.lib.nixosSystem rec {
+    nixosConfigurations = {
+      nixos = nixpkgs.lib.nixosSystem rec {
         system = "aarch64-linux";
-        specialArgs = { inherit inputs outputs; };
+        specialArgs = {inherit inputs outputs;};
         modules = [
           ./hosts/nixos
         ];
-     };
-   };
+      };
+    };
   };
 }

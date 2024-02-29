@@ -5,8 +5,7 @@
   pkgs,
   lib,
   ...
-}:
-{
+}: {
   # You can import other home-manager modules here
   imports = [
     # If you want to use modules your own flake exports (from modules/home-manager):
@@ -50,20 +49,19 @@
     };
   };
 
-    home.packages = [
-      pkgs.neovim
-      pkgs.postgresql
-      pkgs.tmux
-      pkgs.kubectl
-      pkgs.kubernetes-helm
-      (pkgs.google-cloud-sdk.withExtraComponents [pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin])
-      pkgs.peco
-      pkgs.git
-      pkgs.unstable.pritunl-client
-    ];
+  home.packages = [
+    pkgs.neovim
+    pkgs.postgresql
+    pkgs.tmux
+    pkgs.kubectl
+    pkgs.kubernetes-helm
+    (pkgs.google-cloud-sdk.withExtraComponents [pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin])
+    pkgs.peco
+    pkgs.git
+    pkgs.unstable.pritunl-client
+  ];
 
-    # The state version is required and should stay at the version you
-    # originally installed.
-    home.stateVersion = "23.11";
+  # The state version is required and should stay at the version you
+  # originally installed.
+  home.stateVersion = "23.11";
 }
-

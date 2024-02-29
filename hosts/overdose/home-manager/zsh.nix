@@ -7,17 +7,17 @@
   customZshStuff =
     builtins.concatStringsSep "\n"
     (
-    ( map builtins.readFile [
-      ./zsh/functions/current_branch.zsh
-      ./zsh/functions/current_repository.zsh
-      ./zsh/functions/e.zsh
-      ./zsh/functions/git_functions.zsh
-      ./zsh/correction.zsh
-      ./zsh/history.zsh
-      ./zsh/vi-mode.zsh
-    ] ++
-      ["source ~/.p10k.zsh"]
-    ));
+      map builtins.readFile [
+        ./zsh/functions/current_branch.zsh
+        ./zsh/functions/current_repository.zsh
+        ./zsh/functions/e.zsh
+        ./zsh/functions/git_functions.zsh
+        ./zsh/correction.zsh
+        ./zsh/history.zsh
+        ./zsh/vi-mode.zsh
+      ]
+      ++ ["source ~/.p10k.zsh"]
+    );
 in {
   programs.zsh = {
     defaultKeymap = "viins";

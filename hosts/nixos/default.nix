@@ -1,15 +1,20 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, lib, inputs, outputs, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  inputs,
+  outputs,
+  ...
+}: {
   imports = [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      # Import home-manager's NixOS module
-      inputs.home-manager.nixosModules.home-manager
-    ];
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    # Import home-manager's NixOS module
+    inputs.home-manager.nixosModules.home-manager
+  ];
 
   # Allow unfree packages
   nixpkgs = {
@@ -31,7 +36,6 @@
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
-
     ];
 
     # Configure your nixpkgs instance
@@ -41,10 +45,9 @@
     };
   };
 
-
   # https://github.com/NixOS/nixpkgs/pull/238857
-  systemd.packages = [ pkgs.unstable.pritunl-client ];
-  systemd.targets.multi-user.wants = [ "pritunl-client.service" ];
+  systemd.packages = [pkgs.unstable.pritunl-client];
+  systemd.targets.multi-user.wants = ["pritunl-client.service"];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -118,28 +121,27 @@
   users.users.pcasaretto = {
     isNormalUser = true;
     description = "Paulo Casaretto";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
-    #  firefox
-    #  thunderbird
+      #  firefox
+      #  thunderbird
     ];
     shell = pkgs.zsh;
     ignoreShellProgramCheck = true;
   };
 
   home-manager = {
-    extraSpecialArgs = { inherit inputs outputs; };
+    extraSpecialArgs = {inherit inputs outputs;};
     users = {
-	    pcasaretto = import ./home-manager;
+      pcasaretto = import ./home-manager;
     };
   };
-
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
+    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    #  wget
     spice-vdagent
     phodav
     davfs2
@@ -180,7 +182,6 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.05"; # Did you read the comment?
 
-
   # activate nix flake support
   nix = {
     package = pkgs.nixFlakes;
@@ -188,5 +189,4 @@
       experimental-features = nix-command flakes
     '';
   };
-
 }
