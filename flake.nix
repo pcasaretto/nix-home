@@ -34,6 +34,8 @@
     systems = [
       "aarch64-darwin"
       "x86_64-darwin"
+      "aarch64-linux"
+      "x86_64-linux"
     ];
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
@@ -63,6 +65,16 @@
         modules = [
           # > Our main nixos configuration file <
           ./hosts/overdose
+        ];
+      };
+    };
+
+    nixosConfigurations = {
+      nixos = nixpkgs.lib.nixosSystem rec {
+        system = "aarch64-linux";
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          ./hosts/nixos
         ];
       };
     };

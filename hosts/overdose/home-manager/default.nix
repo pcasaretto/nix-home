@@ -5,11 +5,9 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   dotenv = inputs.dotenv.packages.${pkgs.system}.default;
-  in
-{
+in {
   home.stateVersion = "23.05";
 
   # You can import other home-manager modules here

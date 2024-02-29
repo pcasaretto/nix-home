@@ -19,6 +19,9 @@
       ++ ["source ~/.p10k.zsh"]
     );
 in {
+  # Install the p10k generated config file, as .p10k.zsh in the home directory
+  home.file.".p10k.zsh".source = ./zsh/p10k.zsh;
+
   programs.zsh = {
     defaultKeymap = "viins";
     enable = true;
