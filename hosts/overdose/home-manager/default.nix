@@ -56,6 +56,7 @@ in {
     zoom-us                    # video conferencing
     _1password                 # password manager
     pcasaretto.immersed-vr     # experiment with coding in VR
+    unstable.vlc-bin-universal # video player
 
     qemu
   ];
