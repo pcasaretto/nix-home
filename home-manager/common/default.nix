@@ -45,11 +45,6 @@
   programs.htop.enable = true;
   programs.htop.settings.show_program_path = true;
 
-  modules.editors.emacs = {
-    enable = true;
-    default = true;
-  };
-
   home.shellAliases = {
     l    = "ls -lAh";
   };
