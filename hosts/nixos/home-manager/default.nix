@@ -20,12 +20,15 @@
     ../../../home-manager/common
   ];
 
+  home.shellAliases = {
+    kubectl-switch-context = "kubectl config get-contexts -o name | peco | xargs kubectl config use-context";
+  };
+
   home.packages = [
     pkgs.neovim
     pkgs.kubectl
     pkgs.kubernetes-helm
     (pkgs.google-cloud-sdk.withExtraComponents [pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin])
-    pkgs.unstable.pritunl-client
   ];
 
   # The state version is required and should stay at the version you

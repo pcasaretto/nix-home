@@ -45,10 +45,6 @@
     };
   };
 
-  # https://github.com/NixOS/nixpkgs/pull/238857
-  systemd.packages = [pkgs.unstable.pritunl-client];
-  systemd.targets.multi-user.wants = ["pritunl-client.service"];
-
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -155,6 +151,9 @@
   #   enableSSHSupport = true;
   # };
 
+  # Enable ssh-agent
+  programs.ssh.startAgent = true;
+
   # Enable mosh, the ssh alternative when client has bad connection
   # Opens UDP ports 60000 ... 61000
   programs.mosh.enable = true;
@@ -181,6 +180,10 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.05"; # Did you read the comment?
+
+  services.openvpn.servers = {
+    officeVPN  = { config = '' config /root/nixos/openvpn/officeVPN.conf ''; };
+  };
 
   # activate nix flake support
   nix = {

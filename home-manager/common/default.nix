@@ -78,7 +78,6 @@
     fd                         # fast find
     fira-code-nerdfont         # favorite dev font
     gnupg                      # gpg
-    google-cloud-sdk           # gcloud
     jq                         # for handling json
     mosh                       # persistent ssh sessions
     nodejs_20                  # dependency for emacs Github Copilot (TODO: move)
