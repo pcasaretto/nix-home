@@ -182,7 +182,10 @@
   system.stateVersion = "23.05"; # Did you read the comment?
 
   services.openvpn.servers = {
-    officeVPN  = { config = '' config /root/nixos/openvpn/officeVPN.conf ''; };
+    officeVPN  = {
+      config = '' config /root/nixos/openvpn/officeVPN.conf '';
+      autoStart = false;
+    };
   };
 
   # activate nix flake support
