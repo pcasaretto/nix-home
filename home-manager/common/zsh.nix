@@ -13,6 +13,7 @@
         ./zsh/functions/e.zsh
         ./zsh/functions/git_functions.zsh
         ./zsh/correction.zsh
+        ./zsh/completion.zsh
         ./zsh/history.zsh
         ./zsh/vi-mode.zsh
       ]

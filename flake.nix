@@ -1,6 +1,21 @@
 {
   description = "Your new nix config";
 
+  # the nixConfig here only affects the flake itself, not the system configuration!
+  nixConfig = {
+    # override the default substituters
+    substituters = [
+      "https://cache.nixos.org"
+
+      # nix community's cache server
+      "https://nix-community.cachix.org"
+    ];
+    trusted-public-keys = [
+      # nix community's cache server public key
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
+
   inputs = {
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
@@ -19,8 +34,11 @@
     darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     dotenv.url = "github:pcasaretto/dotenv";
-    devenv.url = "github:cachix/devenv/latest";
+    dotenv.inputs.nixpkgs.follows = "nixpkgs";
+
     emacs-overlay.url = "github:nix-community/emacs-overlay";
+    emacs-overlay.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs";
   };
 
   outputs = {
@@ -65,6 +83,11 @@
         modules = [
           # > Our main nixos configuration file <
           ./hosts/overdose
+          {
+            # given the users in this list the right to specify additional substituters via:
+            #    1. `nixConfig.substituters` in `flake.nix`
+            nix.settings.trusted-users = [ "pcasaretto" ];
+          }
         ];
       };
     };
@@ -75,6 +98,11 @@
         specialArgs = {inherit inputs outputs;};
         modules = [
           ./hosts/nixos
+          {
+            # given the users in this list the right to specify additional substituters via:
+            #    1. `nixConfig.substituters` in `flake.nix`
+            nix.settings.trusted-users = [ "pcasaretto" ];
+          }
         ];
       };
     };

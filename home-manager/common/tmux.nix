@@ -8,6 +8,7 @@
     enable = true;
     keyMode = "vi";
     terminal = "tmux-256color";
+    historyLimit = 10000;
     extraConfig = ''
       # Enable mouse movement
       set -g mouse on

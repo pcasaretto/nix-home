@@ -84,5 +84,6 @@
     peco                       # choose options in cli scripts
     ripgrep                    # searching files fast
     unixtools.watch            # repeat commands and monitor their outputs
+    unstable.devenv            # dev environments made easy
   ];
 }
