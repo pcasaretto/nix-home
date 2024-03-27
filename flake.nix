@@ -37,6 +37,14 @@
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     emacs-overlay.inputs.nixpkgs.follows = "nixpkgs-unstable";
     emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs";
+
+    sops-nix.url = "github:mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    mysecrets = {
+        url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
+	flake = false;
+    };
   };
 
   outputs = {
@@ -79,7 +87,7 @@
       overdose = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
-          # > Our main nixos configuration file <
+	  ./hosts/common/core
           ./hosts/overdose
           {
             # given the users in this list the right to specify additional substituters via:
@@ -95,6 +103,7 @@
         system = "aarch64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [
+	  ./hosts/common/core
           ./hosts/nixos
           {
             # given the users in this list the right to specify additional substituters via:

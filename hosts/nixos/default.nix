@@ -113,9 +113,12 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  # ensure the user can’t modify their password or groups
+  users.mutableUsers = false;
+
   users.users.pcasaretto = {
     isNormalUser = true;
+    hashedPasswordFile = config.sops.secrets.nixos-password.path;
     description = "Paulo Casaretto";
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
