@@ -121,10 +121,6 @@
     hashedPasswordFile = config.sops.secrets.nixos-password.path;
     description = "Paulo Casaretto";
     extraGroups = ["networkmanager" "wheel"];
-    packages = with pkgs; [
-      #  firefox
-      #  thunderbird
-    ];
     shell = pkgs.zsh;
     ignoreShellProgramCheck = true;
   };

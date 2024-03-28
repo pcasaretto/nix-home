@@ -87,7 +87,7 @@
       overdose = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
-	  ./hosts/common/core
+          ./hosts/common/core
           ./hosts/overdose
           {
             # given the users in this list the right to specify additional substituters via:
@@ -103,7 +103,8 @@
         system = "aarch64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [
-	  ./hosts/common/core
+          ./hosts/common/core
+          ./hosts/common/optional/sops.nix
           ./hosts/nixos
           {
             # given the users in this list the right to specify additional substituters via:
