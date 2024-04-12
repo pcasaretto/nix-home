@@ -22,8 +22,6 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
-    nixpkgs-pcasaretto.url = "github:pcasaretto/nixpkgs/immersed-vr-darwin";
-
     # Home manager
     home-manager.url = "github:nix-community/home-manager/release-23.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -40,6 +38,8 @@
 
     sops-nix.url = "github:mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    catppuccin.url = "github:catppuccin/nix";
 
     mysecrets = {
         url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";

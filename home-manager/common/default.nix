@@ -1,6 +1,8 @@
 # This file (and the global directory) holds config that i use on all hosts
 { inputs, outputs, pkgs, ... }: {
   imports = [
+    inputs.catppuccin.homeManagerModules.catppuccin
+
     ./git.nix
     ./tmux.nix
     ./xdg.nix
@@ -53,6 +55,8 @@
     LC_ALL = "en_US.UTF-8";
     LANG = "en_US.UTF-8";
   };
+
+  catppuccin.flavour = "frappe";
 
   home.packages = with pkgs; [
     # Some basics
