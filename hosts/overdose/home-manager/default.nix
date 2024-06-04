@@ -7,6 +7,7 @@
   ...
 }: let
   dotenv = inputs.dotenv.packages.${pkgs.system}.default;
+  transmission = pkgs.transmission_4.overrideAttrs { enableGTK = true; };
 in {
   home.stateVersion = "23.05";
 
@@ -46,7 +47,6 @@ in {
   };
 
   home.packages = with pkgs; [
-    dbeaver                    # db client
     pkgs-x86.caffeine          # prevent mac from sleeping
     cyberduck                  # sftp client
     discord                    # chat

@@ -56,7 +56,7 @@
     LANG = "en_US.UTF-8";
   };
 
-  catppuccin.flavour = "frappe";
+  catppuccin.flavor = "frappe";
 
   home.packages = with pkgs; [
     # Some basics

@@ -3,7 +3,8 @@
 
   # the nixConfig here only affects the flake itself, not the system configuration!
   nixConfig = {
-    # will be appended to the system-level substituters
+    trusted-users = [ "pcasaretto" ];
+
     extra-substituters = [
       # nix community's cache server
       "https://nix-community.cachix.org"
@@ -16,14 +17,14 @@
 
   inputs = {
     # Nixpkgs
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
     # Home manager
-    home-manager.url = "github:nix-community/home-manager/release-23.11";
+    home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     darwin.url = "github:lnl7/nix-darwin/master";
@@ -32,8 +33,11 @@
     dotenv.url = "github:pcasaretto/dotenv";
     dotenv.inputs.nixpkgs.follows = "nixpkgs";
 
+    flake-utils.url = "github:numtide/flake-utils";
+
     emacs-overlay.url = "github:nix-community/emacs-overlay";
-    emacs-overlay.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    emacs-overlay.inputs.flake-utils.follows = "flake-utils";
+    emacs-overlay.inputs.nixpkgs.follows = "nixpkgs";
     emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs";
 
     sops-nix.url = "github:mic92/sops-nix";
@@ -87,13 +91,19 @@
       overdose = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
-          ./hosts/common/core
-          ./hosts/overdose
           {
             # given the users in this list the right to specify additional substituters via:
             #    1. `nixConfig.substituters` in `flake.nix`
-            nix.settings.trusted-users = [ "pcasaretto" ];
+            nix.settings = {
+              trusted-users = [ "pcasaretto" ];
+
+              substituters = [
+                "https://cache.nixos.org"
+              ];
+            };
           }
+          ./hosts/common/core
+          ./hosts/overdose
         ];
       };
     };
@@ -106,11 +116,6 @@
           ./hosts/common/core
           ./hosts/common/optional/sops.nix
           ./hosts/nixos
-          {
-            # given the users in this list the right to specify additional substituters via:
-            #    1. `nixConfig.substituters` in `flake.nix`
-            nix.settings.trusted-users = [ "pcasaretto" ];
-          }
         ];
       };
     };

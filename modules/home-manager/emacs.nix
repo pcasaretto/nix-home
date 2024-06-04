@@ -45,6 +45,7 @@ in {
       fd # faster projectile indexing
       imagemagick # for image-dired
       zstd # for undo-fu-session/undo-tree compression
+      parinfer-rust-emacs # for parinfer functionality
 
       ## Module dependencies
       # :checkers spell
