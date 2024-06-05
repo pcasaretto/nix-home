@@ -45,7 +45,6 @@ in {
       fd # faster projectile indexing
       imagemagick # for image-dired
       zstd # for undo-fu-session/undo-tree compression
-      parinfer-rust-emacs # for parinfer functionality
 
       ## Module dependencies
       # :checkers spell
@@ -54,7 +53,11 @@ in {
       editorconfig-core-c # per-project style config
       # :tools lookup & :lang org +roam
       sqlite
+      # :editor parinfer
+      parinfer-rust-emacs
     ];
+
+    home.file.".config/emacs/.local/etc/parinfer-rust/parinfer-rust-darwin.so".source = "${pkgs.parinfer-rust-emacs}/lib/libparinfer_rust.dylib";
 
     home.sessionVariables = mkIf cfg.default rec {
       EDITOR = ''emacsclient -t -a \"\"'';
