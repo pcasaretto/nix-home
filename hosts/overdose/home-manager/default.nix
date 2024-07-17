@@ -61,7 +61,6 @@ in {
     vscode                     # code editor
     zoom-us                    # video conferencing
     _1password                 # password manager
-    unstable.immersed-vr       # experiment with coding in VR
     unstable.vlc-bin-universal # video player
 
     qemu
