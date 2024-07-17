@@ -45,9 +45,11 @@
 
     catppuccin.url = "github:catppuccin/nix";
 
+    mac-app-util.url = "github:hraban/mac-app-util";
+
     mysecrets = {
         url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
-	flake = false;
+        flake = false;
     };
   };
 
@@ -103,6 +105,7 @@
             };
           }
           ./hosts/common/core
+          ./hosts/common/darwin
           ./hosts/overdose
         ];
       };

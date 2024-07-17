@@ -23,6 +23,7 @@ in {
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
     ../../../home-manager/common
+    ../../../home-manager/darwin
 
     ./kitty.nix
   ];
