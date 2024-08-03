@@ -55,7 +55,7 @@ in {
     m-cli                      # useful macOS CLI commands
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
-    spotify                    # music
+    # spotify                    # music
     slack                      # chat
     transmission               # torrent client
     vscode                     # code editor
