@@ -106,6 +106,7 @@
           }
           ./hosts/common/core
           ./hosts/common/darwin
+          ./hosts/common/darwin/mac-app-util.nix
           ./hosts/overdose
         ];
       };

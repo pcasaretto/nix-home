@@ -24,6 +24,7 @@ in {
     # ./nvim.nix
     ../../../home-manager/common
     ../../../home-manager/darwin
+    ../../../home-manager/darwin/mac-app-util.nix
 
     ./kitty.nix
   ];
