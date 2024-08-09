@@ -3,7 +3,7 @@
 
   # the nixConfig here only affects the flake itself, not the system configuration!
   nixConfig = {
-    trusted-users = [ "pcasaretto" ];
+    trusted-users = [ "pcasaretto" "paulo.casaretto" ];
 
     extra-substituters = [
       # nix community's cache server
@@ -107,6 +107,26 @@
           ./hosts/common/core
           ./hosts/common/darwin
           ./hosts/overdose
+        ];
+      };
+
+      heatseeker = inputs.darwin.lib.darwinSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          {
+            # given the users in this list the right to specify additional substituters via:
+            #    1. `nixConfig.substituters` in `flake.nix`
+            nix.settings = {
+              trusted-users = [ "paulo.casaretto" ];
+
+              substituters = [
+                "https://cache.nixos.org"
+              ];
+            };
+          }
+          ./hosts/common/core
+          ./hosts/common/darwin
+          ./hosts/heatseeker
         ];
       };
     };
