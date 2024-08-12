@@ -23,6 +23,8 @@
     ../../../home-manager/darwin
 
     ./kitty.nix
+    ./dev.nix
+    ./git.nix
   ];
 
   nixpkgs = {

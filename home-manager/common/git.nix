@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 let
   gitignore = pkgs.writeText "gitignore" ''
   .DS_Store
@@ -87,7 +87,7 @@ in
     };
 
     userName = "pcasaretto";
-    userEmail = "pcasaretto@gmail.com";
+    userEmail = lib.mkDefault "pcasaretto@gmail.com";
   };
 
   # GitHub CLI
