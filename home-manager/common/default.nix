@@ -84,5 +84,6 @@
     ripgrep                    # searching files fast
     unixtools.watch            # repeat commands and monitor their outputs
     unstable.devenv            # dev environments made easy
+    tree                       # directory tree viewer
   ];
 }
