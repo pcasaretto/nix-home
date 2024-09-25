@@ -42,8 +42,23 @@
   };
 
   modules.editors.emacs = {
+    enable = false;
+    default = false;
+  };
+
+  programs.neovim = {
     enable = true;
-    default = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
+    plugins = with pkgs.vimPlugins; [
+      nvim-lspconfig
+      nvim-treesitter.withAllGrammars
+      plenary-nvim
+      mini-nvim
+    ];
+    catppuccin.enable = true;
   };
 
   home.packages = with pkgs; [

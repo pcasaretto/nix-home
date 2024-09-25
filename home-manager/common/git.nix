@@ -84,6 +84,7 @@ in
       help.autocorrect            = "1";
       push.default                = "simple";
       init.defaultBranch          = "main";
+      push.autoSetupRemote        = "true";
     };
 
     userName = "pcasaretto";

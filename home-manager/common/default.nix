@@ -60,7 +60,7 @@
 
   home.packages = with pkgs; [
     # Some basics
-    coreutils
+    # coreutils
     curl
 
     # GNU flavored basic tools
