@@ -47,6 +47,9 @@
 
     mac-app-util.url = "github:hraban/mac-app-util";
 
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
     mysecrets = {
         url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
         flake = false;

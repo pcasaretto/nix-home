@@ -21,7 +21,7 @@
       # do not use press and hold for special characters
       ApplePressAndHoldEnabled = false;
       KeyRepeat = 2;
-      InitialKeyRepeat = 10;
+      InitialKeyRepeat = 15;
     };
 
     trackpad.Clicking = true;

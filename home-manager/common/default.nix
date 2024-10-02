@@ -3,6 +3,8 @@
   imports = [
     inputs.catppuccin.homeManagerModules.catppuccin
 
+    inputs.nix-index-database.hmModules.nix-index
+
     ./git.nix
     ./tmux.nix
     ./xdg.nix
@@ -46,6 +48,9 @@
   # https://rycee.gitlab.io/home-manager/options.html#opt-programs.htop.enable
   programs.htop.enable = true;
   programs.htop.settings.show_program_path = true;
+
+  programs.nix-index-database.comma.enable = true;
+  programs.nix-index.enable = true;
 
   home.shellAliases = {
     l    = "ls -lAh";
