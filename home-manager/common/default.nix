@@ -78,13 +78,11 @@
     # (agda.withPackages (p: [ p.standard-library ]))
     ctop                       # top for containers
     curlie                     # curl helper
-    docker                     # container runtime
     fd                         # fast find
     fira-code-nerdfont         # favorite dev font
     gnupg                      # gpg
     jq                         # for handling json
     mosh                       # persistent ssh sessions
-    nodejs_20                  # dependency for emacs Github Copilot (TODO: move)
     peco                       # choose options in cli scripts
     ripgrep                    # searching files fast
     unixtools.watch            # repeat commands and monitor their outputs
