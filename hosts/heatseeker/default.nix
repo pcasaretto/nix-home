@@ -93,4 +93,6 @@
   services.nix-daemon.enable = true;
 
   networking.hostName = "heatseeker";
+
+  system.stateVersion = 5;
 }

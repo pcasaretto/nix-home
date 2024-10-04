@@ -66,6 +66,6 @@
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
     vscode                     # code editor
-    graphite-cli               # CLI that makes creating stacked git changes fast & intuitive
+    unstable.graphite-cli      # CLI that makes creating stacked git changes fast & intuitive
   ];
 }
