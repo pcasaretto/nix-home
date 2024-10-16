@@ -17,12 +17,8 @@
         ./zsh/history.zsh
         ./zsh/vi-mode.zsh
       ]
-      ++ ["source ~/.p10k.zsh"]
     );
 in {
-  # Install the p10k generated config file, as .p10k.zsh in the home directory
-  home.file.".p10k.zsh".source = ./zsh/p10k.zsh;
-
   programs.zsh = {
     defaultKeymap = "viins";
     enable = true;
@@ -35,11 +31,6 @@ in {
     initExtra = customZshStuff;
 
     plugins = with pkgs; [
-      {
-        name = "powerlevel10k";
-        src = pkgs.zsh-powerlevel10k;
-        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }
       {
         name = "zsh-syntax-highlighting";
         src = fetchFromGitHub {
