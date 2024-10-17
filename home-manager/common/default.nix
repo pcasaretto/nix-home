@@ -6,6 +6,7 @@
     inputs.nix-index-database.hmModules.nix-index
 
     ./git.nix
+    ./lnav.nix
     ./starship.nix
     ./tmux.nix
     ./xdg.nix

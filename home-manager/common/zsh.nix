@@ -20,6 +20,7 @@
     );
 in {
   programs.zsh = {
+    autocd = true;
     defaultKeymap = "viins";
     enable = true;
     enableCompletion = true;
