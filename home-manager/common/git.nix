@@ -91,6 +91,8 @@ in
     userEmail = lib.mkDefault "pcasaretto@gmail.com";
   };
 
+  programs.git.difftastic.enable = true;
+
   # GitHub CLI
   # https://rycee.gitlab.io/home-manager/options.html#opt-programs.gh.enable
   programs.gh.enable = true;
