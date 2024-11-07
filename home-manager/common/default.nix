@@ -90,5 +90,6 @@
     unixtools.watch            # repeat commands and monitor their outputs
     unstable.devenv            # dev environments made easy
     tree                       # directory tree viewer
+    yq-go                      # yaml processor
   ];
 }
