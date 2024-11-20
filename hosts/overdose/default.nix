@@ -116,4 +116,6 @@
     trackpad.Clicking = true;
     trackpad.TrackpadThreeFingerDrag = true;
   };
+
+  system.stateVersion = 5;
 }

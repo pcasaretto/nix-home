@@ -44,8 +44,8 @@ in {
   };
 
   modules.editors.emacs = {
-    enable = true;
-    default = true;
+    enable = false;
+    default = false;
   };
 
   home.packages = with pkgs; [
