@@ -83,8 +83,9 @@
     # Enable flakes and new 'nix' command
     experimental-features = "nix-command flakes";
     # Deduplicate and optimize nix store
-    auto-optimise-store = true;
   };
+
+  nix.optimise.automatic = true;
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
