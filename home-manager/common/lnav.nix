@@ -1,8 +1,8 @@
 { pkgs, ... }: {
   home.packages = [
-    pkgs.unstable.lnav
+    # pkgs.unstable.lnav
   ];
   home.sessionVariables = {
-    PAGER = "lnav -q";
+    # PAGER = "lnav -q";
   };
 }
