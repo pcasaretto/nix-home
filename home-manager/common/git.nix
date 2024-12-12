@@ -33,8 +33,7 @@ in
   home.shellAliases = {
     gst  = "git status";
     gsw  = "git switch";
-    gl   = "git pull --prune";
-    gup  = "git pull --prune --rebase";
+    gup  = "git pull";
     gp   = "git push";
     gd   = "git diff";
     gc   = "git commit -v";
