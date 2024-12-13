@@ -82,6 +82,7 @@ in
       mergetool.keepBackup        = "false";
       help.autocorrect            = "1";
       push.default                = "simple";
+      pull.rebase                 = "true";
       init.defaultBranch          = "main";
       push.autoSetupRemote        = "true";
     };
