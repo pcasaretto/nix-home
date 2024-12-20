@@ -84,6 +84,10 @@
     experimental-features = "nix-command flakes";
   };
 
+  nix.extraOptions = ''
+    !include nix.conf.d/dev.conf;
+  '';
+
   # Deduplicate and optimize nix store
   nix.optimise.automatic = true;
 
