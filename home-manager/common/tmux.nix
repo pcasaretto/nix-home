@@ -4,8 +4,8 @@
   pkgs,
   ...
 }: {
+  catppuccin.tmux.enable = true;
   programs.tmux = {
-    catppuccin.enable = true;
     enable = true;
     keyMode = "vi";
     terminal = "tmux-256color";
