@@ -8,9 +8,10 @@
     TERMINAL = "kitty";
   };
 
+  catppuccin.kitty.enable = true;
+
   programs.kitty = {
     enable = true;
-    catppuccin.enable = true;
     font = {
       name = "FiraCode Nerd Font Mono";
       size = 18;

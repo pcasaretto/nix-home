@@ -11,6 +11,7 @@
     ./tmux.nix
     ./xdg.nix
     ./zsh.nix
+    ./kitty.nix
   ];
 
   nixpkgs = {
