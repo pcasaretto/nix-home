@@ -73,7 +73,7 @@
 
     # GNU flavored basic tools
     gawk
-    gnused
+    # gnused removed from common temporarily
     gnugrep
     gnutar
 

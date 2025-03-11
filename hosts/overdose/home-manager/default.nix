@@ -44,6 +44,7 @@ in {
     pkgs-x86.caffeine          # prevent mac from sleeping
     cyberduck                  # sftp client
     discord                    # chat
+    gnused                     # GNU sed implementation
     hexfiend                   # hex editor
     m-cli                      # useful macOS CLI commands
     reattach-to-user-namespace # tmux helper
