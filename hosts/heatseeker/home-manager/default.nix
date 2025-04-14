@@ -59,7 +59,7 @@
     m-cli                      # useful macOS CLI commands
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
+    vscode                     # code editor
     unstable.graphite-cli      # CLI that makes creating stacked git changes fast & intuitive
-    unstable.emacs
   ];
 }
