@@ -1,7 +1,7 @@
 # This file (and the global directory) holds config that i use on all hosts
 { inputs, outputs, pkgs, ... }: {
   imports = [
-    inputs.catppuccin.homeManagerModules.catppuccin
+    inputs.catppuccin.homeModules.catppuccin
 
     inputs.nix-index-database.hmModules.nix-index
 
