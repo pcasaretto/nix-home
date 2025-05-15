@@ -49,7 +49,7 @@
     vimdiffAlias = true;
     plugins = with pkgs.vimPlugins; [
       nvim-lspconfig
-      nvim-treesitter.withAllGrammars
+      # nvim-treesitter.withAllGrammars
       plenary-nvim
       mini-nvim
     ];
@@ -59,7 +59,6 @@
     m-cli                      # useful macOS CLI commands
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
-    vscode                     # code editor
-    unstable.graphite-cli      # CLI that makes creating stacked git changes fast & intuitive
+    uv                         # python package manager
   ];
 }
