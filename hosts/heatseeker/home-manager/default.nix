@@ -53,6 +53,9 @@
       plenary-nvim
       mini-nvim
     ];
+    extraConfig = ''
+      set clipboard=unnamedplus
+    '';
   };
 
   home.packages = with pkgs; [
