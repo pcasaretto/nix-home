@@ -49,7 +49,7 @@
     vimdiffAlias = true;
     plugins = with pkgs.vimPlugins; [
       nvim-lspconfig
-      # nvim-treesitter.withAllGrammars
+      nvim-treesitter
       plenary-nvim
       mini-nvim
     ];

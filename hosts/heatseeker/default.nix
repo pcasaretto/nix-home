@@ -85,7 +85,7 @@
   };
 
   nix.extraOptions = ''
-    !include nix.conf.d/dev.conf;
+    !include nix.conf.d/shopify.conf
   '';
 
   # Deduplicate and optimize nix store
