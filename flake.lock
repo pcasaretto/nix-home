@@ -54,6 +54,22 @@
         "type": "github"
       }
     },
+    "doomemacs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1747941432,
+        "narHash": "sha256-hPaLeu/1CoWADviDwcBxV7VTRFb831TF2ND7ArLzpfQ=",
+        "owner": "doomemacs",
+        "repo": "doomemacs",
+        "rev": "cfea950e60961e45fc43a820d855eb6212856126",
+        "type": "github"
+      },
+      "original": {
+        "owner": "doomemacs",
+        "repo": "doomemacs",
+        "type": "github"
+      }
+    },
     "dotenv": {
       "inputs": {
         "nixpkgs": [
@@ -71,6 +87,29 @@
       "original": {
         "owner": "pcasaretto",
         "repo": "dotenv",
+        "type": "github"
+      }
+    },
+    "emacs-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nix-doom-emacs-unstraightened"
+        ],
+        "nixpkgs-stable": [
+          "nix-doom-emacs-unstraightened"
+        ]
+      },
+      "locked": {
+        "lastModified": 1747988687,
+        "narHash": "sha256-OBjm86K0TMsudNuYLJm5U0Mdqoef5GqULrSaRvrimFw=",
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "rev": "3ad212608046c130ac9788652f711a78c34ee993",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
         "type": "github"
       }
     },
@@ -189,6 +228,27 @@
         "url": "ssh://git@github.com/pcasaretto/nix-secrets.git"
       }
     },
+    "nix-doom-emacs-unstraightened": {
+      "inputs": {
+        "doomemacs": "doomemacs",
+        "emacs-overlay": "emacs-overlay",
+        "nixpkgs": "nixpkgs_3",
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1747989781,
+        "narHash": "sha256-ycuH36Z+HXMypfMPcawiNKZDkVsBuVPXuv9Bd4Y8cYY=",
+        "owner": "marienz",
+        "repo": "nix-doom-emacs-unstraightened",
+        "rev": "2ab752405f722c7ce7f15a6256efd84ccc6db832",
+        "type": "github"
+      },
+      "original": {
+        "owner": "marienz",
+        "repo": "nix-doom-emacs-unstraightened",
+        "type": "github"
+      }
+    },
     "nix-index-database": {
       "inputs": {
         "nixpkgs": [
@@ -259,6 +319,20 @@
     },
     "nixpkgs_3": {
       "locked": {
+        "lastModified": 1747920628,
+        "narHash": "sha256-IlAuXnIi+ZmyS89tt1YOFDCv7FKs9bNBHd3MXMp8PxE=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e314d5c6d3b3a0f40ec5bcbc007b0cbe412f48ae",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
         "lastModified": 1746163478,
         "narHash": "sha256-YO8tVX1TbRP/Rc2dWxNr+f+rLlJ80bilKOnsXaeLBDg=",
         "owner": "nixos",
@@ -282,8 +356,9 @@
         "home-manager": "home-manager",
         "mac-app-util": "mac-app-util",
         "mysecrets": "mysecrets",
+        "nix-doom-emacs-unstraightened": "nix-doom-emacs-unstraightened",
         "nix-index-database": "nix-index-database",
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_4",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "sops-nix": "sops-nix"
       }
@@ -335,6 +410,21 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default-darwin",
+        "type": "github"
+      }
+    },
+    "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
         "type": "github"
       }
     }

@@ -45,6 +45,8 @@
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
+    nix-doom-emacs-unstraightened.url = "github:marienz/nix-doom-emacs-unstraightened";
+
     mysecrets = {
         url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
         flake = false;
@@ -123,6 +125,7 @@
               ];
             };
           }
+          ./hosts/common/optional/sops.nix
           ./hosts/common/core
           ./hosts/common/darwin
           ./hosts/heatseeker
