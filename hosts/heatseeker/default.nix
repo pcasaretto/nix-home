@@ -97,6 +97,8 @@
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
 
+  services.emacs.enable = true;
+
   networking.hostName = "heatseeker";
 
   system.stateVersion = 5;

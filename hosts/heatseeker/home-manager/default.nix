@@ -21,6 +21,7 @@
     ../../../home-manager/common
     ../../../home-manager/darwin
     ../../../home-manager/darwin/mac-app-util.nix
+    ../../../home-manager/common/doom.nix
 
     ./dev.nix
     ./git.nix
