@@ -88,14 +88,19 @@
     !include nix.conf.d/shopify.conf
   '';
 
+  # To continue using these options, set `system.primaryUser` to the name
+  # of the user you have been using to run `darwin-rebuild`. In the long
+  # run, this setting will be deprecated and removed after all the
+  # functionality it is relevant for has been adjusted to allow
+  # specifying the relevant user separately, moved under the
+  # `users.users.*` namespace, or migrated to Home Manager.
+  system.primaryUser = "paulo.casaretto";
+
   # Deduplicate and optimize nix store
   nix.optimise.automatic = true;
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
-
-  # Auto upgrade nix package and the daemon service.
-  services.nix-daemon.enable = true;
 
   services.emacs.enable = true;
 

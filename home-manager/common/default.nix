@@ -82,14 +82,15 @@
     ctop                       # top for containers
     curlie                     # curl helper
     fd                         # fast find
-    fira-code-nerdfont         # favorite dev font
+    nerd-fonts.fira-code       # favorite dev font
     jq                         # for handling json
     mosh                       # persistent ssh sessions
-    peco                       # choose options in cli scripts
     ripgrep                    # searching files fast
     unixtools.watch            # repeat commands and monitor their outputs
     unstable.devenv            # dev environments made easy
     tree                       # directory tree viewer
     yq-go                      # yaml processor
   ];
+
+  fonts.fontconfig.enable = true;
 }

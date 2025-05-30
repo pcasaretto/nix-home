@@ -29,7 +29,7 @@ in {
       gst = "git status";
     };
 
-    initExtra = customZshStuff;
+    initContent = customZshStuff;
 
     plugins = with pkgs; [
       {
