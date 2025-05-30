@@ -49,10 +49,10 @@
     nix-doom-emacs-unstraightened.inputs.nixpkgs.follows = "";
 
 
-    mysecrets = {
-        url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
-        flake = false;
-    };
+    # mysecrets = {
+    #    url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
+    #    flake = false;
+    # };
   };
 
   outputs = {
@@ -87,11 +87,32 @@
     nixosModules = import ./modules/nixos;
     # Reusable home-manager modules you might want to export
     # These are usually stuff you would upstream into home-manager
-    homeManagerModules = import ./modules/home-manager;
+    # homeManagerModules = import ./modules/home-manager;
 
     # NixOS configuration entrypoint
     # Available through 'nixos-rebuild --flake .#your-hostname'
     darwinConfigurations = {
+      "littlelover" = inputs.darwin.lib.darwinSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          {
+            # given the users in this list the right to specify additional substituters via:
+            #    1. `nixConfig.substituters` in `flake.nix`
+            nix.settings = {
+              trusted-users = [ "pcasaretto" ];
+
+              substituters = [
+                "https://cache.nixos.org"
+              ];
+            };
+          }
+          ./hosts/common/core
+          ./hosts/common/darwin
+          ./hosts/common/darwin/mac-app-util.nix
+          ./hosts/littlelover
+        ];
+      };
+
       overdose = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
@@ -130,18 +151,6 @@
           ./hosts/common/core
           ./hosts/common/darwin
           ./hosts/heatseeker
-        ];
-      };
-    };
-
-    nixosConfigurations = {
-      nixos = nixpkgs.lib.nixosSystem rec {
-        system = "aarch64-linux";
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          ./hosts/common/core
-          ./hosts/common/optional/sops.nix
-          ./hosts/nixos
         ];
       };
     };

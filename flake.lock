@@ -211,23 +211,6 @@
         "type": "github"
       }
     },
-    "mysecrets": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1711632014,
-        "narHash": "sha256-WszvaOT3NZr+2x7uwXFVvUswGBOpPv+yDEBL6TtKUNY=",
-        "ref": "refs/heads/main",
-        "rev": "aae6e01de0d01978093c17ec7bbc64f7117ae45c",
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://git@github.com/pcasaretto/nix-secrets.git"
-      },
-      "original": {
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://git@github.com/pcasaretto/nix-secrets.git"
-      }
-    },
     "nix-doom-emacs-unstraightened": {
       "inputs": {
         "doomemacs": "doomemacs",
@@ -341,7 +324,6 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "mac-app-util": "mac-app-util",
-        "mysecrets": "mysecrets",
         "nix-doom-emacs-unstraightened": "nix-doom-emacs-unstraightened",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_3",
