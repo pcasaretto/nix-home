@@ -87,6 +87,15 @@
 
   nix.optimise.automatic = true;
 
+  # To continue using these options, set `system.primaryUser` to the name
+  # of the user you have been using to run `darwin-rebuild`. In the long
+  # run, this setting will be deprecated and removed after all the
+  # functionality it is relevant for has been adjusted to allow
+  # specifying the relevant user separately, moved under the
+  # `users.users.*` namespace, or migrated to Home Manager.
+  system.primaryUser = "paulo.casaretto";
+
+
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
 
@@ -94,29 +103,6 @@
   services.nix-daemon.enable = true;
 
   networking.hostName = "littlelover";
-
-  # Keyboard
-  system.keyboard.enableKeyMapping = true;
-  system.keyboard.remapCapsLockToControl = true;
-
-  # Add ability to used TouchID for sudo authentication
-  security.pam.enableSudoTouchIdAuth = true;
-
-  system.defaults = {
-    # Finder preferences
-    finder = {
-      FXPreferredViewStyle = "Nlsv";
-      AppleShowAllFiles = true;
-      AppleShowAllExtensions = true;
-    };
-    NSGlobalDomain = {
-      # do not use press and hold for special characters
-      ApplePressAndHoldEnabled = false;
-    };
-
-    trackpad.Clicking = true;
-    trackpad.TrackpadThreeFingerDrag = true;
-  };
 
   system.stateVersion = 5;
 }

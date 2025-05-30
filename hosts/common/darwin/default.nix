@@ -2,13 +2,14 @@
 {
   imports = [
   ];
+  # Keyboard
 
   # Keyboard
   system.keyboard.enableKeyMapping = true;
   system.keyboard.remapCapsLockToControl = true;
 
   # Add ability to used TouchID for sudo authentication
-  security.pam.services.sudo_local.touchIdAuth = true;
+  security.pam.enableSudoTouchIdAuth = true;
 
   system.defaults = {
     # Finder preferences
