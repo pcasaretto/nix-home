@@ -93,14 +93,11 @@
   # functionality it is relevant for has been adjusted to allow
   # specifying the relevant user separately, moved under the
   # `users.users.*` namespace, or migrated to Home Manager.
-  system.primaryUser = "paulo.casaretto";
+  system.primaryUser = "pcasaretto";
 
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
-
-  # Auto upgrade nix package and the daemon service.
-  services.nix-daemon.enable = true;
 
   networking.hostName = "littlelover";
 
