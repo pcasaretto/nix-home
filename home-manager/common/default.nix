@@ -83,7 +83,6 @@
     curlie                     # curl helper
     fd                         # fast find
     fira-code-nerdfont         # favorite dev font
-    gnupg                      # gpg
     jq                         # for handling json
     mosh                       # persistent ssh sessions
     peco                       # choose options in cli scripts
