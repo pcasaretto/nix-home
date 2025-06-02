@@ -5,9 +5,20 @@ to a functional configuration using Nix. It's still a work in progress.
 
 ## Installation
 
-I have not installed this on a new machine yet. This keeps me up at night
 
-## Resources that helped me reach this point
+1. create a host config that matches your hostname under /hosts
+2. add it under flake.nix
+
+### Mac OS
+
+3. bootstrap with `sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch --flake`
+4. `sudo darwin-rebuild switch --flake .`
+
+### NixOS
+
+TODO
+
+## Resources
 
 - [NixOS Wiki](https://nixos.wiki/wiki/Home)
 - [NixOS Manual](https://nixos.org/manual/nixos/stable/index.html)
