@@ -25,7 +25,7 @@ in {
     enable = true;
     enableCompletion = true;
     shellAliases = {
-      l = "ls -lAh";
+      l = "eza -lAh";
       gst = "git status";
     };
 

@@ -55,10 +55,6 @@
   programs.nix-index-database.comma.enable = true;
   programs.nix-index.enable = true;
 
-  home.shellAliases = {
-    l    = "ls -lAh";
-  };
-
   home.sessionVariables = {
     LC_ALL = "en_US.UTF-8";
     LANG = "en_US.UTF-8";
@@ -91,6 +87,7 @@
     tree                       # directory tree viewer
     yq-go                      # yaml processor
     babashka                   # Clojure babushka for the grey areas of Bash
+    eza                        # ls replacement
   ];
 
   fonts.fontconfig.enable = true;
