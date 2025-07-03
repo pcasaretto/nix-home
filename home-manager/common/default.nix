@@ -90,6 +90,7 @@
     unstable.devenv            # dev environments made easy
     tree                       # directory tree viewer
     yq-go                      # yaml processor
+    babashka                   # Clojure babushka for the grey areas of Bash
   ];
 
   fonts.fontconfig.enable = true;
