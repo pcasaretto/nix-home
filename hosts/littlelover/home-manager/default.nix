@@ -60,12 +60,10 @@ in {
   };
 
   home.packages = with pkgs; [
-    caffeine          # prevent mac from sleeping
     gnused                     # GNU sed implementation
     m-cli                      # useful macOS CLI commands
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
-    # spotify                    # music
-    _1password                 # password manager
+    spotify                    # music
   ];
 }

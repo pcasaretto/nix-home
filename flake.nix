@@ -92,7 +92,7 @@
     # NixOS configuration entrypoint
     # Available through 'nixos-rebuild --flake .#your-hostname'
     darwinConfigurations = {
-      "littlelover" = inputs.darwin.lib.darwinSystem {
+      littlelover = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
           {

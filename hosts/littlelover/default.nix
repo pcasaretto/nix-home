@@ -28,7 +28,7 @@
   ];
 
   nixpkgs = {
-    hostPlatform = "x86_64-darwin";
+    hostPlatform = "aarch64-darwin";
 
     # You can add overlays here
     overlays = [
@@ -65,6 +65,9 @@
     };
   };
 
+  # make it play nice with determinate
+  nix.enable = false;
+
   # To make nix3 commands consistent with your flake
   nix.registry = (lib.mapAttrs (_: flake: {inherit flake;})) ((lib.filterAttrs (_: lib.isType "flake")) inputs);
 
@@ -85,7 +88,7 @@
     # Deduplicate and optimize nix store
   };
 
-  nix.optimise.automatic = true;
+  # nix.optimise.automatic = true;
 
   # To continue using these options, set `system.primaryUser` to the name
   # of the user you have been using to run `darwin-rebuild`. In the long
@@ -98,6 +101,9 @@
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
+
+  programs._1password.enable = true;
+  programs._1password-gui.enable = true;
 
   networking.hostName = "littlelover";
 
