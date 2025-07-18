@@ -102,9 +102,6 @@
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
 
-  programs._1password.enable = true;
-  programs._1password-gui.enable = true;
-
   networking.hostName = "littlelover";
 
   system.stateVersion = 5;

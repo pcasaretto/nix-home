@@ -64,6 +64,5 @@
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
     uv                         # python package manager
-    unstable.gemini-cli        # Claude Code, but from Google
   ];
 }

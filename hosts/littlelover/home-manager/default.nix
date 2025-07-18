@@ -64,6 +64,8 @@ in {
     m-cli                      # useful macOS CLI commands
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
-    spotify                    # music
+    unstable.spotify           # music
+    unstable.gemini-cli        # Claude Code, but from Google
+    vlc-bin
   ];
 }
