@@ -88,6 +88,8 @@
     yq-go                      # yaml processor
     babashka                   # Clojure babushka for the grey areas of Bash
     eza                        # ls replacement
+    bat                        # cat, but pretty and git aware
+    chafa                      # terminal image viewer
   ];
 
   fonts.fontconfig.enable = true;
