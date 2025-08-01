@@ -60,7 +60,7 @@
     LANG = "en_US.UTF-8";
   };
 
-  catppuccin.flavor = "frappe";
+  catppuccin.flavor = "macchiato";
 
   home.packages = with pkgs; [
     # Some basics
