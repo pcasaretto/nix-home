@@ -102,8 +102,6 @@
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
 
-  services.emacs.enable = true;
-
   networking.hostName = "heatseeker";
 
   system.stateVersion = 5;

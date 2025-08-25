@@ -3,7 +3,7 @@
   imports = [
     inputs.catppuccin.homeModules.catppuccin
 
-    inputs.nix-index-database.hmModules.nix-index
+    inputs.nix-index-database.homeModules.nix-index
 
     ./git.nix
     ./lnav.nix
@@ -58,6 +58,7 @@
   home.sessionVariables = {
     LC_ALL = "en_US.UTF-8";
     LANG = "en_US.UTF-8";
+    EDITOR = "emacsclient --tty --create-frame --alternate-editor=''";
   };
 
   catppuccin.flavor = "macchiato";

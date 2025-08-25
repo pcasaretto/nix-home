@@ -47,3 +47,5 @@
 ;; (unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
+(package! mcp
+    :pin "3a380185597f56290057f370ab65dde89a20a18f")

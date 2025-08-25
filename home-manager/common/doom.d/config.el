@@ -74,3 +74,15 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+;;
+(after! lsp-mode
+        (add-to-list 'lsp-disabled-clients 'rubocop-ls))
+
+(use-package! gptel
+  :init
+  ;; declare the default llm configuration
+  ;; for me this is co-pilot with claude-sonnet-4
+  (setq gptel-default-mode 'org-mode ;; I want the llm to reply to me with org-mode format.
+        gptel-backend (gptel-make-anthropic "Claude" :stream t :key (function (shell-command-to-string "devx llm-gateway print-token --key")))
+        gptel-model 'claude-sonnet-4)
+  (require 'gptel-integrations)) ;; <- for mcp
