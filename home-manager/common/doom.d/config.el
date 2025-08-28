@@ -90,3 +90,12 @@
 (use-package! shadowenv
   :ensure t
   :hook (after-init . shadowenv-global-mode))
+
+;; Configure parinfer-rust to use Nix-installed library
+(after! parinfer-rust-mode
+  ;; Disable auto-download since we're using Nix-installed library
+  (setq parinfer-rust-auto-download nil)
+  ;; Use the Nix-installed parinfer-rust dylib (find it relative to the binary)
+  (when-let ((binary-path (executable-find "parinfer-rust")))
+    (setq parinfer-rust-library 
+          (concat (file-name-directory binary-path) "../lib/libparinfer_rust.dylib"))))

@@ -68,6 +68,7 @@ in {
   home.packages = with pkgs; [
     gnused                     # GNU sed implementation
     m-cli                      # useful macOS CLI commands
+    parinfer-rust-emacs        # Rust-based parinfer for Emacs
     reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
     unstable.spotify           # music
