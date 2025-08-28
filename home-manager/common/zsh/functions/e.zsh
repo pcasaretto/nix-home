@@ -1,7 +1,7 @@
 e () {
     if [ $# -eq 0 ]
     then
-        ''${=EDITOR} .
+        eval "${EDITOR} ."
     fi
-    ''${=EDITOR} $@
+    eval "${EDITOR} \"\$@\""
 }

@@ -97,7 +97,8 @@
   system.primaryUser = "paulo.casaretto";
 
   # Deduplicate and optimize nix store
-  nix.optimise.automatic = true;
+  # nix.optimise.automatic = true;
+  nix.enable = false;
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;

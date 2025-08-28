@@ -86,3 +86,7 @@
         gptel-backend (gptel-make-anthropic "Claude" :stream t :key (function (shell-command-to-string "devx llm-gateway print-token --key")))
         gptel-model 'claude-sonnet-4)
   (require 'gptel-integrations)) ;; <- for mcp
+
+(use-package! shadowenv
+  :ensure t
+  :hook (after-init . shadowenv-global-mode))
