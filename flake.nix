@@ -48,6 +48,8 @@
     nix-doom-emacs-unstraightened.url = "github:marienz/nix-doom-emacs-unstraightened";
     nix-doom-emacs-unstraightened.inputs.nixpkgs.follows = "";
 
+    try.url = "github:tobi/try";
+    try.inputs.nixpkgs.follows = "nixpkgs";
 
     # mysecrets = {
     #    url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
