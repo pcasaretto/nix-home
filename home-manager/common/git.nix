@@ -87,7 +87,7 @@ in
       push.autoSetupRemote        = "true";
     };
 
-    userName = "pcasaretto";
+    userName = "Paulo Casaretto";
     userEmail = lib.mkDefault "pcasaretto@gmail.com";
   };
 
