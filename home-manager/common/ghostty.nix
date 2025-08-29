@@ -14,6 +14,10 @@
       font-family = "FiraCode Nerd Font Mono";
       font-size = 18;
 
+      # working directory settings
+      window-inherit-working-directory = false;
+      working-directory = "home";
+
       # Performance settings
       window-vsync = true;
 
