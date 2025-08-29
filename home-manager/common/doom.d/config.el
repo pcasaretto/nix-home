@@ -87,9 +87,9 @@
         gptel-model 'claude-sonnet-4)
   (require 'gptel-integrations)) ;; <- for mcp
 
-(use-package! shadowenv
-  :ensure t
-  :hook (after-init . shadowenv-global-mode))
+(when (executable-find "shadowenv")
+  (use-package! shadowenv
+    :hook (after-init . shadowenv-global-mode)))
 
 ;; Configure parinfer-rust to use Nix-installed library
 (after! parinfer-rust-mode
