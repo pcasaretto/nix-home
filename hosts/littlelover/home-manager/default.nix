@@ -18,8 +18,6 @@ in {
 
     # Or modules exported from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModules.default
-    inputs.try.homeManagerModules.default
-
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
     ../../../home-manager/common
@@ -59,10 +57,6 @@ in {
     '';
   };
 
-  programs.try = {
-    enable = true;
-    path = "~/src/tries";
-  };
 
   home.packages = with pkgs; [
     gnused                     # GNU sed implementation

@@ -10,6 +10,7 @@
     ./lnav.nix
     ./starship.nix
     ./tmux.nix
+    ./try.nix
     ./xdg.nix
     ./zsh.nix
     ./kitty.nix
