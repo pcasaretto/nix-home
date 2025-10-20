@@ -62,7 +62,6 @@ in {
     gnused                     # GNU sed implementation
     m-cli                      # useful macOS CLI commands
     parinfer-rust-emacs        # Rust-based parinfer for Emacs
-    reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
     unstable.spotify           # music
     unstable.gemini-cli        # Claude Code, but from Google

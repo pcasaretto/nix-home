@@ -51,6 +51,9 @@
     try.url = "github:tobi/try";
     try.inputs.nixpkgs.follows = "nixpkgs";
 
+    tmux-git-worktree.url = "github:pcasaretto/tmux-git-worktree";
+    tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs";
+
     # mysecrets = {
     #    url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
     #    flake = false;

@@ -60,7 +60,6 @@
 
   home.packages = with pkgs; [
     m-cli                      # useful macOS CLI commands
-    reattach-to-user-namespace # tmux helper
     rectangle                  # window manager
     uv                         # python package manager
   ];
