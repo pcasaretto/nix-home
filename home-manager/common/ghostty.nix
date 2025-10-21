@@ -26,9 +26,6 @@
       clipboard-write = "allow";
       copy-on-select = true;
 
-      # Theme
-      theme = "catppuccin-mocha";
-
       # Keybindings
       keybind = [
         # Tmux-style bindings
