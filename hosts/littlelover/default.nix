@@ -25,6 +25,8 @@
 
     # `home-manager` module
     inputs.home-manager.darwinModules.home-manager
+
+    ./tailscale.nix
   ];
 
   nixpkgs = {
