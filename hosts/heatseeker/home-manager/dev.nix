@@ -6,5 +6,7 @@
   [[ -x /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
   # Added by //areas/tools/world-up
   [[ -x ~/world/.tectonix/init ]] && eval "$(~/world/.tectonix/init zsh)"
+  # Added by tec agent
+  [[ -x /Users/paulo.casaretto/.local/state/tec/profiles/base/current/global/init ]] && eval "$(/Users/paulo.casaretto/.local/state/tec/profiles/base/current/global/init zsh)"
   '';
 }
