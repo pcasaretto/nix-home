@@ -14,7 +14,7 @@ in
       "[](bg:peach fg:red)"
       "$directory"
       "[](bg:yellow fg:peach)"
-      "$git_branch"
+      ("$" + "{custom.git_branch_workaround}")
       "$git_status"
       "[](fg:yellow bg:green)"
       "$c"
@@ -88,15 +88,27 @@ in
         };
       };
 
-      git_branch = {
-        symbol = "";
-        style = "bg:yellow";
-        format = "[[ $symbol $branch ](fg:crust bg:yellow)]($style)";
-      };
+      # Disabled: Using custom git_branch_workaround instead due to reftable issues
+      # git_branch = {
+      #   symbol = "";
+      #   style = "bg:yellow";
+      #   format = "[[ $symbol $branch ](fg:crust bg:yellow)]($style)";
+      # };
 
       git_status = {
         style = "bg:yellow";
         format = "[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)";
+      };
+
+      # Temporary workaround for reftable compatibility - shells out to git
+      custom = {
+        git_branch_workaround = {
+          command = "git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null";
+          when = "git rev-parse --git-dir 2>/dev/null";
+          symbol = "";
+          style = "bg:yellow";
+          format = "[[ $symbol $output ](fg:crust bg:yellow)]($style)";
+        };
       };
 
       nodejs = {
@@ -192,7 +204,7 @@ in
         vimcmd_visual_symbol = "[](bold fg:yellow)";
       };
 
-      command_timeout = 10;
+      command_timeout = 500;  # 500ms for git commands in large repos
     };
     # // lib.importTOML "${sources.starship}/${catppuccinFlavor}.toml";
   };
