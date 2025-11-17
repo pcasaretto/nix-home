@@ -10,28 +10,12 @@ in
       format = lib.concatStrings [
       "[](red)"
       "$os"
-      "$username"
       "[](bg:peach fg:red)"
-      "$directory"
+      ("$" + "{custom.world_path}")
       "[](bg:yellow fg:peach)"
       ("$" + "{custom.git_branch_workaround}")
       "$git_status"
-      "[](fg:yellow bg:green)"
-      "$c"
-      "$rust"
-      "$golang"
-      "$nodejs"
-      "$php"
-      "$java"
-      "$kotlin"
-      "$haskell"
-      "$python"
-      "[](fg:green bg:sapphire)"
-      "$docker_context"
-      "$conda"
-      "[](fg:sapphire bg:lavender)"
-      "$time"
-      "[ ](fg:lavender)"
+      "[ ](fg:yellow)"
       "$cmd_duration"
       "$line_break"
       "$character"
@@ -67,12 +51,6 @@ in
         };
       };
 
-      username = {
-        show_always = true;
-        style_user = "bg:red fg:crust";
-        style_root = "bg:red fg:crust";
-        format = "[ $user ]($style)";
-      };
 
       directory = {
         style = "bg:peach fg:crust";
@@ -102,6 +80,37 @@ in
 
       # Temporary workaround for reftable compatibility - shells out to git
       custom = {
+        world_path = {
+          command = ''
+            current="$PWD"
+            # Check if we're in world monorepo
+            while [[ "$current" != "/" ]]; do
+              if [[ -f "$current/.meta/manifest.json" ]]; then
+                rel_path="''${PWD#$current}"
+                rel_path="''${rel_path#/}"  # Strip leading slash
+                if [[ -z "$rel_path" ]]; then
+                  echo "🌍 //"
+                else
+                  echo "🌍 //$rel_path"
+                fi
+                exit 0
+              fi
+              current="$(dirname "$current")"
+            done
+            # Not in world, show truncated directory path
+            echo "$PWD" | sed "s|^$HOME|~|" | awk -F/ '{
+              if (NF > 3) {
+                printf "…/%s/%s\n", $(NF-1), $NF
+              } else {
+                print $0
+              }
+            }'
+          '';
+          when = "true";  # Always show
+          symbol = "";
+          style = "bg:peach";
+          format = "[[ $output ](fg:crust bg:peach)]($style)";
+        };
         git_branch_workaround = {
           command = "git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null";
           when = "git rev-parse --git-dir 2>/dev/null";
@@ -109,71 +118,6 @@ in
           style = "bg:yellow";
           format = "[[ $symbol $output ](fg:crust bg:yellow)]($style)";
         };
-      };
-
-      nodejs = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      c = {
-        symbol = " ";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      rust = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      golang = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      php = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      java = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      kotlin = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      haskell = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      python = {
-        symbol = "";
-        style = "bg:green";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-      };
-
-      docker_context = {
-        symbol = "";
-        style = "bg:sapphire";
-        format = "[[ $symbol( $context) ](fg:#83a598 bg:sapphire)]($style)";
-      };
-
-      conda = {
-        style = "bg:sapphire";
-        format = "[[ $symbol( $environment) ](fg:#83a598 bg:sapphire)]($style)";
       };
 
       time = {
