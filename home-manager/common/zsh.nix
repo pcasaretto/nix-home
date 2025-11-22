@@ -12,6 +12,7 @@
         ./zsh/functions/current_repository.zsh
         ./zsh/functions/e.zsh
         ./zsh/functions/git_functions.zsh
+        ./zsh/functions/dev.zsh
         ./zsh/correction.zsh
         ./zsh/completion.zsh
         ./zsh/history.zsh
