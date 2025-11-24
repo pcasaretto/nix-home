@@ -78,15 +78,6 @@
 (after! lsp-mode
         (add-to-list 'lsp-disabled-clients 'rubocop-ls))
 
-(use-package! gptel
-  :init
-  ;; declare the default llm configuration
-  ;; for me this is co-pilot with claude-sonnet-4
-  (setq gptel-default-mode 'org-mode ;; I want the llm to reply to me with org-mode format.
-        gptel-backend (gptel-make-anthropic "Claude" :stream t :key (function (shell-command-to-string "devx llm-gateway print-token --key")))
-        gptel-model 'claude-sonnet-4)
-  (require 'gptel-integrations)) ;; <- for mcp
-
 (when (executable-find "shadowenv")
   (use-package! shadowenv
     :hook (after-init . shadowenv-global-mode)))
@@ -100,7 +91,12 @@
     (setq parinfer-rust-library
           (concat (file-name-directory binary-path) "../lib/libparinfer_rust.dylib"))))
 
-;; Use consult-fd for project file finding - no cache, better fuzzy search
+;; Use consult-fd for project file finding - match fzf ctrl-t behavior
 (after! consult
+  ;; Configure consult-fd to match zsh fzf behavior: fd --type f (files only, clean paths)
+  (setq consult-fd-args '("fd" "--type" "f" "--color=never"))
   (map! :leader
         "SPC" #'consult-fd))
+
+;; Remove xref backend from lookup-definition-functions
+(remove-hook '+lookup-definition-functions #'+lookup-xref-definitions-backend-fn)
