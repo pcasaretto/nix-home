@@ -5,15 +5,17 @@
 
     inputs.nix-index-database.homeModules.nix-index
 
-    ./git.nix
+    ./direnv.nix
     ./ghostty.nix
+    ./git.nix
+    ./kitty.nix
     ./lnav.nix
+    ./nushell.nix
     ./starship.nix
     ./tmux.nix
     ./try.nix
     ./xdg.nix
     ./zsh.nix
-    ./kitty.nix
   ];
 
   nixpkgs = {
@@ -43,11 +45,6 @@
     };
   };
 
-  # Direnv, load and unload environment variables depending on the current directory.
-  # https://direnv.net
-  # https://rycee.gitlab.io/home-manager/options.html#opt-programs.direnv.enable
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
 
   # Htop
   # https://rycee.gitlab.io/home-manager/options.html#opt-programs.htop.enable
@@ -79,7 +76,6 @@
     # Dev stuff
     # (agda.withPackages (p: [ p.standard-library ]))
     ctop                       # top for containers
-    curlie                     # curl helper
     fd                         # fast find
     nerd-fonts.fira-code       # favorite dev font
     jq                         # for handling json

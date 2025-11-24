@@ -97,5 +97,10 @@
   (setq parinfer-rust-auto-download nil)
   ;; Use the Nix-installed parinfer-rust dylib (find it relative to the binary)
   (when-let ((binary-path (executable-find "parinfer-rust")))
-    (setq parinfer-rust-library 
+    (setq parinfer-rust-library
           (concat (file-name-directory binary-path) "../lib/libparinfer_rust.dylib"))))
+
+;; Use consult-fd for project file finding - no cache, better fuzzy search
+(after! consult
+  (map! :leader
+        "SPC" #'consult-fd))

@@ -52,3 +52,6 @@
 
 (package! shadowenv
   :recipe (:host github :repo "Shopify/shadowenv.el"))
+
+(package! nushell-mode
+  :recipe (:host github :repo "mrkkrp/nushell-mode"))
