@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, config, pkgs, ... }:
 let
   inherit (config.catppuccin) sources;
   catppuccinFlavor = config.catppuccin.flavor;
@@ -79,41 +79,41 @@ in
       };
 
       # Temporary workaround for reftable compatibility - shells out to git
+      # Written in nushell for compatibility
       custom = {
         world_path = {
+          shell = ["${pkgs.nushell}/bin/nu" "-c"];
           command = ''
-            current="$PWD"
-            # Check if we're in world monorepo
-            while [[ "$current" != "/" ]]; do
-              if [[ -f "$current/.meta/manifest.json" ]]; then
-                rel_path="''${PWD#$current}"
-                rel_path="''${rel_path#/}"  # Strip leading slash
-                if [[ -z "$rel_path" ]]; then
-                  echo "🌍 //"
-                else
-                  echo "🌍 //$rel_path"
-                fi
-                exit 0
-              fi
-              current="$(dirname "$current")"
-            done
-            # Not in world, show truncated directory path
-            echo "$PWD" | sed "s|^$HOME|~|" | awk -F/ '{
-              if (NF > 3) {
-                printf "…/%s/%s\n", $(NF-1), $NF
-              } else {
-                print $0
+            mut check = $env.PWD
+            loop {
+              if ($check | path join ".meta" "manifest.json" | path exists) {
+                let rel = ($env.PWD | str replace $check "" | str trim --left --char "/")
+                if ($rel | is-empty) { print "🌍 //" } else { print $"🌍 //($rel)" }
+                break
               }
-            }'
+              let parent = ($check | path dirname)
+              if $parent == $check {
+                let display = ($env.PWD | str replace $env.HOME "~")
+                let parts = ($display | split row "/")
+                if ($parts | length) > 3 {
+                  print $"…/(($parts | last 2) | str join "/")"
+                } else {
+                  print $display
+                }
+                break
+              }
+              $check = $parent
+            }
           '';
-          when = "true";  # Always show
+          when = "";
           symbol = "";
           style = "bg:peach";
           format = "[[ $output ](fg:crust bg:peach)]($style)";
         };
         git_branch_workaround = {
-          command = "git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null";
-          when = "git rev-parse --git-dir 2>/dev/null";
+          shell = ["${pkgs.nushell}/bin/nu" "-c"];
+          command = "do -i { git symbolic-ref --short HEAD } | default (do -i { git rev-parse --short HEAD } | default '') | str trim";
+          when = "git rev-parse --git-dir";
           symbol = "";
           style = "bg:yellow";
           format = "[[ $symbol $output ](fg:crust bg:yellow)]($style)";
