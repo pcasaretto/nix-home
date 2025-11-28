@@ -91,12 +91,14 @@
     (setq parinfer-rust-library
           (concat (file-name-directory binary-path) "../lib/libparinfer_rust.dylib"))))
 
-;; Use consult-fd for project file finding - match fzf ctrl-t behavior
+;; Use consult-fd for project file finding - no cache, better fuzzy search
 (after! consult
-  ;; Configure consult-fd to match zsh fzf behavior: fd --type f (files only, clean paths)
-  (setq consult-fd-args '("fd" "--type" "f" "--color=never"))
   (map! :leader
         "SPC" #'consult-fd))
+
+;; Configure orderless with flex matching for fzf-like fuzzy search
+(after! orderless
+  (setq orderless-matching-styles '(orderless-flex orderless-literal orderless-regexp)))
 
 ;; Remove xref backend from lookup-definition-functions
 (remove-hook '+lookup-definition-functions #'+lookup-xref-definitions-backend-fn)
