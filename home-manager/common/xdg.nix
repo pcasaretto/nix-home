@@ -4,9 +4,11 @@
 #
 # Set up and enforce XDG compliance. Other modules will take care of their own,
 # but this takes care of the general cases.
-
-{ config, home-manager, ... }:
 {
+  config,
+  home-manager,
+  ...
+}: {
   ### A tidy $HOME is a tidy mind
   config.xdg.enable = true;
 }

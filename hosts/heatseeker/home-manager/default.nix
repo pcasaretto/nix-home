@@ -28,9 +28,11 @@
   ];
 
   nixpkgs = {
-    overlays = builtins.attrValues outputs.overlays ++ [
-      outputs.overlays.apple-silicon
-    ];
+    overlays =
+      builtins.attrValues outputs.overlays
+      ++ [
+        outputs.overlays.apple-silicon
+      ];
     config = {
       allowUnfree = true;
     };
@@ -59,8 +61,8 @@
   };
 
   home.packages = with pkgs; [
-    m-cli                      # useful macOS CLI commands
-    rectangle                  # window manager
-    uv                         # python package manager
+    m-cli # useful macOS CLI commands
+    rectangle # window manager
+    uv # python package manager
   ];
 }

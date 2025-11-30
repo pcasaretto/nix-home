@@ -1,11 +1,10 @@
-{ inputs, ... }:
-{
+{inputs, ...}: {
   imports = [
   ];
 
   services.macos-remap-keys = {
-   enable = true;
-   keyboard.Capslock = "Control";
+    enable = true;
+    keyboard.Capslock = "Control";
   };
 
   targets.darwin.defaults = {
@@ -32,5 +31,4 @@
       show-recents = false;
     };
   };
-
 }

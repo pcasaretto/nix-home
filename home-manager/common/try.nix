@@ -1,5 +1,5 @@
 # Try configuration - allows safely testing shell commands
-{ inputs, ... }: {
+{inputs, ...}: {
   imports = [
     inputs.try.homeModules.default
   ];

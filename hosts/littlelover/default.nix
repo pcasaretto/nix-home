@@ -100,7 +100,6 @@
   # `users.users.*` namespace, or migrated to Home Manager.
   system.primaryUser = "pcasaretto";
 
-
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
 

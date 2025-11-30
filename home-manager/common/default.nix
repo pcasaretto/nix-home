@@ -1,5 +1,10 @@
 # This file (and the global directory) holds config that i use on all hosts
-{ inputs, outputs, pkgs, ... }: {
+{
+  inputs,
+  outputs,
+  pkgs,
+  ...
+}: {
   imports = [
     inputs.catppuccin.homeModules.catppuccin
 
@@ -44,7 +49,6 @@
       allowUnfreePredicate = _: true;
     };
   };
-
 
   # Htop
   # https://rycee.gitlab.io/home-manager/options.html#opt-programs.htop.enable

@@ -7,7 +7,7 @@
   ...
 }: let
   dotenv = inputs.dotenv.packages.${pkgs.system}.default;
-  transmission = pkgs.transmission_4.overrideAttrs { enableGTK = true; };
+  transmission = pkgs.transmission_4.overrideAttrs {enableGTK = true;};
 in {
   home.stateVersion = "23.05";
 
@@ -27,9 +27,11 @@ in {
   ];
 
   nixpkgs = {
-    overlays = builtins.attrValues outputs.overlays ++ [
-      outputs.overlays.apple-silicon
-    ];
+    overlays =
+      builtins.attrValues outputs.overlays
+      ++ [
+        outputs.overlays.apple-silicon
+      ];
     config = {
       allowUnfree = true;
     };
@@ -57,14 +59,10 @@ in {
     '';
   };
 
-
   home.packages = with pkgs; [
-    gnused                     # GNU sed implementation
-    m-cli                      # useful macOS CLI commands
-    parinfer-rust-emacs        # Rust-based parinfer for Emacs
-    rectangle                  # window manager
-    unstable.spotify           # music
-    unstable.gemini-cli        # Claude Code, but from Google
+    gnused # GNU sed implementation
+    m-cli # useful macOS CLI commands
+    unstable.gemini-cli # Claude Code, but from Google
     vlc-bin
   ];
 }

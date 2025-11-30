@@ -46,8 +46,10 @@
 
   # Add tmux-git-worktree plugin to tmuxPlugins
   tmux-git-worktree = final: prev: {
-    tmuxPlugins = prev.tmuxPlugins // {
-      git-worktree = inputs.tmux-git-worktree.packages.${final.system}.default;
-    };
+    tmuxPlugins =
+      prev.tmuxPlugins
+      // {
+        git-worktree = inputs.tmux-git-worktree.packages.${final.system}.default;
+      };
   };
 }

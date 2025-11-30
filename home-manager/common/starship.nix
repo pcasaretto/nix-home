@@ -1,24 +1,27 @@
-{ lib, config, pkgs, ... }:
-let
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}: let
   inherit (config.catppuccin) sources;
   catppuccinFlavor = config.catppuccin.flavor;
-in
- {
+in {
   programs.starship = {
     enable = true;
     settings = {
       format = lib.concatStrings [
-      "[](red)"
-      "$os"
-      "[](bg:peach fg:red)"
-      ("$" + "{custom.world_path}")
-      "[](bg:yellow fg:peach)"
-      ("$" + "{custom.git_branch_workaround}")
-      "$git_status"
-      "[ ](fg:yellow)"
-      "$cmd_duration"
-      "$line_break"
-      "$character"
+        "[](red)"
+        "$os"
+        "[](bg:peach fg:red)"
+        ("$" + "{custom.world_path}")
+        "[](bg:yellow fg:peach)"
+        ("$" + "{custom.git_branch_workaround}")
+        "$git_status"
+        "[ ](fg:yellow)"
+        "$cmd_duration"
+        "$line_break"
+        "$character"
       ];
 
       # palette = "catppuccin_${catppuccinFlavor}";
@@ -50,7 +53,6 @@ in
           Pop = "";
         };
       };
-
 
       directory = {
         style = "bg:peach fg:crust";
@@ -148,7 +150,7 @@ in
         vimcmd_visual_symbol = "[](bold fg:yellow)";
       };
 
-      command_timeout = 500;  # 500ms for git commands in large repos
+      command_timeout = 500; # 500ms for git commands in large repos
     };
     # // lib.importTOML "${sources.starship}/${catppuccinFlavor}.toml";
   };

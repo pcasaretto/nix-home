@@ -3,7 +3,7 @@
 
   # the nixConfig here only affects the flake itself, not the system configuration!
   nixConfig = {
-    trusted-users = [ "pcasaretto" "paulo.casaretto" ];
+    trusted-users = ["pcasaretto" "paulo.casaretto"];
 
     extra-substituters = [
       # nix community's cache server
@@ -104,7 +104,7 @@
             # given the users in this list the right to specify additional substituters via:
             #    1. `nixConfig.substituters` in `flake.nix`
             nix.settings = {
-              trusted-users = [ "pcasaretto" ];
+              trusted-users = ["pcasaretto"];
 
               substituters = [
                 "https://cache.nixos.org"
@@ -125,7 +125,7 @@
             # given the users in this list the right to specify additional substituters via:
             #    1. `nixConfig.substituters` in `flake.nix`
             nix.settings = {
-              trusted-users = [ "pcasaretto" ];
+              trusted-users = ["pcasaretto"];
 
               substituters = [
                 "https://cache.nixos.org"
@@ -146,7 +146,7 @@
             # given the users in this list the right to specify additional substituters via:
             #    1. `nixConfig.substituters` in `flake.nix`
             nix.settings = {
-              trusted-users = [ "paulo.casaretto" ];
+              trusted-users = ["paulo.casaretto"];
 
               substituters = [
                 "https://cache.nixos.org"
