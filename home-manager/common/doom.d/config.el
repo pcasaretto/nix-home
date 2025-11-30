@@ -102,3 +102,6 @@
 
 ;; Remove xref backend from lookup-definition-functions
 (remove-hook '+lookup-definition-functions #'+lookup-xref-definitions-backend-fn)
+
+(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
