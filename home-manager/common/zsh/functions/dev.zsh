@@ -13,9 +13,20 @@ dev() {
             fi
 
             if [[ -n "$1" ]]; then
-                # Use fzf to select, pre-filling the query
-                # --select-1: automatically select if only one match
-                target=$(fd -t d . "$src_root" | fzf --query "$*" --select-1 --exit-0)
+                # Check for exact directory name match
+                # We use -g to match the name exactly (glob pattern)
+                # This avoids fzf if there is exactly one directory with this name
+                local exact_matches
+                exact_matches=("${(@f)$(fd -t d -g "$1" "$src_root")}")
+                
+                if [[ ${#exact_matches[@]} -eq 1 ]]; then
+                    target="${exact_matches[1]}"
+                else
+                    # Fallback to fzf
+                    # --select-1: automatically select if only one match
+                    # --exit-0: exit if no match
+                    target=$(fd -t d . "$src_root" | fzf --query "$*" --select-1 --exit-0)
+                fi
             else
                 target=$(fd -t d . "$src_root" | fzf)
             fi
