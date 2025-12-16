@@ -105,3 +105,10 @@
 
 (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
 (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+
+;; Enable kitty keyboard protocol for proper key handling in terminal
+;; Fixes ESC and other keys in Ghostty/tmux
+(use-package! kkp
+  :hook (after-init . global-kkp-mode))
+
+(setq insert-directory-program "gls")

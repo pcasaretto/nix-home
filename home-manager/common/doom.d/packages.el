@@ -57,3 +57,5 @@
   :recipe (:host github :repo "mrkkrp/nushell-mode"))
 
 (package! rainbow-delimiters)
+
+(package! kkp)

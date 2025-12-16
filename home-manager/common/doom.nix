@@ -1,5 +1,5 @@
 
-{ inputs, ... }: {
+{ inputs, pkgs, ... }: {
   imports = [
     inputs.nix-doom-emacs-unstraightened.homeModule
   ];
@@ -8,4 +8,10 @@
     enable = true;
     doomDir = ./doom.d;
   };
+
+  # for "gls"
+  home.packages = [
+    pkgs.coreutils-prefixed
+  ];
+
 }
