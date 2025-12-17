@@ -15,7 +15,8 @@
       font-size = 18;
 
       # working directory settings
-      window-inherit-working-directory = false;
+      # new windows start in home, tabs/splits inherit current directory
+      window-inherit-working-directory = true;
       working-directory = "home";
 
       # Performance settings

@@ -98,7 +98,22 @@
 
   # Deduplicate and optimize nix store
   # nix.optimise.automatic = true;
-  nix.enable = false;
+  nix.enable = true;
+
+  nix.linux-builder = {
+    enable = true;
+    ephemeral = true;
+    maxJobs = 4;
+    config = {
+      virtualisation = {
+        darwin-builder = {
+          diskSize = 40 * 1024;
+          memorySize = 16 * 1024;
+        };
+        cores = 6;
+      };
+    };
+  };
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
