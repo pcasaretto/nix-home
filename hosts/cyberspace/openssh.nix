@@ -1,0 +1,6 @@
+
+{
+  ...
+}: {
+  programs.openssh.enable = true;
+}

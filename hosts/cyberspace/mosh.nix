@@ -1,0 +1,6 @@
+
+{
+  ...
+}: {
+  programs.mosh.enable = true;
+}

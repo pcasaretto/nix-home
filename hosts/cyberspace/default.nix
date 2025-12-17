@@ -10,12 +10,31 @@
 }: {
   # You can import other NixOS modules here
   imports = [
+    # If you want to use modules your own flake exports (from modules/nixos):
+    # outputs.nixosModules.example
+
+    # Or modules from other flakes (such as nixos-hardware):
+    # inputs.hardware.nixosModules.common-cpu-amd
+    # inputs.hardware.nixosModules.common-ssd
+
+    # You can also split up your configuration and import pieces of it here:
+    # ./users.nix
+
+    # Import your generated (nixos-generate-config) hardware configuration
+    # ./hardware-configuration.nix
+
+    # `home-manager` module
+    inputs.home-manager.nixosModules.home-manager
+
+    ./apple-silicon-support
+    ./hardware-configuration.nix
+    ./mosh.nix
+    ./networking.nix
+    ./openssh.nix
     ./tailscale.nix
   ];
 
   nixpkgs = {
-    hostPlatform = "aarch64-darwin";
-
     # You can add overlays here
     overlays = [
       # Add overlays your own flake exports (from overlays and pkgs dir):
@@ -40,8 +59,13 @@
     };
   };
 
-  # make it play nice with determinate
-  nix.enable = false;
+  home-manager = {
+    extraSpecialArgs = {inherit inputs outputs;};
+    users = {
+      # Import your home-manager configuration
+      "pcasaretto" = import ./home-manager;
+    };
+  };
 
   # To make nix3 commands consistent with your flake
   nix.registry = (lib.mapAttrs (_: flake: {inherit flake;})) ((lib.filterAttrs (_: lib.isType "flake")) inputs);
@@ -57,20 +81,25 @@
     })
     config.nix.registry;
 
+  # Deduplicate and optimize nix store
   # nix.optimise.automatic = true;
-
-  # To continue using these options, set `system.primaryUser` to the name
-  # of the user you have been using to run `darwin-rebuild`. In the long
-  # run, this setting will be deprecated and removed after all the
-  # functionality it is relevant for has been adjusted to allow
-  # specifying the relevant user separately, moved under the
-  # `users.users.*` namespace, or migrated to Home Manager.
-  system.primaryUser = "pcasaretto";
+  nix.enable = true;
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
 
-  networking.hostName = "littlelover";
+  networking.hostName = "cyberspace";
 
-  system.stateVersion = 5;
+  users.users.pcasaretto = {
+    isNormalUser = true;
+    home = "/home/pcasaretto";
+    extraGroups = ["wheel"];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC5IzKxcJzMplMhh+j5bcY6eAIz9PsQ0t7PpusMslJ2F pcasaretto Nix SSH Key"
+    ];
+  };
+
+  time.timeZone = "America/Sao_Paulo";
+
+  system.stateVersion = "25.11";
 }
