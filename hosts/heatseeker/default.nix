@@ -79,11 +79,6 @@
     })
     config.nix.registry;
 
-  nix.settings = {
-    # Enable flakes and new 'nix' command
-    experimental-features = "nix-command flakes";
-  };
-
   nix.extraOptions = ''
     !include nix.conf.d/shopify.conf
   '';

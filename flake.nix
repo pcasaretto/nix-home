@@ -70,9 +70,7 @@
     # Supported systems for your flake packages, shell, etc.
     systems = [
       "aarch64-darwin"
-      "x86_64-darwin"
       "aarch64-linux"
-      "x86_64-linux"
     ];
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
@@ -96,6 +94,26 @@
 
     # NixOS configuration entrypoint
     # Available through 'nixos-rebuild --flake .#your-hostname'
+    nixosConfigurations = {
+      cyberspace = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs outputs; };
+        modules = [
+          {
+            # given the users in this list the right to specify additional substituters via:
+            #    1. `nixConfig.substituters` in `flake.nix`
+            nix.settings = {
+              trusted-users = [ "pcasaretto" ];
+
+              substituters = [
+                "https://cache.nixos.org"
+              ];
+            };
+          }
+          ./hosts/common/core
+          ./hosts/cyberspace
+        ];
+      };
+    };
     darwinConfigurations = {
       littlelover = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
@@ -115,27 +133,6 @@
           ./hosts/common/darwin
           ./hosts/common/darwin/mac-app-util.nix
           ./hosts/littlelover
-        ];
-      };
-
-      overdose = inputs.darwin.lib.darwinSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          {
-            # given the users in this list the right to specify additional substituters via:
-            #    1. `nixConfig.substituters` in `flake.nix`
-            nix.settings = {
-              trusted-users = [ "pcasaretto" ];
-
-              substituters = [
-                "https://cache.nixos.org"
-              ];
-            };
-          }
-          ./hosts/common/core
-          ./hosts/common/darwin
-          ./hosts/common/darwin/mac-app-util.nix
-          ./hosts/overdose
         ];
       };
 
