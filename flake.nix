@@ -16,8 +16,9 @@
   };
 
   inputs = {
-    # Nixpkgs
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.11-darwin";
+    # Nixpkgs - separate inputs for darwin and nixos
+    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-25.11-darwin";
+    nixpkgs-nixos.url = "github:nixos/nixpkgs/nixos-25.11";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -25,37 +26,36 @@
 
     # Home manager
     home-manager.url = "github:nix-community/home-manager"; # master branch for programs.claude-code
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     darwin.url = "github:lnl7/nix-darwin/nix-darwin-25.11";
-    darwin.inputs.nixpkgs.follows = "nixpkgs";
+    darwin.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     dotenv.url = "github:pcasaretto/dotenv";
-    dotenv.inputs.nixpkgs.follows = "nixpkgs";
+    dotenv.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     flake-utils.url = "github:numtide/flake-utils";
 
     sops-nix.url = "github:mic92/sops-nix";
-    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     catppuccin.url = "github:catppuccin/nix";
-    catppuccin.inputs.nixpkgs.follows = "nixpkgs";
+    catppuccin.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     mac-app-util.url = "github:hraban/mac-app-util";
-    # mac-app-util.inputs.nixpkgs.follows = "nixpkgs";
-    # mac-app-util.inputs.treefmt-nix.nixpkgs.follows = "nixpkgs";
+    # mac-app-util.inputs.nixpkgs.follows = "nixpkgs-darwin";
+    # mac-app-util.inputs.treefmt-nix.nixpkgs.follows = "nixpkgs-darwin";
 
     nix-index-database.url = "github:nix-community/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     nix-doom-emacs-unstraightened.url = "github:marienz/nix-doom-emacs-unstraightened";
-    nix-doom-emacs-unstraightened.inputs.nixpkgs.follows = "nixpkgs";
+    nix-doom-emacs-unstraightened.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     try.url = "github:tobi/try";
-    try.inputs.nixpkgs.follows = "nixpkgs";
+    try.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     tmux-git-worktree.url = "github:pcasaretto/tmux-git-worktree";
-    tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs";
+    tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs-darwin";
 
     tabline-wez = {
       url = "github:michaelbrusegard/tabline.wez";
@@ -70,28 +70,38 @@
 
   outputs = {
     self,
-    nixpkgs,
+    nixpkgs-darwin,
+    nixpkgs-nixos,
     home-manager,
     ...
   } @ inputs: let
     inherit (self) outputs;
-    # Supported systems for your flake packages, shell, etc.
-    systems = [
-      "aarch64-darwin"
-      "x86_64-darwin"
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
+
+    # System categories
+    darwinSystems = ["aarch64-darwin" "x86_64-darwin"];
+    nixosSystems = ["aarch64-linux" "x86_64-linux"];
+    allSystems = darwinSystems ++ nixosSystems;
+
+    # Helper to get appropriate nixpkgs for a system
+    nixpkgsFor = system:
+      if builtins.elem system darwinSystems
+      then nixpkgs-darwin
+      else nixpkgs-nixos;
+
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
-    forAllSystems = nixpkgs.lib.genAttrs systems;
+    forAllSystems = nixpkgs-darwin.lib.genAttrs allSystems;
   in {
     # Your custom packages
     # Accessible through 'nix build', 'nix shell', etc
-    packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+    packages = forAllSystems (system:
+      import ./pkgs (nixpkgsFor system).legacyPackages.${system}
+    );
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
-    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+    formatter = forAllSystems (system:
+      (nixpkgsFor system).legacyPackages.${system}.alejandra
+    );
 
     # Your custom packages and modifications, exported as overlays
     overlays = import ./overlays {inherit inputs;};
@@ -106,7 +116,7 @@
     # Available through 'home-manager switch --flake .#username'
     homeConfigurations = {
       "paulo.casaretto" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        pkgs = nixpkgs-darwin.legacyPackages.aarch64-darwin;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
           ./home-manager/users/paulo.casaretto.nix
@@ -114,10 +124,33 @@
       };
 
       "pcasaretto@littlelover" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        pkgs = nixpkgs-darwin.legacyPackages.aarch64-darwin;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
           ./home-manager/users/pcasaretto-littlelover.nix
+        ];
+      };
+    };
+
+    # NixOS configuration entrypoint
+    # Available through 'nixos-rebuild --flake .#your-hostname'
+    nixosConfigurations = {
+      cyberspace = nixpkgs-nixos.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          {
+            # given the users in this list the right to specify additional substituters via:
+            #    1. `nixConfig.substituters` in `flake.nix`
+            nix.settings = {
+              trusted-users = ["pcasaretto"];
+
+              substituters = [
+                "https://cache.nixos.org"
+              ];
+            };
+          }
+          ./hosts/common/core
+          ./hosts/cyberspace
         ];
       };
     };
@@ -148,32 +181,6 @@
           ./hosts/common/darwin
           ./hosts/common/darwin/mac-app-util.nix
           ./hosts/littlelover
-        ];
-      };
-
-      overdose = inputs.darwin.lib.darwinSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          {
-            # given the users in this list the right to specify additional substituters via:
-            #    1. `nixConfig.substituters` in `flake.nix`
-            nix.settings = {
-              trusted-users = ["pcasaretto"];
-
-              substituters = [
-                "https://cache.nixos.org"
-                "https://nix-community.cachix.org"
-              ];
-
-              trusted-public-keys = [
-                "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-              ];
-            };
-          }
-          ./hosts/common/core
-          ./hosts/common/darwin
-          ./hosts/common/darwin/mac-app-util.nix
-          ./hosts/overdose
         ];
       };
     };
