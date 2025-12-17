@@ -1,8 +1,13 @@
 {
+  pkgs,
   ...
 }: {
   programs.nushell = {
     enable = true;
+    package = pkgs.unstable.nushell;
+    plugins = [
+      pkgs.nushellPlugins.dns
+    ];
     settings = {
       show_banner = false;
       edit_mode = "vi";
