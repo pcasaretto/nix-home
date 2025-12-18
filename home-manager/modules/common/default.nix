@@ -79,18 +79,18 @@
 
     # Dev stuff
     # (agda.withPackages (p: [ p.standard-library ]))
-    fd                         # fast find
-    nerd-fonts.fira-code       # favorite dev font
-    jq                         # for handling json
-    mosh                       # persistent ssh sessions
-    ripgrep                    # searching files fast
-    unixtools.watch            # repeat commands and monitor their outputs
-    unstable.devenv            # dev environments made easy
-    tree                       # directory tree viewer
-    yq-go                      # yaml processor
-    eza                        # ls replacement
-    bat                        # cat, but pretty and git aware
-    chafa                      # terminal image viewer
+    fd # fast find
+    nerd-fonts.fira-code # favorite dev font
+    jq # for handling json
+    mosh # persistent ssh sessions
+    ripgrep # searching files fast
+    unixtools.watch # repeat commands and monitor their outputs
+    unstable.devenv # dev environments made easy
+    tree # directory tree viewer
+    yq-go # yaml processor
+    eza # ls replacement
+    bat # cat, but pretty and git aware
+    chafa # terminal image viewer
   ];
 
   fonts.fontconfig.enable = true;

@@ -26,7 +26,6 @@
       clipboard-read = "allow";
       clipboard-write = "allow";
       copy-on-select = true;
-
     };
   };
 }

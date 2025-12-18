@@ -20,10 +20,10 @@ in {
     # inputs.nix-colors.homeManagerModules.default
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
-    ../../../home-manager/common
-    ../../../home-manager/darwin
-    ../../../home-manager/darwin/mac-app-util.nix
-    ../../../home-manager/common/doom.nix
+    ../../../home-manager/modules/common
+    ../../../home-manager/modules/darwin
+    ../../../home-manager/modules/darwin/mac-app-util.nix
+    ../../../home-manager/modules/common/doom.nix
   ];
 
   nixpkgs = {
@@ -62,6 +62,8 @@ in {
   home.packages = with pkgs; [
     gnused # GNU sed implementation
     m-cli # useful macOS CLI commands
+    rectangle # window manager
+    unstable.spotify # music
     unstable.gemini-cli # Claude Code, but from Google
     vlc-bin
   ];

@@ -101,7 +101,7 @@
         pkgs = nixpkgs.legacyPackages.aarch64-darwin;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
-          ./home-manager/standalone/heatseeker.nix
+          ./home-manager/users/paulo.casaretto.nix
         ];
       };
     };

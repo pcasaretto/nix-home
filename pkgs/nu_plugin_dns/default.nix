@@ -5,7 +5,6 @@
   pkg-config,
   openssl,
 }:
-
 rustPlatform.buildRustPackage rec {
   pname = "nu_plugin_dns";
   version = "4.0.5";
@@ -19,9 +18,9 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-7qS1cXNuztVs6preUut0l/XZtsO7eAzdljst+mGBQnA=";
 
-  nativeBuildInputs = [ pkg-config ];
+  nativeBuildInputs = [pkg-config];
 
-  buildInputs = [ openssl ];
+  buildInputs = [openssl];
 
   # Tests require network access and a working directory
   doCheck = false;

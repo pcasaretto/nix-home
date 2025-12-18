@@ -22,9 +22,11 @@
       system = final.system;
     };
   in {
-    nushellPlugins = prev.nushellPlugins // {
-      dns = unstable.callPackage ../pkgs/nu_plugin_dns { };
-    };
+    nushellPlugins =
+      prev.nushellPlugins
+      // {
+        dns = unstable.callPackage ../pkgs/nu_plugin_dns {};
+      };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
