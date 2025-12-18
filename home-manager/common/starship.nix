@@ -85,28 +85,7 @@ in {
       custom = {
         world_path = {
           shell = ["${pkgs.nushell}/bin/nu" "-c"];
-          command = ''
-            mut check = $env.PWD
-            loop {
-              if ($check | path join ".meta" "manifest.json" | path exists) {
-                let rel = ($env.PWD | str replace $check "" | str trim --left --char "/")
-                if ($rel | is-empty) { print "🌍 //" } else { print $"🌍 //($rel)" }
-                break
-              }
-              let parent = ($check | path dirname)
-              if $parent == $check {
-                let display = ($env.PWD | str replace $env.HOME "~")
-                let parts = ($display | split row "/")
-                if ($parts | length) > 3 {
-                  print $"…/(($parts | last 2) | str join "/")"
-                } else {
-                  print $display
-                }
-                break
-              }
-              $check = $parent
-            }
-          '';
+          command = "worldpath --compact | ansi strip";
           when = "";
           symbol = "";
           style = "bg:peach";
