@@ -28,6 +28,8 @@
 
     # Tec agent
     [[ -x ~/.local/state/tec/profiles/base/current/global/init ]] && eval "$(~/.local/state/tec/profiles/base/current/global/init zsh)"
+
+    eval "$(wcd --init zsh)"
   '';
 
   # Shopify git email

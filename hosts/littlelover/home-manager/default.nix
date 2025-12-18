@@ -1,70 +1,24 @@
+# littlelover (personal machine) user configuration
+# Extends the base pcasaretto user module with machine-specific settings
 {
   inputs,
   outputs,
-  config,
   pkgs,
-  lib,
   ...
-}: let
-  dotenv = inputs.dotenv.packages.${pkgs.system}.default;
-  transmission = pkgs.transmission_4.overrideAttrs {enableGTK = true;};
-in {
-  home.stateVersion = "23.05";
-
-  # You can import other home-manager modules here
+}: {
   imports = [
-    # If you want to use modules your own flake exports (from modules/home-manager):
-    # outputs.homeManagerModules.example
-
-    # Or modules exported from other flakes (such as nix-colors):
-    # inputs.nix-colors.homeManagerModules.default
-    # You can also split up your configuration and import pieces of it here:
-    # ./nvim.nix
-    ../../../home-manager/modules/common
-    ../../../home-manager/modules/darwin
-    ../../../home-manager/modules/darwin/mac-app-util.nix
-    ../../../home-manager/modules/common/doom.nix
+    ../../../home-manager/users/pcasaretto.nix
+    ./git.nix
   ];
 
-  nixpkgs = {
-    overlays =
-      builtins.attrValues outputs.overlays
-      ++ [
-        outputs.overlays.apple-silicon
-      ];
-    config = {
-      allowUnfree = true;
-    };
-  };
+  home.username = "pcasaretto";
+  home.homeDirectory = "/Users/pcasaretto";
 
-  home.sessionVariables = {
-    # use 1password agent for ssh
-    SSH_AUTH_SOCK = "\$HOME/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock";
-  };
-
-  catppuccin.nvim.enable = true;
-  programs.neovim = {
-    enable = true;
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
-    plugins = with pkgs.vimPlugins; [
-      nvim-lspconfig
-      nvim-treesitter
-      plenary-nvim
-      mini-nvim
-    ];
-    extraConfig = ''
-      set clipboard=unnamedplus
-    '';
-  };
-
+  # littlelover-specific packages
   home.packages = with pkgs; [
     gnused # GNU sed implementation
-    m-cli # useful macOS CLI commands
-    rectangle # window manager
-    unstable.spotify # music
-    unstable.gemini-cli # Claude Code, but from Google
+    unstable.spotify
+    unstable.gemini-cli
     vlc-bin
   ];
 }
