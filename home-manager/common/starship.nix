@@ -85,7 +85,7 @@ in {
       custom = {
         world_path = {
           shell = ["${pkgs.nushell}/bin/nu" "-c"];
-          command = "worldpath --compact | ansi strip";
+          command = "worldpath --compact --zsh";
           when = "";
           symbol = "";
           style = "bg:peach";

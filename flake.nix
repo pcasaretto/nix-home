@@ -94,8 +94,20 @@
     # These are usually stuff you would upstream into home-manager
     # homeManagerModules = import ./modules/home-manager;
 
-    # NixOS configuration entrypoint
-    # Available through 'nixos-rebuild --flake .#your-hostname'
+    # Standalone home-manager configurations
+    # Available through 'home-manager switch --flake .#username'
+    homeConfigurations = {
+      "paulo.casaretto" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        extraSpecialArgs = {inherit inputs outputs;};
+        modules = [
+          ./home-manager/standalone/heatseeker.nix
+        ];
+      };
+    };
+
+    # nix-darwin configurations
+    # Available through 'darwin-rebuild switch --flake .#hostname'
     darwinConfigurations = {
       littlelover = inputs.darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
@@ -136,26 +148,6 @@
           ./hosts/common/darwin
           ./hosts/common/darwin/mac-app-util.nix
           ./hosts/overdose
-        ];
-      };
-
-      heatseeker = inputs.darwin.lib.darwinSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          {
-            # given the users in this list the right to specify additional substituters via:
-            #    1. `nixConfig.substituters` in `flake.nix`
-            nix.settings = {
-              trusted-users = ["paulo.casaretto"];
-
-              substituters = [
-                "https://cache.nixos.org"
-              ];
-            };
-          }
-          ./hosts/common/core
-          ./hosts/common/darwin
-          ./hosts/heatseeker
         ];
       };
     };
