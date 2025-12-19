@@ -6,7 +6,10 @@
   lib,
   ...
 }: {
-  imports = [../../../modules/home-manager/wcd.nix];
+  imports = [
+    ../../../modules/home-manager/wcd.nix
+    ./shopify/claude-code.nix
+  ];
 
   programs.wcd.enable = true;
 

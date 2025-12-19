@@ -10,6 +10,7 @@
 
     inputs.nix-index-database.homeModules.nix-index
 
+    ./claude-code
     ./direnv.nix
     ./ghostty.nix
     ./git.nix
