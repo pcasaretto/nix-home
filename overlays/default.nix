@@ -12,16 +12,37 @@
     # });
 
     pcasaretto = import inputs.nixpkgs-pcasaretto {
+<<<<<<< HEAD
       system = final.stdenv.hostPlatform.system;
+=======
+      inherit (final) system;
+>>>>>>> f3374a3 (we have liftoff)
       config.allowUnfree = true;
     };
+  };
+
+  # Add nu_plugin_dns to nushellPlugins (built with unstable for Rust compatibility)
+  nushell-plugins = final: prev: let
+    unstable = import inputs.nixpkgs-unstable {
+      inherit (final) system;
+    };
+  in {
+    nushellPlugins =
+      prev.nushellPlugins
+      // {
+        dns = unstable.callPackage ../pkgs/nu_plugin_dns {};
+      };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
   # be accessible through 'pkgs.unstable'
   unstable-packages = final: _prev: {
     unstable = import inputs.nixpkgs-unstable {
+<<<<<<< HEAD
       system = final.stdenv.hostPlatform.system;
+=======
+      inherit (final) system;
+>>>>>>> f3374a3 (we have liftoff)
       config.allowUnfree = true;
     };
   };
@@ -33,4 +54,16 @@
         system = "x86_64-darwin";
       };
     };
+<<<<<<< HEAD
+=======
+
+  # Add tmux-git-worktree plugin to tmuxPlugins
+  tmux-git-worktree = final: prev: {
+    tmuxPlugins =
+      prev.tmuxPlugins
+      // {
+        git-worktree = inputs.tmux-git-worktree.packages.${final.system}.default;
+      };
+  };
+>>>>>>> f3374a3 (we have liftoff)
 }

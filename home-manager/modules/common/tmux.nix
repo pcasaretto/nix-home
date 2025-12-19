@@ -24,7 +24,6 @@
       {
         plugin = battery;
         extraConfig = ''
-          set -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l $SHELL"
           set -g status-right-length 100
           set -g status-right ""
           set -ga status-right "#{?#{e|>=:10,#{battery_percentage}},#{#[bg=#{@thm_red},fg=#{@thm_bg}]},#{#[bg=#{@thm_bg},fg=#{@thm_pink}]}} #{battery_icon} #{battery_percentage} "
@@ -37,6 +36,23 @@
           set -ga status-right "#[bg=#{@thm_bg}]#{?#{==:#{online_status},ok},#[fg=#{@thm_mauve}] 󰖩 on ,#[fg=#{@thm_red},bold]#[reverse] 󰖪 off }"
           set -g @online_icon "ok"
           set -g @offline_icon "nok"
+        '';
+      }
+      {
+        plugin = inputs.tmux-git-worktree.packages.${pkgs.system}.default;
+        extraConfig = ''
+          # status left look and feel
+          set -g status-left-length 100
+          set -g status-left ""
+          set -ga status-left "#{?client_prefix,#{#[bg=#{@thm_red},fg=#{@thm_bg},bold]  #S },#{#[bg=#{@thm_bg},fg=#{@thm_green}]  #S }}"
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_maroon}]  #{pane_current_command} "
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_blue}]  #{=/-32/...:#{s|$USER|~|:#{b:pane_current_path}}} "
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]#{?#{!=:#{git_worktree},},│,}"
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_lavender}]#{?#{!=:#{git_worktree},}, 󰐅 #{git_worktree} ,}"
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]#{?window_zoomed_flag,│,}"
+          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_yellow}]#{?window_zoomed_flag,  zoom ,}"
         '';
       }
     ];
@@ -55,17 +71,6 @@
 
       # this removes ESC key delay
       set -s escape-time 0
-
-      # status left look and feel
-      set -g status-left-length 100
-      set -g status-left ""
-      set -ga status-left "#{?client_prefix,#{#[bg=#{@thm_red},fg=#{@thm_bg},bold]  #S },#{#[bg=#{@thm_bg},fg=#{@thm_green}]  #S }}"
-      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
-      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_maroon}]  #{pane_current_command} "
-      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
-      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_blue}]  #{=/-32/...:#{s|$USER|~|:#{b:pane_current_path}}} "
-      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]#{?window_zoomed_flag,│,}"
-      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_yellow}]#{?window_zoomed_flag,  zoom ,}"
 
       set -ga status-right "#[bg=#{@thm_bg},fg=#{@thm_overlay_0}, none]│"
       set -ga status-right "#[bg=#{@thm_bg},fg=#{@thm_blue}] 󰭦 %Y-%m-%d 󰅐 %H:%M "

@@ -1,6 +1,4 @@
-{
-  ...
-}: {
+_: {
   services.tailscale = {
     enable = true;
     # Use a preauthorized key

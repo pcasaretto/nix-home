@@ -26,13 +26,28 @@
     # `home-manager` module
     inputs.home-manager.nixosModules.home-manager
 
-    ./apple-silicon-support
+    inputs.nixos-apple-silicon.nixosModules.apple-silicon-support
+
+    # ./apple-silicon-support
     ./hardware-configuration.nix
     ./mosh.nix
     ./networking.nix
     ./openssh.nix
     ./tailscale.nix
+    ./hyprland.nix
+    ./nginx
   ];
+
+  # hardware.asahi.peripheralFirmwareDirectory = pkgs.requireFile {
+  #   name = "asahi";
+  #   hashMode = "recursive";
+  #   hash = "sha256-Ib4xHM1gK01mu9/ievdpASpmqnN//2W05N/a3c69t0w=";
+  #   message = ''
+  #     nix-store --add-fixed sha256 --recursive /boot/asahi
+  #   '';
+  # };
+
+  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 
   nixpkgs = {
     # You can add overlays here
@@ -61,6 +76,8 @@
 
   home-manager = {
     extraSpecialArgs = {inherit inputs outputs;};
+    useGlobalPkgs = true;
+    useUserPackages = true;
     users = {
       # Import your home-manager configuration
       "pcasaretto" = import ./home-manager;
@@ -81,14 +98,80 @@
     })
     config.nix.registry;
 
+  environment.systemPackages =
+    with pkgs;
+    [
+      # Core utilities
+      git
+      curl
+      wget
+      htop
+      tree
+      file
+      which
+      rsync
+      lsof
+      iotop
+      sysz
+      dust
+      mprocs
+      pv
+      killall
+
+      # System tools
+      vim
+      nano
+      pciutils
+      usbutils
+      bind.dnsutils
+      nmap
+      traceroute
+      iperf3
+      # Desktop-specific packages
+      pavucontrol
+      wireplumber
+      v4l-utils
+      cheese
+      pipewire
+      bluez
+      bluez-tools
+      pcsclite
+      libfido2
+      iw
+      wirelesstools
+    ];
+
   # Deduplicate and optimize nix store
   # nix.optimise.automatic = true;
   nix.enable = true;
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+
+  # Bluetooth configuration
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+    settings = {
+      General = {
+        Experimental = true;
+      };
+    };
+  };
+  services.blueman.enable = true;
+
+  # Prevent logind from suspending on lid close; Hyprland handles DPMS + lock instead
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchDocked = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+  };
+
+  # Auto-login on an alternate VT so the user session (services) starts at boot
+  services.getty.autologinUser = "pcasaretto";
+  systemd.services."getty@tty2".enable = true;
+  systemd.services."getty@tty2".wantedBy = ["multi-user.target"];
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
-
-  networking.hostName = "cyberspace";
 
   users.users.pcasaretto = {
     isNormalUser = true;
@@ -97,9 +180,14 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC5IzKxcJzMplMhh+j5bcY6eAIz9PsQ0t7PpusMslJ2F pcasaretto Nix SSH Key"
     ];
+    description = "Paulo Casaretto";
+    shell = pkgs.zsh;
+    linger = true;
   };
 
   time.timeZone = "America/Sao_Paulo";
+  
+  environment.enableAllTerminfo = true;
 
   system.stateVersion = "25.11";
 }
