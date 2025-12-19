@@ -6,11 +6,11 @@
   lib,
   ...
 }: {
-  # World aliases
-  programs.zsh.shellAliases = {
-    ls = "wls";
-    cd = "wcd";
-  };
+  imports = [../../../modules/home-manager/wcd.nix];
+
+  programs.wcd.enable = true;
+
+  programs.zsh.shellAliases.ls = "wls";
 
   # Shopify dev environment initialization
   programs.zsh.initContent = ''
@@ -28,8 +28,6 @@
 
     # Tec agent
     [[ -x ~/.local/state/tec/profiles/base/current/global/init ]] && eval "$(~/.local/state/tec/profiles/base/current/global/init zsh)"
-
-    eval "$(wcd --init zsh)"
   '';
 
   # Shopify git email
