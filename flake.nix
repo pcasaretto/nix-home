@@ -70,10 +70,10 @@
     nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
     nixos-apple-silicon.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
-    # mysecrets = {
-    #    url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
-    #    flake = false;
-    # };
+    mysecrets = {
+       url = "git+https://github.com/pcasaretto/nix-secrets.git?shallow=1";
+       flake = false;
+    };
   };
 
   outputs = {

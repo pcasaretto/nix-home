@@ -26,6 +26,9 @@
     # `home-manager` module
     inputs.home-manager.nixosModules.home-manager
 
+    # sops-nix for secrets management
+    inputs.sops-nix.nixosModules.sops
+
     inputs.nixos-apple-silicon.nixosModules.apple-silicon-support
 
     # ./apple-silicon-support
@@ -33,6 +36,7 @@
     ./mosh.nix
     ./networking.nix
     ./openssh.nix
+    ./sops.nix
     ./tailscale.nix
     ./hyprland.nix
     ./nginx
