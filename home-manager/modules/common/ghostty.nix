@@ -7,7 +7,7 @@
   catppuccin.ghostty.enable = true;
 
   programs.ghostty = {
-    enable = true;
+    enable = false;
     package = pkgs.unstable.ghostty-bin;
     settings = {
       # Font configuration

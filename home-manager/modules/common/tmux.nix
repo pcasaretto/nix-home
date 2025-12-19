@@ -24,7 +24,6 @@
       {
         plugin = battery;
         extraConfig = ''
-          set -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l $SHELL"
           set -g status-right-length 100
           set -g status-right ""
           set -ga status-right "#{?#{e|>=:10,#{battery_percentage}},#{#[bg=#{@thm_red},fg=#{@thm_bg}]},#{#[bg=#{@thm_bg},fg=#{@thm_pink}]}} #{battery_icon} #{battery_percentage} "
@@ -40,7 +39,7 @@
         '';
       }
       {
-        plugin = git-worktree;
+        plugin = inputs.tmux-git-worktree.packages.${pkgs.system}.default;
         extraConfig = ''
           # status left look and feel
           set -g status-left-length 100

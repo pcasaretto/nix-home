@@ -2,9 +2,9 @@
   programs.nushell = {
     enable = true;
     package = pkgs.unstable.nushell;
-    plugins = [
-      pkgs.nushellPlugins.dns
-    ];
+    # plugins = [
+    #   pkgs.nushellPlugins.dns  # Plugin not available
+    # ];
     settings = {
       show_banner = false;
       edit_mode = "vi";

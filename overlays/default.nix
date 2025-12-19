@@ -11,7 +11,7 @@
     # ...
     # });
     pcasaretto = import inputs.nixpkgs-pcasaretto {
-      system = final.system;
+      inherit (final) system;
       config.allowUnfree = true;
     };
   };
@@ -19,7 +19,7 @@
   # Add nu_plugin_dns to nushellPlugins (built with unstable for Rust compatibility)
   nushell-plugins = final: prev: let
     unstable = import inputs.nixpkgs-unstable {
-      system = final.system;
+      inherit (final) system;
     };
   in {
     nushellPlugins =
@@ -33,7 +33,7 @@
   # be accessible through 'pkgs.unstable'
   unstable-packages = final: _prev: {
     unstable = import inputs.nixpkgs-unstable {
-      system = final.system;
+      inherit (final) system;
       config.allowUnfree = true;
     };
   };
