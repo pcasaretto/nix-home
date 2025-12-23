@@ -189,6 +189,7 @@
     description = "Paulo Casaretto";
     shell = pkgs.zsh;
     linger = true;
+    hashedPasswordFile = config.sops.secrets.pcasaretto-password-hash.path;
   };
 
   time.timeZone = "America/Sao_Paulo";
