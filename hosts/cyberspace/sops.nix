@@ -16,6 +16,11 @@
     group = "grafana";
   };
 
+  sops.secrets.pcasaretto-password-hash = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    neededForUsers = true;
+  };
+
   # sops.secrets.jellyfin-admin-username = {
   #   sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
   #   owner = "jellyfin";
