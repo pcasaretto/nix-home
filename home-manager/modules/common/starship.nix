@@ -53,18 +53,19 @@ in {
       format = lib.concatStrings [
         ("$" + "{custom.world_path}")
         ("$" + "{custom.regular_path}")
-        "$git_branch"
+        ("$" + "{custom.git_branch_workaround}")
         "$git_status"
         "$cmd_duration"
         "$line_break"
         "$character"
       ];
 
-      git_branch = {
-        symbol = "";
-        style = "bold purple";
-        format = "on [$symbol$branch]($style) ";
-      };
+      # Disabled: Using custom git_branch_workaround instead due to reftable issues
+      # git_branch = {
+      #   symbol = "";
+      #   style = "bold purple";
+      #   format = "on [$symbol$branch]($style) ";
+      # };
 
       git_status = {
         style = "bold yellow";
@@ -84,6 +85,13 @@ in {
           style = "${colors.teal}";
           format = "[$output]($style) ";
         };
+        git_branch_workaround = {
+          command = "git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null";
+          when = "git rev-parse --git-dir 2>/dev/null";
+          symbol = "";
+          style = "bold purple";
+          format = "on [$symbol$output]($style) ";
+        };
       };
 
       cmd_duration = {
@@ -98,6 +106,8 @@ in {
       };
 
       line_break.disabled = false;
+
+      command_timeout = 50;
     };
   };
   catppuccin.starship.enable = true;
