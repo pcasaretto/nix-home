@@ -56,8 +56,15 @@
     "d /mnt/external/downloads/.incomplete 0775 transmission transmission -"
   ];
 
-  # Add pcasaretto user to transmission group for access to downloads
-  users.users.pcasaretto.extraGroups = [ "transmission" ];
+  # Ensure transmission starts after external drive is mounted
+  systemd.services.transmission = {
+    requires = [ "mnt-external.mount" ];
+    after = [ "mnt-external.mount" ];
+  };
+
+  # Add users to appropriate groups for shared access
+  users.users.pcasaretto.extraGroups = [ "transmission" "external" ];
+  users.users.transmission.extraGroups = [ "external" ];
 
   # Register in service registry
   services.cyberspace.registeredServices.transmission = {

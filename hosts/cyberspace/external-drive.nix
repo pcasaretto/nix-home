@@ -4,6 +4,11 @@
   pkgs,
   ...
 }: {
+  # Create dedicated group for external drive access
+  users.groups.external = {
+    gid = 1001;
+  };
+
   # Mount external SanDisk Extreme drive
   # UUID: 6941-B41D (exFAT partition)
   fileSystems."/mnt/external" = {
@@ -12,15 +17,15 @@
     options = [
       "nofail" # Don't fail boot if drive is not connected
       "uid=1000" # Set owner to pcasaretto
-      "gid=100" # Set group to users
-      "dmask=0022" # Directory permissions: rwxr-xr-x
-      "fmask=0133" # File permissions: rw-r--r--
+      "gid=1001" # Set group to external
+      "dmask=0002" # Directory permissions: rwxrwxr-x (group writable)
+      "fmask=0113" # File permissions: rw-rw-r--
     ];
   };
 
   # Ensure the mount point exists
   systemd.tmpfiles.rules = [
-    "d /mnt/external 0755 pcasaretto users -"
+    "d /mnt/external 0755 pcasaretto external -"
   ];
 
   # Install exfat utilities
