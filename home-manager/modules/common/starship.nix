@@ -4,134 +4,101 @@
   pkgs,
   ...
 }: let
-  inherit (config.catppuccin) sources;
-  catppuccinFlavor = config.catppuccin.flavor;
+  # Read catppuccin colors from global palette
+  flavor = config.catppuccin.flavor;
+  palette = builtins.fromJSON (builtins.readFile "${config.catppuccin.sources.palette}/palette.json");
+  colors = lib.mapAttrs (_: v: v.hex) palette.${flavor}.colors;
+
+  worldPromptScript = pkgs.writeText "world-prompt.nu" ''
+    #!/usr/bin/env nu
+
+    # World prompt script for starship
+    # Colors from catppuccin macchiato palette
+
+    let gps = (do -i { tec gps --json } | from json)
+
+    if ($gps | get -o zone_path | is-not-empty) {
+      let green = (ansi { fg: "${colors.green}" })
+      let teal = (ansi { fg: "${colors.teal}" })
+      let reset = (ansi reset)
+
+      let tree = $gps.tree_name
+
+      let substrate = if ($gps.wroot_relative_path | is-not-empty) {
+        let parts = ($gps.wroot_relative_path | split row "/")
+        if ($parts | length) > 1 {
+          let len = ($parts | length)
+          let head_parts = ($parts | first ($len - 1))
+          let abbrev = ($head_parts | each { $in | str substring 0..<1 } | str join "/")
+          $"($abbrev)/($parts | last)"
+        } else {
+          $gps.wroot_relative_path
+        }
+      } else { "" }
+
+      let project = if ($gps.path_in_zone | is-not-empty) {
+        let parts = ($gps.path_in_zone | split row "/")
+        $"/($parts | last)"
+      } else { "" }
+
+      $"🌍 ($green)+($tree)($reset)($teal)//($substrate)($project)($reset)"
+    } else {
+      ""
+    }
+  '';
 in {
   programs.starship = {
     enable = true;
     settings = {
       format = lib.concatStrings [
-        "[](red)"
-        "$os"
-        "[](bg:peach fg:red)"
         ("$" + "{custom.world_path}")
-        "[](bg:yellow fg:peach)"
-        ("$" + "{custom.git_branch_workaround}")
+        ("$" + "{custom.regular_path}")
+        "$git_branch"
         "$git_status"
-        "[ ](fg:yellow)"
         "$cmd_duration"
         "$line_break"
         "$character"
       ];
 
-      # palette = "catppuccin_${catppuccinFlavor}";
-
-      os = {
-        disabled = false;
-        style = "bg:red fg:crust";
-        symbols = {
-          Windows = "󰍲";
-          Ubuntu = "󰕈";
-          SUSE = "";
-          Raspbian = "󰐿";
-          Mint = "󰣭";
-          Macos = "󰀵";
-          Manjaro = "";
-          Linux = "󰌽";
-          Gentoo = "󰣨";
-          Fedora = "󰣛";
-          Alpine = "";
-          Amazon = "";
-          Android = "";
-          Arch = "󰣇";
-          Artix = "󰣇";
-          EndeavourOS = "";
-          CentOS = "";
-          Debian = "󰣚";
-          Redhat = "󱄛";
-          RedHatEnterprise = "󱄛";
-          Pop = "";
-        };
+      git_branch = {
+        symbol = "";
+        style = "bold purple";
+        format = "on [$symbol$branch]($style) ";
       };
-
-      directory = {
-        style = "bg:peach fg:crust";
-        format = "[ $path ]($style)";
-        truncation_length = 3;
-        truncation_symbol = "…/";
-        substitutions = {
-          Documents = "󰈙 ";
-          Downloads = " ";
-          Music = "󰝚 ";
-          Pictures = " ";
-          Developer = "󰲋 ";
-        };
-      };
-
-      # Disabled: Using custom git_branch_workaround instead due to reftable issues
-      # git_branch = {
-      #   symbol = "";
-      #   style = "bg:yellow";
-      #   format = "[[ $symbol $branch ](fg:crust bg:yellow)]($style)";
-      # };
 
       git_status = {
-        style = "bg:yellow";
-        format = "[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)";
+        style = "bold yellow";
+        format = "[$all_status$ahead_behind]($style) ";
       };
 
-      # Temporary workaround for reftable compatibility - shells out to git
-      # Written in nushell for compatibility
       custom = {
         world_path = {
-          shell = ["${pkgs.nushell}/bin/nu" "-c"];
-          command = "worldpath --compact | ansi strip";
-          when = "";
-          symbol = "";
-          style = "bg:peach";
-          format = "[[ $output ](fg:crust bg:peach)]($style)";
+          shell = ["${pkgs.unstable.nushell}/bin/nu" "-c"];
+          command = "nu ${worldPromptScript}";
+          when = ''tec gps --json 2>/dev/null | grep -q '"zone_path": "//' '';
+          format = "$output ";
         };
-        git_branch_workaround = {
-          shell = ["${pkgs.nushell}/bin/nu" "-c"];
-          command = "do -i { git symbolic-ref --short HEAD } | default (do -i { git rev-parse --short HEAD } | default '') | str trim";
-          when = "git rev-parse --git-dir";
-          symbol = "";
-          style = "bg:yellow";
-          format = "[[ $symbol $output ](fg:crust bg:yellow)]($style)";
+        regular_path = {
+          command = "echo $PWD | sed \"s|$HOME|~|\"";
+          when = ''! tec gps --json 2>/dev/null | grep -q '"zone_path": "//' '';
+          style = "${colors.teal}";
+          format = "[$output]($style) ";
         };
       };
-
-      time = {
-        disabled = false;
-        time_format = "%R";
-        style = "bg:lavender";
-        format = "[[  $time ](fg:crust bg:lavender)]($style)";
-      };
-
-      line_break.disabled = false;
 
       cmd_duration = {
-        show_milliseconds = true;
-        format = " in $duration ";
-        style = "bg:lavender";
-        disabled = false;
-        show_notifications = false;
-        min_time_to_notify = 45000;
+        format = "took [$duration]($style) ";
+        style = "bold yellow";
+        min_time = 2000;
       };
 
       character = {
-        disabled = false;
-        success_symbol = "[](bold fg:green)";
-        error_symbol = "[](bold fg:red)";
-        vimcmd_symbol = "[](bold fg:green)";
-        vimcmd_replace_one_symbol = "[](bold fg:lavender)";
-        vimcmd_replace_symbol = "[](bold fg:lavender)";
-        vimcmd_visual_symbol = "[](bold fg:yellow)";
+        success_symbol = "[>](bold green)";
+        error_symbol = "[>](bold red)";
       };
 
-      command_timeout = 500; # 500ms for git commands in large repos
+      line_break.disabled = false;
     };
-    # // lib.importTOML "${sources.starship}/${catppuccinFlavor}.toml";
   };
   catppuccin.starship.enable = true;
 }
