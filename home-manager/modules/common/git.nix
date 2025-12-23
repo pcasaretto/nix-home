@@ -46,16 +46,23 @@ in {
   programs.git = {
     enable = true;
 
-    aliases = {
-      root = "rev-parse --show-toplevel";
-      rb = "for-each-ref --sort=-committerdate --count=10 --format='%(refname:short)' refs/heads/";
-    };
+    settings = {
+      alias = {
+        root = "rev-parse --show-toplevel";
+        rb = "for-each-ref --sort=-committerdate --count=10 --format='%(refname:short)' refs/heads/";
+      };
 
-    extraConfig = {
-      color.diff = "auto";
-      color.status = "auto";
-      color.branch = "auto";
-      color.ui = "always";
+      user = {
+        name = "Paulo Casaretto";
+        email = lib.mkDefault "pcasaretto@gmail.com";
+      };
+
+      color = {
+        diff = "auto";
+        status = "auto";
+        branch = "auto";
+        ui = "always";
+      };
       "color \"diff\"" = {
         meta = "yellow bold";
         commit = "green bold";
@@ -89,12 +96,10 @@ in {
       init.defaultBranch = "main";
       push.autoSetupRemote = "true";
     };
-
-    userName = "Paulo Casaretto";
-    userEmail = lib.mkDefault "pcasaretto@gmail.com";
   };
 
-  programs.git.difftastic.enable = true;
+  programs.difftastic.enable = true;
+  programs.difftastic.git.enable = true;
 
   # GitHub CLI
   # https://rycee.gitlab.io/home-manager/options.html#opt-programs.gh.enable

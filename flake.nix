@@ -107,6 +107,14 @@
           ./home-manager/users/paulo.casaretto.nix
         ];
       };
+
+      "pcasaretto-littlelover" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        extraSpecialArgs = {inherit inputs outputs;};
+        modules = [
+          ./home-manager/users/pcasaretto-littlelover.nix
+        ];
+      };
     };
 
     # nix-darwin configurations

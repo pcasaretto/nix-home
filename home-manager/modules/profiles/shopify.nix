@@ -34,5 +34,5 @@
   '';
 
   # Shopify git email
-  programs.git.userEmail = lib.mkForce "paulo.casaretto@shopify.com";
+  programs.git.settings.user.email = lib.mkForce "paulo.casaretto@shopify.com";
 }
