@@ -40,6 +40,8 @@
     ./tailscale.nix
     ./hyprland.nix
     ./nginx
+    ./metrics
+    ./external-drive.nix
   ];
 
   # hardware.asahi.peripheralFirmwareDirectory = pkgs.requireFile {

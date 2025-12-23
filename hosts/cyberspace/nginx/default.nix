@@ -18,6 +18,12 @@
 
     # Common configuration
     commonHttpConfig = ''
+      # WebSocket support
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''' close;
+      }
+
       # Real IP from Tailscale
       real_ip_header X-Real-IP;
 

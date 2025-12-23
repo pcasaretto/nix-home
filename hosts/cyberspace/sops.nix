@@ -9,4 +9,24 @@
   sops.secrets.tailscale_authkey = {
     sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
   };
+
+  sops.secrets.grafana-admin-password = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "grafana";
+    group = "grafana";
+  };
+
+  # sops.secrets.jellyfin-admin-username = {
+  #   sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+  #   owner = "jellyfin";
+  #   group = "jellyfin";
+  #   mode = "0400";
+  # };
+
+  # sops.secrets.jellyfin-admin-password = {
+  #   sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+  #   owner = "jellyfin";
+  #   group = "jellyfin";
+  #   mode = "0400";
+  # };
 }
