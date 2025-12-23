@@ -8,6 +8,7 @@
     ./grafana.nix
     ./prometheus.nix
     ./transmission.nix
+    ./pihole.nix
     # ./jellyfin.nix
 
     # Future service configurations will be imported here
