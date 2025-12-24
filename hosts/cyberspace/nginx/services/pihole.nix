@@ -37,6 +37,11 @@ in
 
         # Disable IPv6 if not needed
         IPv6 = "false";
+
+        # Set DNS listening mode to accept queries from all networks
+        # This overrides the default local-service restriction
+        # Options: "LOCAL" (default, one-hop only), "ALL" (all networks), "BIND" (specific interfaces)
+        FTLCONF_dns_listeningMode = "ALL";
       };
 
       # Persistent volumes for Pi-hole data
