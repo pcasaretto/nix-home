@@ -1,5 +1,8 @@
 { config, pkgs, ... }:
 
+let
+  ports = config.services.cyberspace.ports;
+in
 {
   # Enable Transmission BitTorrent daemon
   services.transmission = {
@@ -14,7 +17,7 @@
 
       # Web UI settings
       rpc-bind-address = "127.0.0.1";
-      rpc-port = 9091;
+      rpc-port = ports.apps.transmission;
       rpc-authentication-required = false;  # Safe since only accessible via Tailscale
       rpc-host-whitelist-enabled = false;
       rpc-whitelist-enabled = false;
@@ -26,7 +29,7 @@
       speed-limit-up-enabled = false;
 
       # Peer settings
-      peer-port = 51413;
+      peer-port = ports.p2p.transmissionPeer;
       peer-port-random-on-start = false;
       port-forwarding-enabled = true;
 
@@ -44,7 +47,7 @@
 
     # Run as transmission user (will be created)
     user = "transmission";
-    group = "transmission";
+    group = "external";
 
     # Ensure download directory exists and has proper permissions
     home = "/var/lib/transmission";
@@ -52,8 +55,11 @@
 
   # Ensure the downloads directory exists with proper permissions
   systemd.tmpfiles.rules = [
-    "d /mnt/external/downloads 0775 transmission transmission -"
-    "d /mnt/external/downloads/.incomplete 0775 transmission transmission -"
+    "d /mnt/external/downloads 0775 transmission external -"
+    "d /mnt/external/downloads/.incomplete 0775 transmission external -"
+    "d /mnt/external/downloads/sonarr 0775 transmission external -"
+    "d /mnt/external/downloads/radarr 0775 transmission external -"
+    "d /mnt/external/downloads/lidarr 0775 transmission external -"
   ];
 
   # Ensure transmission starts after external drive is mounted
@@ -63,7 +69,7 @@
   };
 
   # Add users to appropriate groups for shared access
-  users.users.pcasaretto.extraGroups = [ "transmission" "external" ];
+  users.users.pcasaretto.extraGroups = [ "external" ];
   users.users.transmission.extraGroups = [ "external" ];
 
   # Register in service registry
@@ -73,14 +79,14 @@
     path = "/transmission";
     icon = "📥";
     enabled = true;
-    port = 9091;
+    port = ports.apps.transmission;
     tags = [ "download" "torrent" "media" ];
   };
 
   # Configure nginx reverse proxy
   services.nginx.virtualHosts."cyberspace" = {
     locations."/transmission/" = {
-      proxyPass = "http://127.0.0.1:9091/transmission/";
+      proxyPass = "http://127.0.0.1:${toString ports.apps.transmission}/transmission/";
       extraConfig = ''
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

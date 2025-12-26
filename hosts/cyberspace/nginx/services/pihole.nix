@@ -1,8 +1,9 @@
 { config, pkgs, lib, ... }:
 
 let
-  piholeWebPort = 8053;  # Custom port for Pi-hole web interface
-  piholeDnsPort = 53;    # Standard DNS port
+  ports = config.services.cyberspace.ports;
+  piholeWebPort = ports.apps.piholeWeb;  # Custom port for Pi-hole web interface
+  piholeDnsPort = ports.dns.pihole;      # Standard DNS port
 in
 {
   # Enable OCI container runtime

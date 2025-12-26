@@ -1,12 +1,15 @@
 { config, pkgs, ... }:
 
+let
+  ports = config.services.cyberspace.ports;
+in
 {
   # Enable ollama service
   services.ollama = {
     enable = true;
     # Ollama runs on localhost:11434 by default
     host = "127.0.0.1";
-    port = 11434;
+    port = ports.ai.ollama;
     # Use Vulkan acceleration for Apple Silicon
     acceleration = "vulkan";
     # Models can be pulled through Open WebUI interface or manually with: ollama pull <model>
@@ -19,14 +22,14 @@
     path = "/ollama";
     icon = "🤖";
     enabled = true;
-    port = 11434;
+    port = ports.ai.ollama;
     tags = [ "ai" "llm" "ml" ];
   };
 
   # Configure nginx reverse proxy
   services.nginx.virtualHosts."cyberspace" = {
     locations."/ollama/" = {
-      proxyPass = "http://127.0.0.1:11434/";
+      proxyPass = "http://127.0.0.1:${toString ports.ai.ollama}/";
       extraConfig = ''
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

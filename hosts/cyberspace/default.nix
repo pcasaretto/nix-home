@@ -31,6 +31,9 @@
 
     inputs.nixos-apple-silicon.nixosModules.apple-silicon-support
 
+    # Centralized port allocation
+    ./ports.nix
+
     # ./apple-silicon-support
     ./hardware-configuration.nix
     ./mosh.nix
@@ -109,6 +112,7 @@
     [
       # Core utilities
       git
+      distrobox
       curl
       wget
       htop
@@ -164,6 +168,12 @@
   };
   services.blueman.enable = true;
 
+  virtualisation.docker = {
+    enable = true;
+  };
+
+# Optional: Add your user to the "docker" group to run docker without sudo
+
   # Prevent logind from suspending on lid close; Hyprland handles DPMS + lock instead
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
@@ -182,7 +192,7 @@
   users.users.pcasaretto = {
     isNormalUser = true;
     home = "/home/pcasaretto";
-    extraGroups = ["wheel"];
+    extraGroups = ["docker" "wheel"];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC5IzKxcJzMplMhh+j5bcY6eAIz9PsQ0t7PpusMslJ2F pcasaretto Nix SSH Key"
     ];

@@ -3,4 +3,6 @@
 pkgs: {
   cc-safety-net = pkgs.callPackage ./cc-safety-net {};
   wezterm-bin = pkgs.callPackage ./wezterm-bin {};
+  nu_plugin_dns = pkgs.callPackage ./nu_plugin_dns {};
+  transmission-exporter = pkgs.callPackage ./transmission-exporter {};
 }
