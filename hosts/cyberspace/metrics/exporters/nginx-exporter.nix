@@ -1,8 +1,9 @@
 { config, lib, pkgs, ... }:
 
 let
-  nginxExporterPort = 9113;
-  nginxStatusPort = 9080;  # Changed from 8080 to avoid conflict with Open WebUI
+  ports = config.services.cyberspace.ports;
+  nginxExporterPort = ports.exporters.nginx;
+  nginxStatusPort = ports.monitoring.nginxStatus;  # Changed from 8080 to avoid conflict with Open WebUI
 in
 {
   # Enable nginx stub_status for metrics collection

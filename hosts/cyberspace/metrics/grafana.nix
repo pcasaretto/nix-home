@@ -1,8 +1,9 @@
 { config, lib, pkgs, ... }:
 
 let
+  ports = config.services.cyberspace.ports;
   prometheusConfig = config.services.prometheus;
-  grafanaPort = 3000;
+  grafanaPort = ports.frontend.grafana;
 
   # Fetch Node Exporter Full dashboard from Grafana.com
   nodeExporterDashboard = pkgs.fetchurl {
@@ -14,6 +15,32 @@ let
   nginxExporterDashboard = pkgs.fetchurl {
     url = "https://grafana.com/api/dashboards/12708/revisions/1/download";
     hash = "sha256-T1HqWbwt+i/We+Y2B7hcl3CijGxZF5QI38aPcXjk9y0=";
+  };
+
+  # Fetch *arr service dashboards
+  sonarrDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/12530/revisions/1/download";
+    hash = "sha256-wkrKTf4Bw/6hWZrnUupHPSGQ4FMh+xY5H08/6EXGhUk=";
+  };
+
+  radarrDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/12896/revisions/1/download";
+    hash = "sha256-MGLFgQhMoCB6hD/uci+NfN6q4tssWbsfqINpQsrlF7s=";
+  };
+
+  lidarrDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/12569/revisions/1/download";
+    hash = "sha256-bt/o3OPi8GPjsaxJtf2MDvDS8cDZL7TA8MPjj4mOK4A=";
+  };
+
+  prowlarrDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/15387/revisions/1/download";
+    hash = "sha256-dj+kPtBbTuvLQfscHhwSR0vKEOCOZw57CxgrMawmmMc=";
+  };
+
+  transmissionDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/10428/revisions/1/download";
+    hash = "sha256-VxfwdVZeNFzlLGMxibMSXVGQ8cmuZ21u5mNvwKpHQb4=";
   };
 in
 {
@@ -95,6 +122,11 @@ in
     "d /var/lib/grafana/dashboards 0755 grafana grafana -"
     "L+ /var/lib/grafana/dashboards/node-exporter-full.json - - - - ${nodeExporterDashboard}"
     "L+ /var/lib/grafana/dashboards/nginx-exporter-full.json - - - - ${nginxExporterDashboard}"
+    "L+ /var/lib/grafana/dashboards/sonarr-dashboard.json - - - - ${sonarrDashboard}"
+    "L+ /var/lib/grafana/dashboards/radarr-dashboard.json - - - - ${radarrDashboard}"
+    "L+ /var/lib/grafana/dashboards/lidarr-dashboard.json - - - - ${lidarrDashboard}"
+    "L+ /var/lib/grafana/dashboards/prowlarr-dashboard.json - - - - ${prowlarrDashboard}"
+    "L+ /var/lib/grafana/dashboards/transmission-dashboard.json - - - - ${transmissionDashboard}"
   ];
 
   # Ensure Grafana starts after Prometheus

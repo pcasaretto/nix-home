@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 
 let
+  ports = config.services.cyberspace.ports;
   grafanaConfig = config.services.grafana.settings.server;
   grafanaPort = grafanaConfig.http_port;
 in

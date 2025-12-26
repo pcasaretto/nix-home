@@ -21,6 +21,28 @@
     neededForUsers = true;
   };
 
+  # Media service API keys for *arr services and exporters
+  sops.secrets.sonarr-api-key = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "sonarr";
+    group = "media";
+    mode = "0440";
+  };
+
+  sops.secrets.radarr-api-key = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "radarr";
+    group = "media";
+    mode = "0440";
+  };
+
+  sops.secrets.prowlarr-api-key = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "prowlarr";
+    group = "media";
+    mode = "0440";
+  };
+
   # sops.secrets.jellyfin-admin-username = {
   #   sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
   #   owner = "jellyfin";

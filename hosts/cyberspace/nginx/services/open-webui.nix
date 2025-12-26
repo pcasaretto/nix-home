@@ -1,8 +1,9 @@
 { config, pkgs, ... }:
 
 let
+  ports = config.services.cyberspace.ports;
   ollamaConfig = config.services.ollama;
-  openWebUIPort = 8080;
+  openWebUIPort = ports.apps.openWebUI;
   openWebUIPath = config.services.cyberspace.registeredServices.open-webui.path;
 in
 {

@@ -1,7 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  nodeExporterPort = 9100;
+  ports = config.services.cyberspace.ports;
+  nodeExporterPort = ports.exporters.node;
 in
 {
   # Enable node_exporter with comprehensive collectors

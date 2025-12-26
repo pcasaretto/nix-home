@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
+  ports = config.services.cyberspace.ports;
   # Get all registered metrics
   registeredMetrics = config.services.cyberspace.metrics.registeredMetrics;
 
@@ -26,7 +27,7 @@ in
 
     # Listen on localhost only - nginx will proxy if needed
     listenAddress = "127.0.0.1";
-    port = 9090;
+    port = ports.monitoring.prometheus;
 
     # External URL and route prefix for reverse proxy
     webExternalUrl = "http://cyberspace/prometheus/";
