@@ -9,7 +9,7 @@
     ./prometheus.nix
     ./transmission.nix
     ./pihole.nix
-    # ./jellyfin.nix
+    ./jellyfin.nix
 
     # *arr Media Management Stack
     ./sonarr.nix

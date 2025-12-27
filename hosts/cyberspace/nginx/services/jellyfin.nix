@@ -1,51 +1,13 @@
 { config, pkgs, ... }:
 
 let
-  # Rebuild Jellyfin 10.10.7 with .NET 8 from scratch
-  jellyfin-10-10-7 = pkgs.buildDotnetModule rec {
-    pname = "jellyfin";
-    version = "10.10.7";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "jellyfin";
-      repo = "jellyfin";
-      rev = "v${version}";
-      hash = "sha256-GWpzX8DvCafHb5V9it0ZPTXKm+NbLS7Oepe/CcMiFuI=";
-    };
-
-    propagatedBuildInputs = [ pkgs.sqlite ];
-
-    projectFile = "Jellyfin.Server/Jellyfin.Server.csproj";
-    executables = [ "jellyfin" ];
-    nugetDeps = ./jellyfin-nuget-deps.json;
-
-    runtimeDeps = [
-      pkgs.jellyfin-ffmpeg
-      pkgs.fontconfig
-      pkgs.freetype
-    ];
-
-    # Use .NET 8
-    dotnet-sdk = pkgs.dotnetCorePackages.sdk_8_0;
-    dotnet-runtime = pkgs.dotnetCorePackages.aspnetcore_8_0;
-
-    dotnetBuildFlags = [ "--no-self-contained" ];
-
-    makeWrapperArgs = [
-      "--add-flags"
-      "--ffmpeg=${pkgs.jellyfin-ffmpeg}/bin/ffmpeg"
-      "--add-flags"
-      "--webdir=${pkgs.jellyfin-web}/share/jellyfin-web"
-    ];
-
-    meta = pkgs.jellyfin.meta;
-  };
+  ports = config.services.cyberspace.ports;
 in
 {
-  # Enable Jellyfin media server (downgraded to 10.10.7)
+  # Enable Jellyfin media server (using standard nixpkgs package with ARM64 support)
   services.jellyfin = {
-    enable = false;
-    package = jellyfin-10-10-7;
+    enable = true;
+    package = pkgs.jellyfin;
     openFirewall = false;
     user = "jellyfin";
     group = "jellyfin";
@@ -67,7 +29,7 @@ in
       # Wait for Jellyfin to start and be ready
       echo "Waiting for Jellyfin to be ready..."
       for i in {1..30}; do
-        if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:8096/health > /dev/null 2>&1; then
+        if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.jellyfin}/health > /dev/null 2>&1; then
           echo "Jellyfin is ready"
           break
         fi
@@ -86,7 +48,7 @@ in
       ADMIN_PASS=$(cat ${config.sops.secrets.jellyfin-admin-password.path})
 
       # Check if users already exist
-      USER_COUNT=$(${pkgs.curl}/bin/curl -s http://127.0.0.1:8096/Users/Public 2>/dev/null | ${pkgs.jq}/bin/jq '. | length')
+      USER_COUNT=$(${pkgs.curl}/bin/curl -s http://127.0.0.1:${toString ports.media.jellyfin}/Users/Public 2>/dev/null | ${pkgs.jq}/bin/jq '. | length')
 
       if [ "$USER_COUNT" = "0" ]; then
         echo "No users found. Creating initial admin user: $ADMIN_USER"
@@ -94,7 +56,7 @@ in
         # Create admin user via Startup/User endpoint (retry a few times if needed)
         for attempt in {1..3}; do
           HTTP_CODE=$(${pkgs.curl}/bin/curl -s -w "%{http_code}" -o /tmp/jellyfin-response.txt \
-            -X POST "http://127.0.0.1:8096/Startup/User" \
+            -X POST "http://127.0.0.1:${toString ports.media.jellyfin}/Startup/User" \
             -H "Content-Type: application/json" \
             -d "{\"Name\": \"$ADMIN_USER\", \"Password\": \"$ADMIN_PASS\"}")
 
@@ -102,7 +64,7 @@ in
             echo "Admin user created successfully (HTTP $HTTP_CODE)"
 
             # Complete the startup wizard
-            ${pkgs.curl}/bin/curl -s -X POST "http://127.0.0.1:8096/Startup/Complete" \
+            ${pkgs.curl}/bin/curl -s -X POST "http://127.0.0.1:${toString ports.media.jellyfin}/Startup/Complete" \
               -H "Content-Type: application/json" > /dev/null
             echo "Startup wizard completed"
             exit 0
@@ -122,8 +84,16 @@ in
     '';
   };
 
-  # Ensure the init service runs after jellyfin is up
-  systemd.services.jellyfin.wants = [ "jellyfin-admin-init.service" ];
+  # Ensure the init service runs after jellyfin is up, and mount dependency
+  systemd.services.jellyfin = {
+    wants = [ "jellyfin-admin-init.service" ];
+    requires = [ "mnt-external.mount" ];
+    after = [ "mnt-external.mount" ];
+    serviceConfig = {
+      # Allow access to media and download directories
+      SupplementaryGroups = [ "external" ];
+    };
+  };
 
   # Create media group for shared access to media files
   users.groups.media = {};
@@ -135,12 +105,11 @@ in
   users.users.jellyfin.extraGroups = [ "media" ];
 
   # Ensure media directory structure exists with proper permissions
+  # Note: /mnt/external/media, /mnt/external/media/movies, and /mnt/external/media/tv
+  # are already created by radarr and sonarr services
   systemd.tmpfiles.rules = [
-    "d /mnt/external/media 0775 jellyfin media -"
-    "d /mnt/external/media/Movies 0775 jellyfin media -"
-    "d /mnt/external/media/TV\\ Shows 0775 jellyfin media -"
-    "d /mnt/external/media/Music 0775 jellyfin media -"
-    "d /mnt/external/media/Photos 0775 jellyfin media -"
+    "d /mnt/external/media/music 0775 jellyfin media -"
+    "d /mnt/external/media/photos 0775 jellyfin media -"
   ];
 
   # Register in service registry
@@ -150,37 +119,25 @@ in
     path = "/jellyfin";
     icon = "🎬";
     enabled = true;
-    port = 8096;
+    port = ports.media.jellyfin;
     tags = [ "media" "streaming" "entertainment" ];
   };
 
-  # Configure nginx reverse proxy
+  # Configure nginx reverse proxy (similar to Sonarr pattern)
   services.nginx.virtualHosts."cyberspace" = {
-    locations."/jellyfin/" = {
-      proxyPass = "http://127.0.0.1:8096/";
-      proxyWebsockets = true;  # Enable WebSocket support for real-time features
-
+    locations."^~ /jellyfin" = {
+      proxyPass = "http://127.0.0.1:${toString ports.media.jellyfin}";
       extraConfig = ''
-        # Standard proxy headers
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Protocol $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
+        # WebSocket support
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
 
-        # Critical for video streaming - disable buffering
+        # Disable buffering for video streaming
         proxy_buffering off;
-        proxy_cache off;
-        proxy_request_buffering off;
 
-        # Large file support for subtitle/media uploads
-        client_max_body_size 1G;
-
-        # Extended timeouts for transcoding operations
-        proxy_connect_timeout 75s;
-        proxy_send_timeout 300s;
-        proxy_read_timeout 300s;
+        # Large file support
+        client_max_body_size 0;
       '';
     };
   };
