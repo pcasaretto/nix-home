@@ -110,6 +110,13 @@ EOF
     description = "Register Sonarr with Prowlarr";
     after = [ "sonarr.service" "prowlarr.service" ];
     wantedBy = [ "multi-user.target" ];
+
+    # Re-run when secrets change during nixos-rebuild
+    restartTriggers = [
+      config.sops.secrets.sonarr-api-key.path
+      config.sops.secrets.prowlarr-api-key.path
+    ];
+
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -136,28 +143,63 @@ EOF
         sleep 2
       done
 
-      # Check if Sonarr already registered
-      if ! ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications -H "X-Api-Key: $PROWLARR_KEY" | ${pkgs.jq}/bin/jq -e '.[] | select(.name == "Sonarr")' > /dev/null 2>&1; then
-        # Register with Prowlarr
-        ${pkgs.curl}/bin/curl -sf -X POST http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications \
-          -H "Content-Type: application/json" \
-          -H "X-Api-Key: $PROWLARR_KEY" \
-          -d "{
-            \"name\": \"Sonarr\",
-            \"syncLevel\": \"fullSync\",
-            \"implementation\": \"Sonarr\",
-            \"configContract\": \"SonarrSettings\",
-            \"fields\": [
-              {\"name\": \"prowlarrUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr\"},
-              {\"name\": \"baseUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.sonarr}/sonarr\"},
-              {\"name\": \"apiKey\", \"value\": \"$SONARR_KEY\"},
-              {\"name\": \"syncCategories\", \"value\": [5000,5010,5020,5030,5040,5045,5050,5060,5070,5080]}
-            ],
-            \"tags\": []
-          }" && echo "Sonarr registered with Prowlarr" || echo "Failed to register Sonarr"
+      # Delete existing Sonarr registration(s) if present (idempotent)
+      echo "Checking for existing Sonarr registrations..."
+      ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications -H "X-Api-Key: $PROWLARR_KEY" | \
+        ${pkgs.jq}/bin/jq -r '.[] | select(.name == "Sonarr") | .id' | while read id; do
+        echo "Deleting existing registration (ID: $id)..."
+        ${pkgs.curl}/bin/curl -sf -X DELETE "http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications/$id" \
+          -H "X-Api-Key: $PROWLARR_KEY"
+        echo "Deleted registration $id"
+      done
+
+      # Always create fresh registration
+      echo "Creating fresh Sonarr registration with Prowlarr..."
+      RESPONSE=$(${pkgs.curl}/bin/curl -w "\nHTTP_CODE:%{http_code}" -X POST http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications \
+        -H "Content-Type: application/json" \
+        -H "X-Api-Key: $PROWLARR_KEY" \
+        -d "{
+          \"name\": \"Sonarr\",
+          \"syncLevel\": \"fullSync\",
+          \"implementation\": \"Sonarr\",
+          \"configContract\": \"SonarrSettings\",
+          \"fields\": [
+            {\"name\": \"prowlarrUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr\"},
+            {\"name\": \"baseUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.sonarr}/sonarr\"},
+            {\"name\": \"apiKey\", \"value\": \"$SONARR_KEY\"},
+            {\"name\": \"syncCategories\", \"value\": [5000,5010,5020,5030,5040,5045,5050,5060,5070,5080]}
+          ],
+          \"tags\": []
+        }" 2>&1)
+
+      HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+      BODY=$(echo "$RESPONSE" | grep -v "HTTP_CODE:")
+
+      if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+        echo "Sonarr registered with Prowlarr successfully (HTTP $HTTP_CODE)"
       else
-        echo "Sonarr already registered with Prowlarr"
+        echo "Failed to register Sonarr (HTTP $HTTP_CODE)"
+        echo "Response: $BODY"
+        exit 1
       fi
+    '';
+  };
+
+  # Path watcher to trigger sync when Sonarr config changes
+  systemd.paths.sonarr-config-watcher = {
+    description = "Watch Sonarr config for changes";
+    wantedBy = [ "multi-user.target" ];
+    pathConfig = {
+      PathChanged = "/var/lib/sonarr/config.xml";
+    };
+  };
+
+  systemd.services.sonarr-config-watcher = {
+    description = "Trigger Sonarr-Prowlarr sync on config change";
+    serviceConfig.Type = "oneshot";
+    script = ''
+      echo "Sonarr config changed, triggering sync..."
+      ${pkgs.systemd}/bin/systemctl restart sonarr-prowlarr-sync.service
     '';
   };
 
