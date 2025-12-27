@@ -59,3 +59,5 @@
 (package! rainbow-delimiters)
 
 (package! kkp)
+
+(package! chordpro-mode)

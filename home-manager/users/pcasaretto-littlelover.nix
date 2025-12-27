@@ -11,6 +11,7 @@
     gnused
     unstable.gemini-cli
     vlc-bin
+    perlPackages.AppMusicChordPro
   ];
 
   # Git: use vscode for diff/merge
