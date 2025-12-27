@@ -110,6 +110,13 @@ EOF
     description = "Register Radarr with Prowlarr";
     after = [ "radarr.service" "prowlarr.service" ];
     wantedBy = [ "multi-user.target" ];
+
+    # Re-run when secrets change during nixos-rebuild
+    restartTriggers = [
+      config.sops.secrets.radarr-api-key.path
+      config.sops.secrets.prowlarr-api-key.path
+    ];
+
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -136,43 +143,63 @@ EOF
         sleep 2
       done
 
-      # Check if Radarr already registered
-      echo "Checking if Radarr is already registered with Prowlarr..."
-      if ! ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications -H "X-Api-Key: $PROWLARR_KEY" | ${pkgs.jq}/bin/jq -e '.[] | select(.name == "Radarr")' > /dev/null 2>&1; then
-        echo "Radarr not found, registering with Prowlarr..."
-        echo "Radarr API Key: $RADARR_KEY"
-        echo "Prowlarr API Key: $PROWLARR_KEY"
+      # Delete existing Radarr registration(s) if present (idempotent)
+      echo "Checking for existing Radarr registrations..."
+      ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications -H "X-Api-Key: $PROWLARR_KEY" | \
+        ${pkgs.jq}/bin/jq -r '.[] | select(.name == "Radarr") | .id' | while read id; do
+        echo "Deleting existing registration (ID: $id)..."
+        ${pkgs.curl}/bin/curl -sf -X DELETE "http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications/$id" \
+          -H "X-Api-Key: $PROWLARR_KEY"
+        echo "Deleted registration $id"
+      done
 
-        # Register with Prowlarr and capture response
-        RESPONSE=$(${pkgs.curl}/bin/curl -w "\nHTTP_CODE:%{http_code}" -X POST http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications \
-          -H "Content-Type: application/json" \
-          -H "X-Api-Key: $PROWLARR_KEY" \
-          -d "{
-            \"name\": \"Radarr\",
-            \"syncLevel\": \"fullSync\",
-            \"implementation\": \"Radarr\",
-            \"configContract\": \"RadarrSettings\",
-            \"fields\": [
-              {\"name\": \"prowlarrUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr\"},
-              {\"name\": \"baseUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.radarr}/radarr\"},
-              {\"name\": \"apiKey\", \"value\": \"$RADARR_KEY\"},
-              {\"name\": \"syncCategories\", \"value\": [2000,2010,2020,2030,2040,2045,2050,2060,2070,2080]}
-            ],
-            \"tags\": []
-          }" 2>&1)
+      # Always create fresh registration
+      echo "Creating fresh Radarr registration with Prowlarr..."
+      RESPONSE=$(${pkgs.curl}/bin/curl -w "\nHTTP_CODE:%{http_code}" -X POST http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr/api/v1/applications \
+        -H "Content-Type: application/json" \
+        -H "X-Api-Key: $PROWLARR_KEY" \
+        -d "{
+          \"name\": \"Radarr\",
+          \"syncLevel\": \"fullSync\",
+          \"implementation\": \"Radarr\",
+          \"configContract\": \"RadarrSettings\",
+          \"fields\": [
+            {\"name\": \"prowlarrUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.prowlarr}/prowlarr\"},
+            {\"name\": \"baseUrl\", \"value\": \"http://127.0.0.1:${toString ports.media.radarr}/radarr\"},
+            {\"name\": \"apiKey\", \"value\": \"$RADARR_KEY\"},
+            {\"name\": \"syncCategories\", \"value\": [2000,2010,2020,2030,2040,2045,2050,2060,2070,2080]}
+          ],
+          \"tags\": []
+        }" 2>&1)
 
-        HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
-        BODY=$(echo "$RESPONSE" | grep -v "HTTP_CODE:")
+      HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+      BODY=$(echo "$RESPONSE" | grep -v "HTTP_CODE:")
 
-        if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
-          echo "Radarr registered with Prowlarr successfully (HTTP $HTTP_CODE)"
-        else
-          echo "Failed to register Radarr (HTTP $HTTP_CODE)"
-          echo "Response: $BODY"
-        fi
+      if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+        echo "Radarr registered with Prowlarr successfully (HTTP $HTTP_CODE)"
       else
-        echo "Radarr already registered with Prowlarr"
+        echo "Failed to register Radarr (HTTP $HTTP_CODE)"
+        echo "Response: $BODY"
+        exit 1
       fi
+    '';
+  };
+
+  # Path watcher to trigger sync when Radarr config changes
+  systemd.paths.radarr-config-watcher = {
+    description = "Watch Radarr config for changes";
+    wantedBy = [ "multi-user.target" ];
+    pathConfig = {
+      PathChanged = "/var/lib/radarr/config.xml";
+    };
+  };
+
+  systemd.services.radarr-config-watcher = {
+    description = "Trigger Radarr-Prowlarr sync on config change";
+    serviceConfig.Type = "oneshot";
+    script = ''
+      echo "Radarr config changed, triggering sync..."
+      ${pkgs.systemd}/bin/systemctl restart radarr-prowlarr-sync.service
     '';
   };
 
