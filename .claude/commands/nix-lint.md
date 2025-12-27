@@ -1,3 +1,8 @@
+---
+description: Run comprehensive code quality checks and apply automated fixes to the NixOS configuration
+allowed-tools: Bash(nix run:*), Bash(nix flake check:*), Bash(git add:*), Bash(git commit:*), Bash(git status:*), Bash(git diff:*)
+---
+
 # Nix Code Linting and Quality Improvements
 
 Run comprehensive code quality checks and apply automated fixes to the NixOS configuration.
