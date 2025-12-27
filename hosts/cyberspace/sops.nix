@@ -43,17 +43,17 @@
     mode = "0440";
   };
 
-  # sops.secrets.jellyfin-admin-username = {
-  #   sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-  #   owner = "jellyfin";
-  #   group = "jellyfin";
-  #   mode = "0400";
-  # };
+  sops.secrets.jellyfin-admin-username = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "jellyfin";
+    group = "jellyfin";
+    mode = "0400";
+  };
 
-  # sops.secrets.jellyfin-admin-password = {
-  #   sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-  #   owner = "jellyfin";
-  #   group = "jellyfin";
-  #   mode = "0400";
-  # };
+  sops.secrets.jellyfin-admin-password = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "jellyfin";
+    group = "jellyfin";
+    mode = "0400";
+  };
 }

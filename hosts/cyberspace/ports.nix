@@ -41,6 +41,12 @@
             default = 9696;
             description = "Prowlarr indexer manager service port";
           };
+
+          jellyfin = lib.mkOption {
+            type = lib.types.int;
+            default = 8096;
+            description = "Jellyfin media server port";
+          };
         };
 
         # Application Services (8000-8999, 9000-9999)
