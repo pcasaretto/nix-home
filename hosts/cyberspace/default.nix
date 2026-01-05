@@ -168,6 +168,11 @@
   };
   services.blueman.enable = true;
 
+  # Game controller udev rules (including Switch Pro Controller)
+  services.udev.packages = [
+    pkgs.gamecontroller-udev-rules
+  ];
+
   virtualisation.docker = {
     enable = true;
   };
