@@ -1,0 +1,27 @@
+# udev rules for game controllers
+# This file provides device access permissions for various game controllers
+
+# Nintendo Switch Joy-Con (L) (Bluetooth)
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", KERNELS=="0005:057E:2006.*", TAG+="uaccess"
+
+# Nintendo Switch Joy-Con (R) (Bluetooth)
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", KERNELS=="0005:057E:2007.*", TAG+="uaccess"
+
+# Nintendo Switch Joy-Con Charging Grip (USB)
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="200e", TAG+="uaccess"
+
+# Nintendo Switch Pro Controller (USB and Bluetooth)
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="2009", MODE="0660", TAG+="uaccess"
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", KERNELS=="0005:057E:2009.*", MODE="0660", TAG+="uaccess"
+
+# Google Stadia Controller
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="9400", MODE="0666", TAG+="uaccess"
+
+# NXP SDP protocol devices
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1fc9", MODE="0666"
+
+# mbed/DAPLink
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0d28", MODE="0666"
+
+# Freescale i.MX Flashloader
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="15a2", MODE="0666"
