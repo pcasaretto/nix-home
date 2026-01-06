@@ -12,7 +12,7 @@
 
     # Recommended settings for reverse proxy
     recommendedProxySettings = true;
-    recommendedTlsSettings = false;  # HTTP only as per requirements
+    recommendedTlsSettings = true;
     recommendedOptimisation = true;
     recommendedGzipSettings = true;
 

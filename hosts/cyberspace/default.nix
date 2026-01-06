@@ -45,6 +45,7 @@
     ./nginx
     ./metrics
     ./external-drive.nix
+    ./tailscale-certs.nix
   ];
 
   # hardware.asahi.peripheralFirmwareDirectory = pkgs.requireFile {
@@ -149,6 +150,9 @@
       libfido2
       iw
       wirelesstools
+
+      pkgs.unstable.beads
+      pkgs.unstable.claude-code
     ];
 
   # Deduplicate and optimize nix store
