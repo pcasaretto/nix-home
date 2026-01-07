@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   domain = config.services.cyberspace.domain;
@@ -32,76 +32,75 @@ in
     };
   };
 
-  # Admin user provisioning service
-  systemd.services.ntfy-admin-init = {
-    description = "Initialize ntfy admin user from sops secrets";
-    after = [ "ntfy-sh.service" ];
-    wantedBy = [ "multi-user.target" ];
+  # Configure ntfy-sh service with admin user creation
+  systemd.services.ntfy-sh = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
 
+    # Disable DynamicUser to avoid permission issues with state directory
     serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      # Run as root to create auth database, set proper permissions after
-      User = "root";
+      DynamicUser = lib.mkForce false;
+      User = "ntfy-sh";
+      Group = "ntfy-sh";
+      StateDirectory = "ntfy-sh";
+      StateDirectoryMode = "0750";
     };
 
-    script = ''
-      echo "Waiting for ntfy to be ready..."
+    # Create admin user after ntfy starts
+    postStart = ''
+      # Wait for ntfy to be ready
       for i in {1..30}; do
         if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.apps.ntfy}/v1/health > /dev/null 2>&1; then
-          echo "ntfy is ready"
           break
-        fi
-        if [ $i -eq 30 ]; then
-          echo "ntfy failed to start within 30 seconds"
-          exit 1
         fi
         sleep 1
       done
 
-      sleep 2
-
       AUTH_FILE="${config.services.ntfy-sh.settings.auth-file}"
-
-      # Check if users already exist
-      if [ -f "$AUTH_FILE" ]; then
-        if ${pkgs.sqlite}/bin/sqlite3 "$AUTH_FILE" "SELECT COUNT(*) FROM user;" 2>/dev/null | grep -q "^[1-9]"; then
-          echo "Users already exist in database, skipping admin user creation"
-          exit 0
-        fi
-      fi
-
-      # Create the auth database directory if needed and set ownership
-      AUTH_DIR="$(dirname "$AUTH_FILE")"
-      mkdir -p "$AUTH_DIR"
-      chown ntfy-sh:ntfy-sh "$AUTH_DIR"
-
       ADMIN_USER=$(cat ${config.sops.secrets.ntfy-admin-username.path})
       ADMIN_PASS=$(cat ${config.sops.secrets.ntfy-admin-password.path})
 
-      echo "No users found. Creating initial admin user: $ADMIN_USER"
-
-      # ntfy user commands use NTFY_AUTH_FILE environment variable
+      # Check if admin user already exists
       export NTFY_AUTH_FILE="$AUTH_FILE"
-
-      echo "$ADMIN_PASS" | ${pkgs.ntfy-sh}/bin/ntfy user add --role=admin "$ADMIN_USER"
-
-      if [ $? -eq 0 ]; then
-        echo "Admin user created successfully"
-        # Set proper ownership so ntfy-sh can read it
-        chown ntfy-sh:ntfy-sh "$AUTH_FILE"
-        chmod 640 "$AUTH_FILE"
-      else
-        echo "Failed to create admin user"
-        exit 1
+      if ${pkgs.ntfy-sh}/bin/ntfy user list 2>/dev/null | grep -q "^user $ADMIN_USER"; then
+        echo "Admin user '$ADMIN_USER' already exists"
+        exit 0
       fi
+
+      echo "Creating admin user: $ADMIN_USER"
+      # ntfy expects password twice (password + confirm) when piped
+      printf '%s\n%s\n' "$ADMIN_PASS" "$ADMIN_PASS" | ${pkgs.ntfy-sh}/bin/ntfy user add --role=admin "$ADMIN_USER" && \
+        echo "Admin user created successfully" || \
+        echo "Failed to create admin user"
+
+      # Grant admin write access to service topics
+      for topic in radarr sonarr prowlarr grafana; do
+        ${pkgs.ntfy-sh}/bin/ntfy access "$ADMIN_USER" "$topic" rw 2>/dev/null || true
+      done
+      echo "Topic permissions configured"
     '';
   };
 
-  systemd.services.ntfy-sh = {
-    wants = [ "ntfy-admin-init.service" ];
-    after = [ "network-online.target" ];
+  # Create ntfy-sh user and group
+  users.users.ntfy-sh = {
+    isSystemUser = true;
+    group = "ntfy-sh";
+    home = "/var/lib/ntfy-sh";
   };
+  users.groups.ntfy-sh = {};
+
+  # Ensure state directory has correct permissions
+  systemd.tmpfiles.rules = [
+    "d /var/lib/ntfy-sh 0750 ntfy-sh ntfy-sh -"
+    "d /var/lib/ntfy-sh/attachments 0750 ntfy-sh ntfy-sh -"
+    # Fix ownership of database files if they exist with wrong permissions
+    "z /var/lib/ntfy-sh/cache.db 0640 ntfy-sh ntfy-sh -"
+    "z /var/lib/ntfy-sh/user.db 0640 ntfy-sh ntfy-sh -"
+  ];
+
+  # Allow ntfy-sh to read admin credentials
+  sops.secrets.ntfy-admin-username.owner = lib.mkForce "ntfy-sh";
+  sops.secrets.ntfy-admin-password.owner = lib.mkForce "ntfy-sh";
 
   # Register in service registry
   services.cyberspace.registeredServices.ntfy = {

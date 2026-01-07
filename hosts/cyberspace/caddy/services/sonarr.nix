@@ -226,4 +226,69 @@ EOF
       reverse_proxy http://127.0.0.1:${toString ports.media.sonarr}
     '';
   };
+
+  # Configure ntfy notifications via API
+  systemd.services.sonarr-ntfy-setup = {
+    description = "Configure Sonarr ntfy notifications";
+    after = [ "sonarr.service" "ntfy-sh.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "sonarr";
+    };
+    script = ''
+      until [ -f /var/lib/sonarr/config.xml ]; do
+        sleep 1
+      done
+      sleep 3
+
+      API_KEY=$(cat ${config.sops.secrets.sonarr-api-key.path})
+      NTFY_USER=$(cat ${config.sops.secrets.ntfy-username.path})
+      NTFY_PASS=$(cat ${config.sops.secrets.ntfy-password.path})
+
+      if [ -z "$API_KEY" ] || [ -z "$NTFY_USER" ] || [ -z "$NTFY_PASS" ]; then
+        echo "Failed to get required secrets"
+        exit 1
+      fi
+
+      # Wait for Sonarr API to be ready
+      until ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.sonarr}/api/v3/system/status -H "X-Api-Key: $API_KEY" > /dev/null; do
+        sleep 2
+      done
+
+      # Check if ntfy notification already exists
+      if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.sonarr}/api/v3/notification -H "X-Api-Key: $API_KEY" | ${pkgs.jq}/bin/jq -e '.[] | select(.name == "ntfy")' > /dev/null 2>&1; then
+        echo "ntfy notification already configured"
+        exit 0
+      fi
+
+      echo "Configuring ntfy notification for Sonarr..."
+
+      # Build payload from schema template (more reliable than manual JSON)
+      PAYLOAD=$(${pkgs.curl}/bin/curl -sf "http://127.0.0.1:${toString ports.media.sonarr}/api/v3/notification/schema" -H "X-Api-Key: $API_KEY" | \
+        ${pkgs.jq}/bin/jq --arg user "$NTFY_USER" --arg pass "$NTFY_PASS" '
+          .[] | select(.implementation == "Ntfy") |
+          .name = "ntfy" |
+          .onGrab = true |
+          .onDownload = true |
+          .onUpgrade = true |
+          .onSeriesAdd = true |
+          .onHealthIssue = true |
+          .onHealthRestored = true |
+          .onApplicationUpdate = true |
+          .includeHealthWarnings = true |
+          (.fields[] | select(.name == "serverUrl").value) = "http://127.0.0.1:${toString ports.apps.ntfy}" |
+          (.fields[] | select(.name == "userName").value) = $user |
+          (.fields[] | select(.name == "password").value) = $pass |
+          (.fields[] | select(.name == "topics").value) = ["sonarr"] |
+          (.fields[] | select(.name == "clickUrl").value) = "https://sonarr.${domain}"
+        ')
+
+      ${pkgs.curl}/bin/curl -sf -X POST http://127.0.0.1:${toString ports.media.sonarr}/api/v3/notification \
+        -H "Content-Type: application/json" \
+        -H "X-Api-Key: $API_KEY" \
+        -d "$PAYLOAD" && echo "ntfy notification configured successfully" || echo "Failed to configure ntfy notification"
+    '';
+  };
 }
