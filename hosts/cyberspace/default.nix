@@ -34,6 +34,9 @@
     # Centralized port allocation
     ./ports.nix
 
+    # Service registry for dashboard
+    ./service-registry.nix
+
     # ./apple-silicon-support
     ./hardware-configuration.nix
     ./mosh.nix
@@ -42,10 +45,12 @@
     ./sops.nix
     ./tailscale.nix
     ./hyprland.nix
-    ./nginx
+    # Caddy replaces nginx - auto-manages Tailscale TLS certs
+    ./caddy
     ./metrics
     ./external-drive.nix
-    ./tailscale-certs.nix
+    # No longer needed - Caddy handles TLS certs automatically:
+    # ./tailscale-certs.nix
   ];
 
   # hardware.asahi.peripheralFirmwareDirectory = pkgs.requireFile {

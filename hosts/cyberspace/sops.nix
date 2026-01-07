@@ -56,4 +56,27 @@
     group = "jellyfin";
     mode = "0400";
   };
+
+  # ntfy notification service credentials
+  sops.secrets.ntfy-admin-username = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "ntfy-sh";
+    group = "ntfy-sh";
+    mode = "0400";
+  };
+
+  sops.secrets.ntfy-admin-password = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "ntfy-sh";
+    group = "ntfy-sh";
+    mode = "0400";
+  };
+
+  # Cloudflare API token for Caddy DNS-01 challenge (Let's Encrypt wildcard certs)
+  sops.secrets.cloudflare-api-token = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "caddy";
+    group = "caddy";
+    mode = "0400";
+  };
 }

@@ -29,9 +29,9 @@ in
     listenAddress = "127.0.0.1";
     port = ports.monitoring.prometheus;
 
-    # External URL and route prefix for reverse proxy
-    webExternalUrl = "http://cyberspace/prometheus/";
-    extraFlags = [ "--web.route-prefix=/prometheus" ];
+    # No longer needed with subdomain routing:
+    # webExternalUrl = "http://cyberspace/prometheus/";
+    # extraFlags = [ "--web.route-prefix=/prometheus" ];
 
     # Global configuration
     globalConfig = {
@@ -52,7 +52,8 @@ in
       # Prometheus self-monitoring (always included)
       {
         job_name = "prometheus";
-        metrics_path = "/prometheus/metrics";
+        # Updated: no longer has /prometheus prefix
+        metrics_path = "/metrics";
         static_configs = [{
           targets = [ "localhost:9090" ];
           labels = {
