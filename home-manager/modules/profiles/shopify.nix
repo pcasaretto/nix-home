@@ -7,16 +7,12 @@
   ...
 }: {
   imports = [
-    ../../../modules/home-manager/wcd.nix
     ./shopify/claude-code.nix
+    ./shopify/starship.nix
   ];
 
-  programs.wcd.enable = true;
-
-  programs.zsh.shellAliases.ls = "wls";
-
   # Shopify dev environment initialization
-  programs.zsh.initContent = ''
+  programs.zsh.initContent = lib.mkAfter ''
     # Shopify dev.sh
     [ -f /opt/dev/dev.sh ] && source /opt/dev/dev.sh
 
@@ -31,6 +27,9 @@
 
     # Tec agent
     [[ -x ~/.local/state/tec/profiles/base/current/global/init ]] && eval "$(~/.local/state/tec/profiles/base/current/global/init zsh)"
+
+    # Override fzf to always use home-manager's version, avoiding PATH conflicts with tectonix
+    fzf() { ${pkgs.fzf}/bin/fzf "$@" }
   '';
 
   # Shopify git email
