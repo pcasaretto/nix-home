@@ -122,6 +122,47 @@ in
           }
         ];
       };
+
+      # Configure alerting with ntfy webhook
+      alerting = {
+        contactPoints.settings = {
+          apiVersion = 1;
+          contactPoints = [
+            {
+              orgId = 1;
+              name = "ntfy-alerts";
+              receivers = [
+                {
+                  uid = "ntfy-webhook";
+                  type = "webhook";
+                  disableResolveMessage = false;
+                  settings = {
+                    url = "https://ntfy.${config.services.cyberspace.domain}/grafana";
+                    httpMethod = "POST";
+                    username = "$__file{${config.sops.secrets.ntfy-grafana-username.path}}";
+                    password = "$__file{${config.sops.secrets.ntfy-grafana-password.path}}";
+                    maxAlerts = "10";
+                  };
+                }
+              ];
+            }
+          ];
+        };
+
+        policies.settings = {
+          apiVersion = 1;
+          policies = [
+            {
+              orgId = 1;
+              receiver = "ntfy-alerts";
+              group_by = [ "alertname" "grafana_folder" ];
+              group_wait = "30s";
+              group_interval = "5m";
+              repeat_interval = "4h";
+            }
+          ];
+        };
+      };
     };
   };
 
