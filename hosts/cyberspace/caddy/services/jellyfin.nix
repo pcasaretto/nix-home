@@ -9,7 +9,7 @@ in
   services.jellyfin = {
     enable = true;
     package = pkgs.jellyfin;
-    openFirewall = false;
+    openFirewall = true;
     user = "jellyfin";
     group = "jellyfin";
   };
@@ -123,4 +123,7 @@ in
       }
     '';
   };
+
+  # Allow direct Jellyfin access on Tailscale for native apps
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ ports.media.jellyfin ];
 }
