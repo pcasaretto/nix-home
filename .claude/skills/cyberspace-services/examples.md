@@ -1,710 +1,593 @@
 # Real-World Service Examples
 
-Complete examples of services you might want to add to your cyberspace service registry.
+Complete examples of services running on cyberspace using Caddy with subdomain routing and Let's Encrypt TLS via Cloudflare.
 
-## Table of Contents
+## Current Services
 
-1. [Jellyfin Media Server](#jellyfin-media-server)
-2. [Nextcloud Personal Cloud](#nextcloud-personal-cloud)
-3. [Gitea Git Server](#gitea-git-server)
-4. [Grafana Monitoring Dashboard](#grafana-monitoring-dashboard)
-5. [Personal Wiki (Wiki.js)](#personal-wiki-wikijs)
-6. [RSS Reader (Miniflux)](#rss-reader-miniflux)
-7. [Photo Gallery (PhotoPrism)](#photo-gallery-photoprism)
-8. [Code Server (VS Code in Browser)](#code-server-vs-code-in-browser)
+These services are already deployed and can be used as reference:
+
+| Service | Subdomain | File |
+|---------|-----------|------|
+| Dashboard | `dashboard.cyberspace.pcasaretto.com` | `caddy/services/dashboard.nix` |
+| Grafana | `grafana.cyberspace.pcasaretto.com` | `caddy/services/grafana.nix` |
+| Prometheus | `prometheus.cyberspace.pcasaretto.com` | `caddy/services/prometheus.nix` |
+| Jellyfin | `jellyfin.cyberspace.pcasaretto.com` | `caddy/services/jellyfin.nix` |
+| Sonarr | `sonarr.cyberspace.pcasaretto.com` | `caddy/services/sonarr.nix` |
+| Radarr | `radarr.cyberspace.pcasaretto.com` | `caddy/services/radarr.nix` |
+| Prowlarr | `prowlarr.cyberspace.pcasaretto.com` | `caddy/services/prowlarr.nix` |
+| Transmission | `transmission.cyberspace.pcasaretto.com` | `caddy/services/transmission.nix` |
+| Pi-hole | `pihole.cyberspace.pcasaretto.com` | `caddy/services/pihole.nix` |
+| Ollama | `ollama.cyberspace.pcasaretto.com` | `caddy/services/ollama.nix` |
+| Open WebUI | `openwebui.cyberspace.pcasaretto.com` | `caddy/services/open-webui.nix` |
+| ntfy | `ntfy.cyberspace.pcasaretto.com` | `caddy/services/ntfy.nix` |
 
 ---
 
-## Jellyfin Media Server
+## Example: Jellyfin Media Server
 
-A complete media server setup for movies, TV shows, and music.
+A complete media server with video streaming support.
 
-**File**: `hosts/cyberspace/nginx/services/jellyfin.nix`
+**File**: `hosts/cyberspace/caddy/services/jellyfin.nix`
 
 ```nix
 { config, pkgs, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Enable Jellyfin service
+  # Enable Jellyfin media server
   services.jellyfin = {
     enable = true;
-    openFirewall = false;  # We only access via Tailscale
+    package = pkgs.jellyfin;
+    openFirewall = false;
+    user = "jellyfin";
+    group = "jellyfin";
+  };
+
+  # Admin user provisioning service using sops-managed credentials
+  systemd.services.jellyfin-admin-init = {
+    description = "Initialize Jellyfin admin user from sops secrets";
+    after = [ "jellyfin.service" ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "root";
+    };
+
+    script = ''
+      # Wait for Jellyfin, check for existing users, create admin if needed
+      # ... (see actual file for full script)
+    '';
+  };
+
+  # Mount external drive for media
+  systemd.services.jellyfin = {
+    requires = [ "mnt-external.mount" ];
+    after = [ "mnt-external.mount" ];
   };
 
   # Register in service registry
   services.cyberspace.registeredServices.jellyfin = {
     name = "Jellyfin";
-    description = "Media server for movies, TV shows, and music";
-    path = "/jellyfin";
+    description = "Media server for streaming movies, TV shows, and music";
+    url = "https://jellyfin.${domain}";
     icon = "🎬";
     enabled = true;
-    port = 8096;
-    tags = ["media" "entertainment" "video"];
+    port = ports.media.jellyfin;
+    tags = [ "media" "streaming" "entertainment" ];
   };
 
-  # Configure nginx reverse proxy
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/jellyfin/" = {
-      proxyPass = "http://127.0.0.1:8096/jellyfin/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
+  # Configure Caddy reverse proxy with streaming support
+  services.caddy.virtualHosts."jellyfin.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.media.jellyfin} {
+        # Disable buffering for video streaming
+        flush_interval -1
 
-        # Disable buffering for better streaming
-        proxy_buffering off;
-
-        # WebSocket support for live updates
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-      '';
-    };
+        # Extended timeouts for streaming
+        transport http {
+          read_timeout 0
+          write_timeout 0
+        }
+      }
+    '';
   };
-
-  # Optional: Configure media directories
-  # systemd.tmpfiles.rules = [
-  #   "d /media/movies 0755 jellyfin jellyfin"
-  #   "d /media/tv 0755 jellyfin jellyfin"
-  #   "d /media/music 0755 jellyfin jellyfin"
-  # ];
 }
 ```
 
-**Usage**:
-1. Access Jellyfin at `http://<tailscale-ip>/jellyfin`
-2. Complete initial setup wizard
-3. Add media libraries pointing to your media directories
-4. Stream from any device on Tailscale network
+**Key Points:**
+- `flush_interval -1` disables buffering for smooth video streaming
+- `read_timeout 0` allows unlimited streaming duration
+- Mount dependencies ensure media drive is available
 
 ---
 
-## Nextcloud Personal Cloud
+## Example: Sonarr TV Management
 
-Self-hosted cloud storage and collaboration platform.
+TV show management with automatic download integration.
 
-**File**: `hosts/cyberspace/nginx/services/nextcloud.nix`
+**File**: `hosts/cyberspace/caddy/services/sonarr.nix`
 
 ```nix
 { config, pkgs, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Enable Nextcloud
-  services.nextcloud = {
+  # Enable Sonarr - NO urlbase needed with subdomain routing!
+  services.sonarr = {
     enable = true;
-    package = pkgs.nextcloud28;
-    hostName = "cyberspace.local";
-
-    config = {
-      adminpassFile = "/var/lib/nextcloud/admin-pass";
-
-      dbtype = "pgsql";
-      dbhost = "/run/postgresql";
-      dbname = "nextcloud";
-      dbuser = "nextcloud";
-    };
-
-    # Additional settings
-    settings = {
-      overwriteprotocol = "http";
-      default_phone_region = "BR";
-    };
+    openFirewall = false;
+    user = "sonarr";
+    group = "media";
+    dataDir = "/var/lib/sonarr";
   };
 
-  # PostgreSQL for Nextcloud
-  services.postgresql = {
-    enable = true;
-    ensureDatabases = [ "nextcloud" ];
-    ensureUsers = [{
-      name = "nextcloud";
-      ensureDBOwnership = true;
-    }];
+  # Set API key from sops and disable authentication (Tailscale provides auth)
+  systemd.services.sonarr.preStart = ''
+    CONFIG_FILE="/var/lib/sonarr/config.xml"
+    API_KEY=$(cat ${config.sops.secrets.sonarr-api-key.path})
+    # ... configure API key and disable auth
+  '';
+
+  # Configure Transmission as download client via API
+  systemd.services.sonarr-setup = {
+    description = "Configure Sonarr download client";
+    after = [ "sonarr.service" ];
+    # ... auto-configure Transmission integration
   };
 
-  # Register in service registry
-  services.cyberspace.registeredServices.nextcloud = {
-    name = "Nextcloud";
-    description = "Personal cloud storage and collaboration";
-    path = "/nextcloud";
-    icon = "☁️";
+  # Register with Prowlarr for indexer syncing
+  systemd.services.sonarr-prowlarr-sync = {
+    # ... auto-sync indexers from Prowlarr
+  };
+
+  services.cyberspace.registeredServices.sonarr = {
+    name = "Sonarr";
+    description = "TV show collection manager with automatic downloads";
+    url = "https://sonarr.${domain}";
+    icon = "📺";
     enabled = true;
-    port = 80;  # Nextcloud runs on standard HTTP
-    tags = ["productivity" "storage" "sync"];
+    port = ports.media.sonarr;
+    tags = [ "media" "automation" "tv" ];
   };
 
-  # Nginx is automatically configured by the Nextcloud module
-  # But we can add our registry-specific location
-  services.nginx.virtualHosts."cyberspace.local" = {
-    listen = [
-      { addr = "127.0.0.1"; port = 8084; }
-    ];
+  services.caddy.virtualHosts."sonarr.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.media.sonarr}
+    '';
   };
-
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/nextcloud/" = {
-      proxyPass = "http://127.0.0.1:8084/";
-      extraConfig = ''
-        proxy_set_header Host cyberspace.local;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # WebDAV support
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Port $server_port;
-
-        # Increase upload size limit
-        client_max_body_size 10G;
-        proxy_request_buffering off;
-      '';
-    };
-  };
-
-  # Create admin password file (manual step)
-  # Run: echo "your-secure-password" > /var/lib/nextcloud/admin-pass
-  # Run: chown nextcloud:nextcloud /var/lib/nextcloud/admin-pass
-  # Run: chmod 600 /var/lib/nextcloud/admin-pass
 }
 ```
 
-**Setup**:
-1. Create admin password file (see comments in code)
-2. Rebuild system
-3. Access at `http://<tailscale-ip>/nextcloud`
-4. Log in with username `admin` and password from file
+**Key Points:**
+- No `urlbase` configuration needed - subdomains work out of the box
+- API key managed via sops-nix
+- Auto-configuration of download clients via API
+- Integration with Prowlarr for indexer management
 
 ---
 
-## Gitea Git Server
+## Example: ntfy Notification Service
 
-Self-hosted Git server with web interface.
+Push notifications with long-polling support.
 
-**File**: `hosts/cyberspace/nginx/services/gitea.nix`
+**File**: `hosts/cyberspace/caddy/services/ntfy.nix`
 
 ```nix
 { config, pkgs, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Enable Gitea
-  services.gitea = {
+  # Enable ntfy notification service
+  services.ntfy-sh = {
     enable = true;
     settings = {
-      server = {
-        DOMAIN = "cyberspace";
-        HTTP_PORT = 3001;
-        ROOT_URL = "http://%(DOMAIN)s/gitea/";
-      };
-      service = {
-        DISABLE_REGISTRATION = true;  # Prevent public registration
-      };
+      base-url = "https://ntfy.${domain}";
+      listen-http = "127.0.0.1:${toString ports.apps.ntfy}";
+      behind-proxy = true;
+
+      cache-file = "/var/lib/ntfy-sh/cache.db";
+      cache-duration = "12h";
+
+      metrics-listen-http = "127.0.0.1:${toString ports.appExporters.ntfy}";
+
+      auth-file = "/var/lib/ntfy-sh/user.db";
+      auth-default-access = "deny-all";
     };
   };
 
-  # Register in service registry
-  services.cyberspace.registeredServices.gitea = {
-    name = "Gitea";
-    description = "Self-hosted Git server";
-    path = "/gitea";
-    icon = "🦊";
+  # Admin user provisioning
+  systemd.services.ntfy-admin-init = {
+    description = "Initialize ntfy admin user from sops secrets";
+    after = [ "ntfy-sh.service" ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "root";
+    };
+
+    script = ''
+      # Wait for ntfy, create admin user if needed
+      # ... (see actual file for full script)
+    '';
+  };
+
+  services.cyberspace.registeredServices.ntfy = {
+    name = "ntfy";
+    description = "Push notification service - send notifications to browser and phone";
+    url = "https://ntfy.${domain}";
+    icon = "🔔";
     enabled = true;
-    port = 3001;
-    tags = ["development" "git" "code"];
+    port = ports.apps.ntfy;
+    tags = [ "notification" "messaging" "monitoring" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/gitea/" = {
-      proxyPass = "http://127.0.0.1:3001/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+  # Configure Caddy with long-polling support
+  services.caddy.virtualHosts."ntfy.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.ntfy} {
+        # Disable buffering for SSE/WebSocket
+        flush_interval -1
 
-        # Increase buffer size for Git operations
-        proxy_buffering on;
-        proxy_buffer_size 4k;
-        proxy_buffers 32 4k;
-
-        # Increase timeouts for large repos
-        proxy_connect_timeout 300s;
-        proxy_send_timeout 300s;
-        proxy_read_timeout 300s;
-      '';
-    };
+        # Extended timeout for long-polling (24 hours)
+        transport http {
+          read_timeout 86400s
+        }
+      }
+    '';
   };
 }
 ```
 
-**Setup**:
-1. Access at `http://<tailscale-ip>/gitea`
-2. Complete initial configuration
-3. Create admin account
-4. Push your repos to Gitea
+**Key Points:**
+- 24-hour read timeout for long-polling connections
+- `flush_interval -1` for real-time SSE delivery
+- Admin user created from sops secrets
+- Prometheus metrics endpoint on separate port
 
 ---
 
-## Grafana Monitoring Dashboard
+## Example: Grafana Monitoring
 
-Monitoring and visualization dashboard.
+Monitoring dashboard with Prometheus integration.
 
-**File**: `hosts/cyberspace/nginx/services/grafana.nix`
+**File**: `hosts/cyberspace/caddy/services/grafana.nix` (with `metrics/grafana.nix`)
 
 ```nix
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
+let
+  ports = config.services.cyberspace.ports;
+  domain = config.services.cyberspace.domain;
+in
 {
-  # Enable Grafana
   services.grafana = {
     enable = true;
+
     settings = {
       server = {
+        protocol = "http";
         http_addr = "127.0.0.1";
-        http_port = 3002;
-        root_url = "http://%(domain)s/grafana/";
-        serve_from_sub_path = true;
+        http_port = ports.frontend.grafana;
+        domain = "grafana.${domain}";
+        root_url = "https://grafana.${domain}/";
       };
+
       security = {
         admin_user = "admin";
-        admin_password = "$__file{/var/lib/grafana/admin-password}";
+        admin_password = "$__file{${config.sops.secrets.grafana-admin-password.path}}";
+      };
+
+      # Anonymous viewing for Tailscale users
+      "auth.anonymous" = {
+        enabled = true;
+        org_role = "Viewer";
       };
     };
-  };
 
-  # Enable Prometheus for metrics collection
-  services.prometheus = {
-    enable = true;
-    port = 9090;
-
-    scrapeConfigs = [
-      {
-        job_name = "node";
-        static_configs = [{
-          targets = [ "localhost:${toString config.services.prometheus.exporters.node.port}" ];
-        }];
-      }
-    ];
-
-    exporters = {
-      node = {
-        enable = true;
-        enabledCollectors = [ "systemd" ];
-        port = 9100;
-      };
+    # Declarative Prometheus datasource
+    provision = {
+      enable = true;
+      datasources.settings.datasources = [
+        {
+          name = "Prometheus";
+          type = "prometheus";
+          access = "proxy";
+          url = "http://127.0.0.1:${toString config.services.prometheus.port}";
+          isDefault = true;
+        }
+      ];
     };
   };
+}
+```
 
-  # Register in service registry
+**Separate Caddy config** in `caddy/services/grafana.nix`:
+
+```nix
+{ config, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  grafanaConfig = config.services.grafana.settings.server;
+  grafanaPort = grafanaConfig.http_port;
+in
+{
   services.cyberspace.registeredServices.grafana = {
     name = "Grafana";
-    description = "Monitoring and visualization dashboard";
-    path = "/grafana";
+    description = "Metrics visualization and monitoring dashboard";
+    url = "https://grafana.${domain}";
     icon = "📊";
     enabled = true;
-    port = 3002;
-    tags = ["monitoring" "metrics" "system"];
+    port = grafanaPort;
+    tags = [ "monitoring" "metrics" "visualization" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/grafana/" = {
-      proxyPass = "http://127.0.0.1:3002/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # WebSocket support for live updates
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-      '';
-    };
+  services.caddy.virtualHosts."grafana.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://${grafanaConfig.http_addr}:${toString grafanaPort}
+    '';
   };
-
-  # Create admin password file
-  # Run: echo "your-secure-password" > /var/lib/grafana/admin-password
-  # Run: chown grafana:grafana /var/lib/grafana/admin-password
-  # Run: chmod 600 /var/lib/grafana/admin-password
 }
 ```
 
-**Setup**:
-1. Create admin password file (see comments)
-2. Rebuild system
-3. Access at `http://<tailscale-ip>/grafana`
-4. Add Prometheus data source: `http://localhost:9090`
-5. Import dashboards from grafana.com
+**Key Points:**
+- No more `serve_from_sub_path = true` needed
+- `root_url` uses the full subdomain URL
+- Anonymous read-only access for Tailscale users
+- Password managed via sops-nix
 
 ---
 
-## Personal Wiki (Wiki.js)
+## Example: Pi-hole DNS
 
-A modern documentation and wiki platform.
+Ad-blocking DNS running in a container.
 
-**File**: `hosts/cyberspace/nginx/services/wikijs.nix`
+**File**: `hosts/cyberspace/caddy/services/pihole.nix`
 
 ```nix
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Wiki.js runs via Docker
-  virtualisation.docker.enable = true;
+  # Run Pi-hole in Podman container
+  virtualisation.oci-containers = {
+    backend = "podman";
 
-  # PostgreSQL for Wiki.js
-  services.postgresql = {
-    enable = true;
-    ensureDatabases = [ "wikijs" ];
-    ensureUsers = [{
-      name = "wikijs";
-      ensureDBOwnership = true;
-    }];
-  };
+    containers.pihole = {
+      image = "pihole/pihole:latest";
 
-  # Create systemd service for Wiki.js container
-  systemd.services.wikijs = {
-    description = "Wiki.js";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "docker.service" "postgresql.service" ];
-    requires = [ "docker.service" "postgresql.service" ];
+      ports = [
+        "${toString ports.dns.pihole}:53/tcp"
+        "${toString ports.dns.pihole}:53/udp"
+        "${toString ports.apps.piholeWeb}:80/tcp"
+      ];
 
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
+      environment = {
+        TZ = "America/Sao_Paulo";
+        PIHOLE_DNS_ = "1.1.1.1;1.0.0.1;8.8.8.8;8.8.4.4";
+        FTLCONF_webserver_api_password = "";
+      };
 
-      ExecStart = ''
-        ${pkgs.docker}/bin/docker run -d \
-          --name wikijs \
-          --restart unless-stopped \
-          -p 127.0.0.1:3003:3000 \
-          -e DB_TYPE=postgres \
-          -e DB_HOST=/var/run/postgresql \
-          -e DB_PORT=5432 \
-          -e DB_NAME=wikijs \
-          -e DB_USER=wikijs \
-          -v /var/lib/wikijs:/wiki/data \
-          --network host \
-          ghcr.io/requarks/wiki:2
-      '';
+      volumes = [
+        "/var/lib/pihole/pihole:/etc/pihole"
+        "/var/lib/pihole/dnsmasq.d:/etc/dnsmasq.d"
+      ];
 
-      ExecStop = "${pkgs.docker}/bin/docker stop wikijs";
-      ExecStopPost = "${pkgs.docker}/bin/docker rm -f wikijs";
+      autoStart = true;
     };
   };
 
-  # Register in service registry
-  services.cyberspace.registeredServices.wikijs = {
-    name = "Wiki.js";
-    description = "Personal knowledge base and documentation";
-    path = "/wiki";
-    icon = "📖";
+  services.cyberspace.registeredServices.pihole = {
+    name = "Pi-hole";
+    description = "Network-wide ad blocking via DNS";
+    url = "https://pihole.${domain}";
+    icon = "🛡️";
     enabled = true;
-    port = 3003;
-    tags = ["productivity" "docs" "knowledge"];
+    port = ports.apps.piholeWeb;
+    tags = [ "dns" "security" "privacy" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/wiki/" = {
-      proxyPass = "http://127.0.0.1:3003/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+  # Much simpler with subdomain - no sub_filter hacks!
+  services.caddy.virtualHosts."pihole.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      # Redirect root to admin interface
+      redir / /admin/ permanent
 
-        # WebSocket for live updates
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-      '';
-    };
-  };
-
-  # Create data directory
-  systemd.tmpfiles.rules = [
-    "d /var/lib/wikijs 0755 root root"
-  ];
-}
-```
-
----
-
-## RSS Reader (Miniflux)
-
-Minimalist RSS feed reader.
-
-**File**: `hosts/cyberspace/nginx/services/miniflux.nix`
-
-```nix
-{ config, pkgs, ... }:
-
-{
-  # PostgreSQL for Miniflux
-  services.postgresql = {
-    enable = true;
-    ensureDatabases = [ "miniflux" ];
-    ensureUsers = [{
-      name = "miniflux";
-      ensureDBOwnership = true;
-    }];
-  };
-
-  # Miniflux service
-  services.miniflux = {
-    enable = true;
-    config = {
-      LISTEN_ADDR = "127.0.0.1:8085";
-      BASE_URL = "http://cyberspace/miniflux/";
-      DATABASE_URL = "postgres://miniflux@/miniflux?host=/run/postgresql";
-    };
-    adminCredentialsFile = "/var/lib/miniflux/credentials";
-  };
-
-  # Register in service registry
-  services.cyberspace.registeredServices.miniflux = {
-    name = "Miniflux";
-    description = "Minimalist RSS feed reader";
-    path = "/miniflux";
-    icon = "📰";
-    enabled = true;
-    port = 8085;
-    tags = ["productivity" "news" "rss"];
-  };
-
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/miniflux/" = {
-      proxyPass = "http://127.0.0.1:8085/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
-  };
-
-  # Create credentials file
-  # Format: ADMIN_USERNAME=admin
-  #         ADMIN_PASSWORD=your-secure-password
-  # Run: sudo touch /var/lib/miniflux/credentials
-  # Run: sudo chown miniflux:miniflux /var/lib/miniflux/credentials
-  # Run: sudo chmod 600 /var/lib/miniflux/credentials
-}
-```
-
----
-
-## Photo Gallery (PhotoPrism)
-
-AI-powered photo management application.
-
-**File**: `hosts/cyberspace/nginx/services/photoprism.nix`
-
-```nix
-{ config, pkgs, ... }:
-
-{
-  # PhotoPrism runs via Docker
-  virtualisation.docker.enable = true;
-
-  # Create systemd service for PhotoPrism
-  systemd.services.photoprism = {
-    description = "PhotoPrism";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "docker.service" ];
-    requires = [ "docker.service" ];
-
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-
-      ExecStart = ''
-        ${pkgs.docker}/bin/docker run -d \
-          --name photoprism \
-          --restart unless-stopped \
-          -p 127.0.0.1:2342:2342 \
-          -e PHOTOPRISM_ADMIN_PASSWORD=changeme \
-          -e PHOTOPRISM_SITE_URL=http://cyberspace/photos/ \
-          -e PHOTOPRISM_DISABLE_TLS=true \
-          -v /var/lib/photoprism/storage:/photoprism/storage \
-          -v /var/lib/photoprism/originals:/photoprism/originals \
-          photoprism/photoprism:latest
-      '';
-
-      ExecStop = "${pkgs.docker}/bin/docker stop photoprism";
-      ExecStopPost = "${pkgs.docker}/bin/docker rm -f photoprism";
-    };
-  };
-
-  # Register in service registry
-  services.cyberspace.registeredServices.photoprism = {
-    name = "PhotoPrism";
-    description = "AI-powered photo gallery and management";
-    path = "/photos";
-    icon = "📸";
-    enabled = true;
-    port = 2342;
-    tags = ["media" "photos" "gallery"];
-  };
-
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/photos/" = {
-      proxyPass = "http://127.0.0.1:2342/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-        # WebSocket support
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        # Large upload support
-        client_max_body_size 500M;
-        proxy_request_buffering off;
-      '';
-    };
-  };
-
-  # Create data directories
-  systemd.tmpfiles.rules = [
-    "d /var/lib/photoprism 0755 root root"
-    "d /var/lib/photoprism/storage 0755 root root"
-    "d /var/lib/photoprism/originals 0755 root root"
-  ];
-}
-```
-
----
-
-## Code Server (VS Code in Browser)
-
-Run Visual Studio Code in your browser.
-
-**File**: `hosts/cyberspace/nginx/services/code-server.nix`
-
-```nix
-{ config, pkgs, ... }:
-
-{
-  # Code Server service
-  services.code-server = {
-    enable = true;
-    host = "127.0.0.1";
-    port = 8086;
-    user = "pcasaretto";
-    extraEnvironment = {
-      PASSWORD = "changeme";  # Change this!
-    };
-    extraArguments = [
-      "--disable-telemetry"
-    ];
-  };
-
-  # Register in service registry
-  services.cyberspace.registeredServices.code-server = {
-    name = "Code Server";
-    description = "VS Code running in the browser";
-    path = "/code";
-    icon = "💻";
-    enabled = true;
-    port = 8086;
-    tags = ["development" "editor" "code"];
-  };
-
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/code/" = {
-      proxyPass = "http://127.0.0.1:8086/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-        # WebSocket support for VS Code
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        # Timeouts for long sessions
-        proxy_connect_timeout 7d;
-        proxy_send_timeout 7d;
-        proxy_read_timeout 7d;
-      '';
-    };
+      reverse_proxy http://127.0.0.1:${toString ports.apps.piholeWeb} {
+        transport http {
+          read_timeout 300s
+        }
+      }
+    '';
   };
 }
 ```
 
-**Setup**:
-1. Change the PASSWORD in the configuration
-2. Rebuild system
-3. Access at `http://<tailscale-ip>/code`
-4. Enter password to access VS Code
+**Key Points:**
+- No more `sub_filter` hacks for URL rewriting
+- Simple redirect from `/` to `/admin/`
+- Container managed via Podman
+- DNS port exposed for network-wide ad blocking
 
 ---
 
-## Common Patterns Across Examples
+## Architecture Patterns
 
 ### Port Management
-Examples use ports in organized ranges:
-- 3000-3999: Node.js apps (Gitea: 3001, Grafana: 3002, Wiki.js: 3003)
-- 8000-8099: Python apps and general services (Miniflux: 8085, Code Server: 8086)
-- 8096: Jellyfin (standard port)
-- 2342: PhotoPrism (standard port)
 
-### Security Considerations
-All examples:
-- Bind only to `127.0.0.1` (localhost)
-- Proxy via nginx on Tailscale interface
-- No public internet exposure
-- Use password files or secrets where possible
+All ports are centralized in `hosts/cyberspace/ports.nix`:
 
-### Database Pattern
-Services with databases (Nextcloud, Gitea, Wiki.js):
-- Use PostgreSQL via NixOS module
-- Ensure database with `ensureDatabases`
-- Ensure user with `ensureUsers`
-- Connect via Unix socket when possible
+```nix
+{
+  services.cyberspace.ports = {
+    apps = {
+      transmission = 9091;
+      ntfy = 2586;
+      piholeWeb = 8053;
+      openWebUI = 3100;
+    };
 
-### Docker Pattern
-Docker-based services (Wiki.js, PhotoPrism):
-- Enable Docker module
-- Create systemd service to manage container
-- Bind container port to `127.0.0.1`
-- Use `-v` for persistent storage
-- Handle start/stop/cleanup in systemd
+    media = {
+      jellyfin = 8096;
+      sonarr = 8989;
+      radarr = 7878;
+      prowlarr = 9696;
+    };
 
-### Directory Structure
-Persistent data typically stored in:
-- `/var/lib/<service-name>/` - Service data
-- `/var/lib/<service-name>/config` - Configuration
-- `/var/lib/<service-name>/data` - User data
-- Create with `systemd.tmpfiles.rules`
+    ai = {
+      ollama = 11434;
+    };
 
-## Next Steps
+    monitoring = {
+      prometheus = 9090;
+    };
 
-After implementing any of these examples:
+    frontend = {
+      grafana = 3000;
+    };
 
-1. **Test locally**: Verify the service works on localhost
-2. **Check logs**: `sudo journalctl -u <service-name> -f`
-3. **Verify dashboard**: Service appears in registry
-4. **Test from another device**: Access via Tailscale IP
-5. **Configure service**: Complete any initial setup wizards
-6. **Backup**: Plan backup strategy for `/var/lib/<service>/`
+    exporters = {
+      node = 9100;
+      nginx = 9113;  # Now used for Caddy metrics
+    };
+  };
+}
+```
 
-## Customization Tips
+### TLS Configuration
 
-- Adjust port numbers to avoid conflicts
-- Modify paths to organize services (`/media/jellyfin`, `/tools/code`, etc.)
-- Change icons to your preference
-- Add/modify tags for better organization
-- Increase `client_max_body_size` for file upload services
-- Adjust timeouts based on service needs
+All services inherit TLS config from `caddy/default.nix`:
+
+```nix
+tlsConfig = ''
+  tls {
+    dns cloudflare {env.CF_API_TOKEN}
+    resolvers 1.1.1.1 8.8.8.8
+  }
+'';
+```
+
+This provides:
+- Let's Encrypt certificates via DNS-01 challenge
+- Cloudflare API for DNS verification
+- Public resolvers (not Tailscale MagicDNS)
+
+### Secrets Management
+
+All secrets use sops-nix. Example from `sops.nix`:
+
+```nix
+sops.secrets.grafana-admin-password = {
+  sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+  owner = "grafana";
+  group = "grafana";
+  mode = "0400";
+};
+```
+
+Services reference secrets via path:
+```nix
+admin_password = "$__file{${config.sops.secrets.grafana-admin-password.path}}";
+```
+
+---
+
+## Benefits of Subdomain Routing
+
+### Before (nginx with paths)
+
+```nix
+# Required urlbase configuration
+services.sonarr.settings.server.urlbase = "/sonarr";
+
+# nginx needed path rewriting
+locations."/sonarr" = {
+  proxyPass = "http://127.0.0.1:8989/sonarr";
+  # Complex sub_filter for Pi-hole
+  # URL base configs everywhere
+};
+```
+
+### After (Caddy with subdomains)
+
+```nix
+# No urlbase needed!
+services.sonarr.enable = true;
+
+# Simple Caddy config
+services.caddy.virtualHosts."sonarr.${domain}" = {
+  extraConfig = ''
+    ${config.services.cyberspace.tlsConfig}
+    reverse_proxy http://127.0.0.1:8989
+  '';
+};
+```
+
+**Advantages:**
+- Works with all applications out of the box
+- No path rewriting complexity
+- Proper cookie handling
+- Cleaner URLs for bookmarks
+- Automatic TLS for all subdomains
+
+---
+
+## Troubleshooting Reference
+
+### Certificate Issues
+
+```bash
+# Check Caddy logs for ACME errors
+journalctl -u caddy -n 100 | grep -i acme
+
+# Verify DNS resolution
+dig myservice.cyberspace.pcasaretto.com
+
+# Force certificate renewal
+sudo systemctl restart caddy
+```
+
+### Service Not Accessible
+
+```bash
+# Check backend is running
+systemctl status <service>
+curl http://127.0.0.1:<port>
+
+# Check Caddy virtualHost
+cat /etc/caddy/caddy_config | grep -A5 "myservice"
+
+# Check TLS config included
+grep "tlsConfig" hosts/cyberspace/caddy/services/<service>.nix
+```
+
+### Port Conflicts
+
+```bash
+# Find all port usages
+grep -r "ports\." hosts/cyberspace/
+
+# Check listening ports
+ss -tlnp | grep <port>
+```

@@ -1,470 +1,262 @@
 # Cyberspace Service Templates
 
-Complete, copy-paste ready templates for common service types in the cyberspace service registry.
+Complete, copy-paste ready templates for common service types using Caddy with subdomain routing and Let's Encrypt TLS.
 
 ## Table of Contents
 
-1. [Static HTML Site](#static-html-site)
-2. [Static Site from Directory](#static-site-from-directory)
-3. [Reverse Proxy (Simple)](#reverse-proxy-simple)
-4. [Reverse Proxy (Advanced)](#reverse-proxy-advanced)
-5. [WebSocket Application](#websocket-application)
-6. [Python Web Application](#python-web-application)
-7. [Node.js Application](#nodejs-application)
-8. [Docker Container Proxy](#docker-container-proxy)
-9. [File Browser Service](#file-browser-service)
-10. [API Service with CORS](#api-service-with-cors)
+1. [Simple Reverse Proxy](#simple-reverse-proxy)
+2. [Streaming Application](#streaming-application)
+3. [Media Server](#media-server)
+4. [Static Website](#static-website)
+5. [Long-Polling/SSE Service](#long-pollingsse-service)
+6. [Docker Container Proxy](#docker-container-proxy)
+7. [Python Web Application](#python-web-application)
+8. [Node.js Application](#nodejs-application)
+9. [File Upload Service](#file-upload-service)
+10. [API with Large Requests](#api-with-large-requests)
 
 ---
 
-## Static HTML Site
+## Simple Reverse Proxy
 
-Serve a simple static HTML page generated at build time.
+Basic reverse proxy to a local service.
 
-**File**: `hosts/cyberspace/nginx/services/my-static-site.nix`
+**File**: `hosts/cyberspace/caddy/services/myapp.nix`
 
 ```nix
 { config, pkgs, ... }:
 
 let
-  # Generate static HTML content
-  webRoot = pkgs.runCommand "my-static-site" {} ''
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  # Register in service registry
+  services.cyberspace.registeredServices.myapp = {
+    name = "My Application";
+    description = "Application running on port 8080";
+    url = "https://myapp.${domain}";
+    icon = "🚀";
+    enabled = true;
+    port = ports.apps.myapp;
+    tags = [ "app" ];
+  };
+
+  # Configure Caddy reverse proxy
+  services.caddy.virtualHosts."myapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.myapp}
+    '';
+  };
+}
+```
+
+---
+
+## Streaming Application
+
+For WebSocket, SSE, or streaming responses.
+
+**File**: `hosts/cyberspace/caddy/services/streamapp.nix`
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  services.cyberspace.registeredServices.streamapp = {
+    name = "Streaming App";
+    description = "Real-time streaming application";
+    url = "https://streamapp.${domain}";
+    icon = "📡";
+    enabled = true;
+    port = ports.apps.streamapp;
+    tags = [ "streaming" "realtime" ];
+  };
+
+  services.caddy.virtualHosts."streamapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.streamapp} {
+        # Disable buffering for streaming
+        flush_interval -1
+
+        # Extended timeouts for long connections
+        transport http {
+          read_timeout 300s
+          write_timeout 300s
+        }
+      }
+    '';
+  };
+}
+```
+
+---
+
+## Media Server
+
+For video/audio streaming (Jellyfin, Plex, etc.).
+
+**File**: `hosts/cyberspace/caddy/services/media.nix`
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  # Enable media server
+  services.jellyfin = {
+    enable = true;
+    openFirewall = false;
+  };
+
+  services.cyberspace.registeredServices.media = {
+    name = "Media Server";
+    description = "Stream movies, TV shows, and music";
+    url = "https://media.${domain}";
+    icon = "🎬";
+    enabled = true;
+    port = ports.media.jellyfin;
+    tags = [ "media" "streaming" "entertainment" ];
+  };
+
+  services.caddy.virtualHosts."media.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.media.jellyfin} {
+        # Disable buffering for video streaming
+        flush_interval -1
+
+        # No timeout for media streaming
+        transport http {
+          read_timeout 0
+          write_timeout 0
+        }
+      }
+    '';
+  };
+}
+```
+
+---
+
+## Static Website
+
+Serve static HTML/CSS/JS files.
+
+**File**: `hosts/cyberspace/caddy/services/mysite.nix`
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+
+  # Generate static content at build time
+  webRoot = pkgs.runCommand "mysite-webroot" {} ''
     mkdir -p $out/css $out/js
 
-    # Create index.html
     cat > $out/index.html <<'EOF'
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>My Static Site</title>
-      <link rel="stylesheet" href="/my-site/css/style.css">
-    </head>
-    <body>
-      <h1>Welcome to My Site</h1>
-      <p>This is a static site generated by NixOS!</p>
-      <script src="/my-site/js/script.js"></script>
-    </body>
-    </html>
-    EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Site</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Welcome to My Site</h1>
+  <p>Built with NixOS and Caddy!</p>
+</body>
+</html>
+EOF
 
-    # Create CSS
     cat > $out/css/style.css <<'EOF'
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: #f5f5f5;
-    }
-    h1 { color: #333; }
-    EOF
-
-    # Create JS
-    cat > $out/js/script.js <<'EOF'
-    console.log('Static site loaded!');
-    EOF
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #f5f5f5;
+}
+h1 { color: #333; }
+EOF
   '';
 in
 {
-  # Register in service registry
-  services.cyberspace.registeredServices.my-static-site = {
-    name = "My Static Site";
-    description = "Example static website";
-    path = "/my-site";
+  services.cyberspace.registeredServices.mysite = {
+    name = "My Site";
+    description = "Static website";
+    url = "https://mysite.${domain}";
     icon = "🌐";
     enabled = true;
-    tags = ["web" "static"];
+    tags = [ "web" "static" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/my-site" = {
-      alias = "${webRoot}";
-      index = "index.html";
-      extraConfig = ''
-        try_files $uri $uri/ /my-site/index.html;
+  services.caddy.virtualHosts."mysite.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      root * ${webRoot}
+      file_server
 
-        # Cache static assets
-        location ~* \.(css|js|jpg|jpeg|png|gif|ico|svg)$ {
-          expires 30d;
-          add_header Cache-Control "public, immutable";
-        }
-      '';
-    };
+      # Cache static assets
+      @static {
+        path *.css *.js *.jpg *.jpeg *.png *.gif *.ico *.svg *.woff *.woff2
+      }
+      header @static Cache-Control "public, max-age=2592000"
+    '';
   };
 }
 ```
 
 ---
 
-## Static Site from Directory
+## Long-Polling/SSE Service
 
-Serve static files from a directory in your home folder or repo.
+For notification services with 24+ hour connections.
 
-**File**: `hosts/cyberspace/nginx/services/my-docs.nix`
-
-```nix
-{ config, pkgs, ... }:
-
-{
-  # Register in service registry
-  services.cyberspace.registeredServices.my-docs = {
-    name = "Documentation";
-    description = "Static documentation site";
-    path = "/docs";
-    icon = "📚";
-    enabled = true;
-    tags = ["docs" "static"];
-  };
-
-  # Configure nginx to serve from a directory
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/docs" = {
-      # Option 1: Serve from home directory
-      alias = "/home/pcasaretto/docs/build";
-
-      # Option 2: Serve from a package (if you have a derivation)
-      # alias = "${pkgs.myDocsPackage}";
-
-      index = "index.html";
-      extraConfig = ''
-        try_files $uri $uri/ /docs/index.html;
-        autoindex on;  # Enable directory listing if no index.html
-        autoindex_exact_size off;
-        autoindex_localtime on;
-      '';
-    };
-  };
-}
-```
-
----
-
-## Reverse Proxy (Simple)
-
-Proxy requests to a local service running on a specific port.
-
-**File**: `hosts/cyberspace/nginx/services/my-app.nix`
-
-```nix
-{ config, ... }:
-
-{
-  # Register in service registry
-  services.cyberspace.registeredServices.my-app = {
-    name = "My Application";
-    description = "Web application on port 8080";
-    path = "/app";
-    icon = "🚀";
-    enabled = true;
-    port = 8080;
-    tags = ["app" "proxy"];
-  };
-
-  # Configure nginx reverse proxy
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/app/" = {
-      proxyPass = "http://127.0.0.1:8080/";
-      extraConfig = ''
-        # Forward original host and IP
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-      '';
-    };
-  };
-}
-```
-
----
-
-## Reverse Proxy (Advanced)
-
-Advanced reverse proxy with custom headers, buffering, and error handling.
-
-**File**: `hosts/cyberspace/nginx/services/advanced-app.nix`
-
-```nix
-{ config, ... }:
-
-{
-  # Register in service registry
-  services.cyberspace.registeredServices.advanced-app = {
-    name = "Advanced Application";
-    description = "Application with advanced proxy configuration";
-    path = "/advanced";
-    icon = "⚡";
-    enabled = true;
-    port = 3000;
-    tags = ["app" "proxy" "advanced"];
-  };
-
-  # Configure nginx with advanced options
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/advanced/" = {
-      proxyPass = "http://127.0.0.1:3000/";
-      extraConfig = ''
-        # Headers
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # Custom headers
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Port $server_port;
-
-        # Buffering (disable for streaming responses)
-        proxy_buffering off;
-        proxy_request_buffering off;
-
-        # Timeouts
-        proxy_connect_timeout 90s;
-        proxy_send_timeout 90s;
-        proxy_read_timeout 90s;
-
-        # Keep-alive
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-
-        # Error handling
-        proxy_intercept_errors on;
-        error_page 502 503 504 /error.html;
-      '';
-    };
-
-    # Custom error page
-    locations."/error.html" = {
-      return = ''200 "Service temporarily unavailable"'';
-      extraConfig = ''
-        default_type text/html;
-      '';
-    };
-  };
-}
-```
-
----
-
-## WebSocket Application
-
-Proxy WebSocket connections (e.g., for real-time apps).
-
-**File**: `hosts/cyberspace/nginx/services/websocket-app.nix`
-
-```nix
-{ config, ... }:
-
-{
-  # Register in service registry
-  services.cyberspace.registeredServices.websocket-app = {
-    name = "WebSocket App";
-    description = "Real-time application with WebSocket support";
-    path = "/ws-app";
-    icon = "🔌";
-    enabled = true;
-    port = 8081;
-    tags = ["app" "websocket" "realtime"];
-  };
-
-  # Configure nginx with WebSocket support
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/ws-app/" = {
-      proxyPass = "http://127.0.0.1:8081/";
-      extraConfig = ''
-        # Standard proxy headers
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-        # WebSocket support
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        # Disable buffering for WebSockets
-        proxy_buffering off;
-
-        # Longer timeouts for persistent connections
-        proxy_connect_timeout 7d;
-        proxy_send_timeout 7d;
-        proxy_read_timeout 7d;
-      '';
-    };
-  };
-}
-```
-
----
-
-## Python Web Application
-
-Run a Python web application with systemd and nginx.
-
-**File**: `hosts/cyberspace/nginx/services/python-app.nix`
+**File**: `hosts/cyberspace/caddy/services/notify.nix`
 
 ```nix
 { config, pkgs, ... }:
 
 let
-  # Python application package
-  pythonApp = pkgs.python3.pkgs.buildPythonApplication {
-    pname = "my-python-app";
-    version = "0.1.0";
-
-    # Point to your app source
-    src = /home/pcasaretto/projects/my-python-app;
-
-    propagatedBuildInputs = with pkgs.python3.pkgs; [
-      flask  # or fastapi, django, etc.
-      gunicorn
-    ];
-  };
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
 in
 {
-  # Create systemd service
-  systemd.services.python-app = {
-    description = "Python Web Application";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pythonApp}/bin/gunicorn -w 4 -b 127.0.0.1:8000 app:app";
-      WorkingDirectory = "/var/lib/python-app";
-      Restart = "always";
-      RestartSec = "10s";
-      User = "python-app";
-
-      # Security hardening
-      NoNewPrivileges = true;
-      PrivateTmp = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
-      ReadWritePaths = [ "/var/lib/python-app" ];
-    };
-
-    environment = {
-      PYTHONUNBUFFERED = "1";
-      LOG_LEVEL = "info";
-    };
-  };
-
-  # Create user
-  users.users.python-app = {
-    isSystemUser = true;
-    group = "python-app";
-    home = "/var/lib/python-app";
-    createHome = true;
-  };
-
-  users.groups.python-app = {};
-
-  # Register in service registry
-  services.cyberspace.registeredServices.python-app = {
-    name = "Python App";
-    description = "Python web application with Flask/Gunicorn";
-    path = "/python-app";
-    icon = "🐍";
+  services.cyberspace.registeredServices.notify = {
+    name = "Notifications";
+    description = "Push notification service";
+    url = "https://notify.${domain}";
+    icon = "🔔";
     enabled = true;
-    port = 8000;
-    tags = ["python" "app" "backend"];
+    port = ports.apps.notify;
+    tags = [ "notification" "messaging" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/python-app/" = {
-      proxyPass = "http://127.0.0.1:8000/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
-  };
-}
-```
+  services.caddy.virtualHosts."notify.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.notify} {
+        # Disable buffering for SSE
+        flush_interval -1
 
----
-
-## Node.js Application
-
-Run a Node.js application with systemd and nginx.
-
-**File**: `hosts/cyberspace/nginx/services/node-app.nix`
-
-```nix
-{ config, pkgs, ... }:
-
-{
-  # Create systemd service
-  systemd.services.node-app = {
-    description = "Node.js Application";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.nodejs}/bin/node server.js";
-      WorkingDirectory = "/var/lib/node-app";
-      Restart = "always";
-      RestartSec = "10s";
-      User = "node-app";
-
-      # Security
-      NoNewPrivileges = true;
-      PrivateTmp = true;
-      ProtectSystem = "strict";
-      ReadWritePaths = [ "/var/lib/node-app" ];
-    };
-
-    environment = {
-      NODE_ENV = "production";
-      PORT = "3000";
-    };
-  };
-
-  # Create user
-  users.users.node-app = {
-    isSystemUser = true;
-    group = "node-app";
-    home = "/var/lib/node-app";
-    createHome = true;
-  };
-
-  users.groups.node-app = {};
-
-  # Register in service registry
-  services.cyberspace.registeredServices.node-app = {
-    name = "Node.js App";
-    description = "Node.js application";
-    path = "/node-app";
-    icon = "📗";
-    enabled = true;
-    port = 3000;
-    tags = ["nodejs" "app" "backend"];
-  };
-
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/node-app/" = {
-      proxyPass = "http://127.0.0.1:3000/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-      '';
-    };
+        # 24-hour timeout for long-polling
+        transport http {
+          read_timeout 86400s
+        }
+      }
+    '';
   };
 }
 ```
@@ -473,193 +265,338 @@ Run a Node.js application with systemd and nginx.
 
 ## Docker Container Proxy
 
-Proxy to a service running in a Docker container.
+Proxy to a service running in Docker/Podman.
 
-**File**: `hosts/cyberspace/nginx/services/docker-app.nix`
+**File**: `hosts/cyberspace/caddy/services/dockerapp.nix`
 
 ```nix
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Enable Docker if not already enabled
-  virtualisation.docker.enable = true;
+  # Run container with Podman
+  virtualisation.oci-containers = {
+    backend = "podman";
 
-  # Create systemd service to run Docker container
-  systemd.services.docker-app = {
-    description = "Docker Application";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "docker.service" ];
-    requires = [ "docker.service" ];
-
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-
-      # Start container
-      ExecStart = ''
-        ${pkgs.docker}/bin/docker run -d \
-          --name my-app \
-          --restart unless-stopped \
-          -p 127.0.0.1:8082:80 \
-          nginx:alpine
-      '';
-
-      # Stop container
-      ExecStop = "${pkgs.docker}/bin/docker stop my-app";
-      ExecStopPost = "${pkgs.docker}/bin/docker rm -f my-app";
+    containers.mycontainer = {
+      image = "nginx:alpine";
+      ports = [
+        "${toString ports.apps.dockerapp}:80"
+      ];
+      autoStart = true;
     };
   };
 
-  # Register in service registry
-  services.cyberspace.registeredServices.docker-app = {
+  services.cyberspace.registeredServices.dockerapp = {
     name = "Docker App";
-    description = "Application running in Docker container";
-    path = "/docker-app";
+    description = "Application running in container";
+    url = "https://dockerapp.${domain}";
     icon = "🐳";
     enabled = true;
-    port = 8082;
-    tags = ["docker" "container" "app"];
+    port = ports.apps.dockerapp;
+    tags = [ "docker" "container" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/docker-app/" = {
-      proxyPass = "http://127.0.0.1:8082/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-      '';
-    };
+  services.caddy.virtualHosts."dockerapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.dockerapp}
+    '';
   };
 }
 ```
 
 ---
 
-## File Browser Service
+## Python Web Application
 
-Serve a directory with file browsing capabilities.
+Run a Python Flask/FastAPI application with systemd.
 
-**File**: `hosts/cyberspace/nginx/services/files.nix`
+**File**: `hosts/cyberspace/caddy/services/pyapp.nix`
 
 ```nix
 { config, pkgs, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Register in service registry
-  services.cyberspace.registeredServices.files = {
-    name = "File Browser";
-    description = "Browse and download files";
-    path = "/files";
-    icon = "📁";
-    enabled = true;
-    tags = ["files" "utility"];
+  # Create systemd service
+  systemd.services.pyapp = {
+    description = "Python Web Application";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+
+    serviceConfig = {
+      Type = "simple";
+      # Using a simple HTTP server as example
+      ExecStart = "${pkgs.python3}/bin/python3 -m http.server ${toString ports.apps.pyapp}";
+      WorkingDirectory = "/var/lib/pyapp";
+      Restart = "always";
+      RestartSec = "10s";
+      User = "pyapp";
+
+      # Security hardening
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      ReadWritePaths = [ "/var/lib/pyapp" ];
+    };
+
+    environment = {
+      PYTHONUNBUFFERED = "1";
+    };
   };
 
-  # Configure nginx with autoindex
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/files/" = {
-      alias = "/home/pcasaretto/shared/";
-      extraConfig = ''
-        # Enable directory listing
-        autoindex on;
-        autoindex_exact_size off;
-        autoindex_localtime on;
+  users.users.pyapp = {
+    isSystemUser = true;
+    group = "pyapp";
+    home = "/var/lib/pyapp";
+    createHome = true;
+  };
 
-        # Custom autoindex styling
-        autoindex_format html;
+  users.groups.pyapp = {};
 
-        # Allow downloads
-        add_header Content-Disposition 'attachment';
+  services.cyberspace.registeredServices.pyapp = {
+    name = "Python App";
+    description = "Python web application";
+    url = "https://pyapp.${domain}";
+    icon = "🐍";
+    enabled = true;
+    port = ports.apps.pyapp;
+    tags = [ "python" "backend" ];
+  };
 
-        # Charset
-        charset utf-8;
-      '';
-    };
+  services.caddy.virtualHosts."pyapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.pyapp}
+    '';
   };
 }
 ```
 
 ---
 
-## API Service with CORS
+## Node.js Application
 
-API service with CORS support for cross-origin requests.
+Run a Node.js application with systemd.
 
-**File**: `hosts/cyberspace/nginx/services/api.nix`
+**File**: `hosts/cyberspace/caddy/services/nodeapp.nix`
 
 ```nix
-{ config, ... }:
+{ config, pkgs, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Register in service registry
-  services.cyberspace.registeredServices.api = {
-    name = "REST API";
-    description = "Backend API with CORS support";
-    path = "/api";
-    icon = "🔌";
-    enabled = true;
-    port = 8083;
-    tags = ["api" "backend"];
+  systemd.services.nodeapp = {
+    description = "Node.js Application";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.nodejs}/bin/node /var/lib/nodeapp/server.js";
+      WorkingDirectory = "/var/lib/nodeapp";
+      Restart = "always";
+      RestartSec = "10s";
+      User = "nodeapp";
+
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ReadWritePaths = [ "/var/lib/nodeapp" ];
+    };
+
+    environment = {
+      NODE_ENV = "production";
+      PORT = toString ports.apps.nodeapp;
+    };
   };
 
-  # Configure nginx with CORS
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/api/" = {
-      proxyPass = "http://127.0.0.1:8083/";
-      extraConfig = ''
-        # Proxy headers
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
+  users.users.nodeapp = {
+    isSystemUser = true;
+    group = "nodeapp";
+    home = "/var/lib/nodeapp";
+    createHome = true;
+  };
 
-        # CORS headers
-        add_header Access-Control-Allow-Origin * always;
-        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
-        add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;
+  users.groups.nodeapp = {};
 
-        # Handle preflight requests
-        if ($request_method = OPTIONS) {
-          add_header Access-Control-Allow-Origin *;
-          add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
-          add_header Access-Control-Allow-Headers "Authorization, Content-Type";
-          add_header Content-Length 0;
-          add_header Content-Type text/plain;
-          return 204;
+  services.cyberspace.registeredServices.nodeapp = {
+    name = "Node.js App";
+    description = "Node.js application";
+    url = "https://nodeapp.${domain}";
+    icon = "📗";
+    enabled = true;
+    port = ports.apps.nodeapp;
+    tags = [ "nodejs" "backend" ];
+  };
+
+  services.caddy.virtualHosts."nodeapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.nodeapp} {
+        # Keep-alive for efficiency
+        transport http {
+          keepalive 30s
         }
-      '';
-    };
+      }
+    '';
   };
 }
 ```
 
 ---
 
-## Template Usage
+## File Upload Service
+
+Service with large file upload support.
+
+**File**: `hosts/cyberspace/caddy/services/upload.nix`
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  services.cyberspace.registeredServices.upload = {
+    name = "File Upload";
+    description = "Large file upload service";
+    url = "https://upload.${domain}";
+    icon = "📤";
+    enabled = true;
+    port = ports.apps.upload;
+    tags = [ "files" "upload" ];
+  };
+
+  services.caddy.virtualHosts."upload.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+
+      # Allow large uploads (1GB)
+      request_body {
+        max_size 1GB
+      }
+
+      reverse_proxy http://127.0.0.1:${toString ports.apps.upload} {
+        # Extended timeouts for large uploads
+        transport http {
+          read_timeout 600s
+          write_timeout 600s
+        }
+      }
+    '';
+  };
+}
+```
+
+---
+
+## API with Large Requests
+
+API service with CORS and large request body support.
+
+**File**: `hosts/cyberspace/caddy/services/api.nix`
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  services.cyberspace.registeredServices.api = {
+    name = "API";
+    description = "REST API service";
+    url = "https://api.${domain}";
+    icon = "🔌";
+    enabled = true;
+    port = ports.apps.api;
+    tags = [ "api" "backend" ];
+  };
+
+  services.caddy.virtualHosts."api.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+
+      # CORS headers
+      header {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Authorization, Content-Type"
+      }
+
+      # Handle preflight
+      @options method OPTIONS
+      respond @options 204
+
+      # Large request bodies
+      request_body {
+        max_size 100MB
+      }
+
+      reverse_proxy http://127.0.0.1:${toString ports.apps.api}
+    '';
+  };
+}
+```
+
+---
+
+## Template Usage Checklist
 
 To use a template:
 
-1. Copy the template code
-2. Create a new file: `hosts/cyberspace/nginx/services/<your-service>.nix`
-3. Replace placeholders:
-   - Service name (e.g., `my-app` → `your-service`)
-   - Display name (e.g., `"My Application"` → `"Your Service"`)
-   - Description
-   - Path (e.g., `/my-app` → `/your-service`)
-   - Icon
-   - Port number
-   - Tags
-4. Add import to `hosts/cyberspace/nginx/services/default.nix`
-5. Run `sudo nixos-rebuild switch --flake .#cyberspace`
+1. [ ] Copy the template code
+2. [ ] Create file: `hosts/cyberspace/caddy/services/<name>.nix`
+3. [ ] Add port to `hosts/cyberspace/ports.nix`
+4. [ ] Replace placeholders:
+   - Service name
+   - Display name and description
+   - Subdomain
+   - Icon and tags
+   - Port reference
+5. [ ] Add import to `hosts/cyberspace/caddy/services/default.nix`
+6. [ ] Rebuild: `sudo nixos-rebuild switch --flake .#cyberspace`
+7. [ ] Verify: `journalctl -u caddy -f`
+8. [ ] Test: `https://<subdomain>.cyberspace.pcasaretto.com`
 
-## Quick Checklist
+## Key Points
 
-- [ ] Created service file in `hosts/cyberspace/nginx/services/`
-- [ ] Configured nginx location or virtualHost
-- [ ] Registered in `services.cyberspace.registeredServices`
-- [ ] Added import to `services/default.nix`
-- [ ] Chose unique path (no conflicts)
-- [ ] Selected appropriate port (no conflicts)
-- [ ] Added descriptive icon and tags
-- [ ] Tested with `sudo nixos-rebuild switch --flake .#cyberspace`
-- [ ] Verified service appears in dashboard
-- [ ] Tested service accessibility via Tailscale
+### Always Include TLS Config
+
+Every virtualHost MUST include:
+```nix
+${config.services.cyberspace.tlsConfig}
+```
+
+This provides Let's Encrypt TLS via Cloudflare DNS-01 challenge.
+
+### Use Port Variables
+
+Always reference ports via config:
+```nix
+ports = config.services.cyberspace.ports;
+# ...
+port = ports.apps.myapp;
+```
+
+### Subdomain Naming
+
+- Use lowercase
+- Avoid hyphens when possible
+- Keep it short and memorable
+- Example: `grafana`, `sonarr`, `jellyfin`

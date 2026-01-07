@@ -1,46 +1,69 @@
 ---
 name: cyberspace-services
-description: Add and manage nginx-backed services in the cyberspace NixOS service registry. Create service files, configure nginx routing, register in dashboard, and handle static sites, reverse proxies, and custom applications. Use when adding services to cyberspace, working with the service registry, configuring nginx locations, or managing web services on Tailscale.
+description: Add and manage Caddy-backed services in the cyberspace NixOS service registry. Create service files, configure Caddy reverse proxy with subdomain routing, register in dashboard, and handle static sites, reverse proxies, and custom applications. Use when adding services to cyberspace, working with the service registry, configuring Caddy locations, or managing web services.
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
 # Cyberspace Service Registry
 
-Automates the complete workflow for adding and managing nginx-backed services in the cyberspace NixOS host's service registry. Services appear automatically in the web dashboard accessible via Tailscale.
+Automates the complete workflow for adding and managing Caddy-backed services in the cyberspace NixOS host's service registry. Services appear automatically in the web dashboard and are accessible via subdomains.
 
 ## When to Use This Skill
 
 Use this skill when you need to:
 - Add new services to the cyberspace service registry
-- Configure nginx routing for services (static sites, reverse proxies, apps)
+- Configure Caddy routing for services (static sites, reverse proxies, apps)
 - Register services in the dashboard with metadata
 - Edit existing service configurations
 - Understand the service registry pattern
 
+## Architecture Overview
+
+**Domain**: `cyberspace.pcasaretto.com`
+**TLS**: Let's Encrypt via Cloudflare DNS-01 challenge
+**Routing**: Subdomain-based (e.g., `grafana.cyberspace.pcasaretto.com`)
+
+### Why Subdomains?
+
+Many services don't support path-based routing well (require `urlbase` hacks, `sub_filter`, etc.). Subdomain routing:
+- Works with all applications out of the box
+- Cleaner URLs for bookmarks
+- No path rewriting complexity
+- Proper cookie handling
+
+### Network Flow
+
+```
+Browser → Cloudflare DNS → CNAME → Tailscale MagicDNS → cyberspace
+                                                            ↓
+                                                      Caddy (TLS)
+                                                            ↓
+                                                     localhost:port
+```
+
 ## Service Registry Pattern
 
-The cyberspace host uses a custom service registry system that automatically maintains a web dashboard of all services.
-
 **Architecture:**
-- **Registry Module**: `@hosts/cyberspace/nginx/service-registry.nix`
+- **Registry Module**: `@hosts/cyberspace/service-registry.nix`
   - Defines `services.cyberspace.registeredServices` option
-  - Schema: name, description, path, icon, enabled, port, tags
+  - Schema: name, description, url, icon, enabled, port, tags
 
-- **Service Files**: `@hosts/cyberspace/nginx/services/<name>.nix`
+- **Caddy Config**: `@hosts/cyberspace/caddy/default.nix`
+  - Custom Caddy with Cloudflare DNS plugin
+  - Exports `services.cyberspace.tlsConfig` for all services
+  - Handles TLS via Let's Encrypt DNS-01 challenge
+
+- **Service Files**: `@hosts/cyberspace/caddy/services/<name>.nix`
   - Each service in its own file
-  - Configures nginx virtualHost or location
+  - Configures Caddy virtualHost with subdomain
+  - Includes TLS config from `config.services.cyberspace.tlsConfig`
   - Registers itself in the service registry
-  - All imported in `@hosts/cyberspace/nginx/services/default.nix`
+  - All imported in `@hosts/cyberspace/caddy/services/default.nix`
 
-- **Dashboard**: Automatically generated at nginx root
+- **Dashboard**: Automatically generated at `dashboard.cyberspace.pcasaretto.com`
   - Shows all registered services with icons and descriptions
-  - Links to each service path
+  - Links to each service subdomain
   - Displays tags, ports, and status
-
-**Network:**
-- nginx binds only to Tailscale interface (tailscale0)
-- HTTP only (Tailscale provides encryption)
-- Accessible from any device on your Tailscale network
 
 ## Workflow: Adding a New Service
 
@@ -51,42 +74,206 @@ Ask the user for:
 - **Service type** (static site, reverse proxy, or custom app)
 - **Display name** (e.g., "My App")
 - **Description** (what the service does)
-- **URL path** (e.g., "/my-app" or "/" for root)
+- **Subdomain** (e.g., "myapp" → `myapp.cyberspace.pcasaretto.com`)
 - **Icon** (emoji, e.g., "🚀")
-- **Port** (if reverse proxy, e.g., 8080)
+- **Port** (the backend port, e.g., 8080)
 - **Tags** (categories, e.g., ["media", "productivity"])
 
-### Step 2: Create Service File
+### Step 2: Allocate Port
 
-Create `hosts/cyberspace/nginx/services/<service-name>.nix` based on the service type (see templates below).
+Check `hosts/cyberspace/ports.nix` for available ports and add the new service:
 
-### Step 3: Add Import
+```nix
+# In hosts/cyberspace/ports.nix
+apps = {
+  # ... existing apps
+  myapp = 8080;  # Add new port
+};
+```
 
-Update `@hosts/cyberspace/nginx/services/default.nix` to import the new service:
+### Step 3: Create Service File
+
+Create `hosts/cyberspace/caddy/services/<service-name>.nix`:
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  # Enable the service (if using a NixOS module)
+  services.myapp = {
+    enable = true;
+    # ... service-specific config
+  };
+
+  # Register in service registry
+  services.cyberspace.registeredServices.myapp = {
+    name = "My Application";
+    description = "Description of what this does";
+    url = "https://myapp.${domain}";
+    icon = "🚀";
+    enabled = true;
+    port = ports.apps.myapp;
+    tags = [ "category" "type" ];
+  };
+
+  # Configure Caddy reverse proxy
+  services.caddy.virtualHosts."myapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.myapp}
+    '';
+  };
+}
+```
+
+### Step 4: Add Import
+
+Update `@hosts/cyberspace/caddy/services/default.nix` to import the new service:
 
 ```nix
 {
   imports = [
-    ./system-info.nix
-    ./my-service.nix  # Add this line
+    ./dashboard.nix
+    ./grafana.nix
+    # ... existing services
+    ./myapp.nix  # Add this line
   ];
 }
 ```
 
-### Step 4: Rebuild
+### Step 5: Rebuild
 
-Provide the rebuild command:
 ```bash
 sudo nixos-rebuild switch --flake .#cyberspace
 ```
 
-### Step 5: Verify
+### Step 6: Verify
 
-After rebuild, the service should appear in the dashboard at the Tailscale IP address.
+After rebuild:
+1. Check Caddy logs: `journalctl -u caddy -f`
+2. Wait for TLS certificate (may take a minute)
+3. Access: `https://myapp.cyberspace.pcasaretto.com`
 
 ## Service Templates
 
-### Template 1: Static Website
+### Template 1: Simple Reverse Proxy
+
+For proxying to a local service:
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  # Register in service registry
+  services.cyberspace.registeredServices.myapp = {
+    name = "My Application";
+    description = "Application proxied to port 8080";
+    url = "https://myapp.${domain}";
+    icon = "🚀";
+    enabled = true;
+    port = ports.apps.myapp;
+    tags = [ "app" ];
+  };
+
+  # Configure Caddy reverse proxy
+  services.caddy.virtualHosts."myapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.myapp}
+    '';
+  };
+}
+```
+
+### Template 2: Streaming/WebSocket Application
+
+For apps with streaming, WebSocket, or long-polling:
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  services.cyberspace.registeredServices.streaming-app = {
+    name = "Streaming App";
+    description = "Application with WebSocket/SSE support";
+    url = "https://streamapp.${domain}";
+    icon = "📡";
+    enabled = true;
+    port = ports.apps.streamapp;
+    tags = [ "streaming" "realtime" ];
+  };
+
+  services.caddy.virtualHosts."streamapp.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.streamapp} {
+        # Disable buffering for streaming
+        flush_interval -1
+
+        # Extended timeouts
+        transport http {
+          read_timeout 300s
+          write_timeout 300s
+        }
+      }
+    '';
+  };
+}
+```
+
+### Template 3: Media Streaming (Jellyfin-style)
+
+For video streaming applications:
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
+{
+  services.cyberspace.registeredServices.media = {
+    name = "Media Server";
+    description = "Video streaming server";
+    url = "https://media.${domain}";
+    icon = "🎬";
+    enabled = true;
+    port = ports.media.myserver;
+    tags = [ "media" "streaming" ];
+  };
+
+  services.caddy.virtualHosts."media.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.media.myserver} {
+        # Disable buffering for video streaming
+        flush_interval -1
+
+        # No timeout for streaming
+        transport http {
+          read_timeout 0
+          write_timeout 0
+        }
+      }
+    '';
+  };
+}
+```
+
+### Template 4: Static Website
 
 For serving static HTML/CSS/JS files:
 
@@ -94,7 +281,8 @@ For serving static HTML/CSS/JS files:
 { config, pkgs, ... }:
 
 let
-  # Create static site content
+  domain = config.services.cyberspace.domain;
+
   webRoot = pkgs.runCommand "my-site" {} ''
     mkdir -p $out
     cat > $out/index.html <<EOF
@@ -107,116 +295,60 @@ let
   '';
 in
 {
-  # Register in service registry
-  services.cyberspace.registeredServices.my-site = {
+  services.cyberspace.registeredServices.mysite = {
     name = "My Site";
-    description = "Static website example";
-    path = "/my-site";
+    description = "Static website";
+    url = "https://mysite.${domain}";
     icon = "🌐";
     enabled = true;
-    tags = ["web" "static"];
+    tags = [ "web" "static" ];
   };
 
-  # Configure nginx
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/my-site" = {
-      alias = "${webRoot}";
-      index = "index.html";
-      extraConfig = ''
-        try_files $uri $uri/ /my-site/index.html;
-      '';
-    };
+  services.caddy.virtualHosts."mysite.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      root * ${webRoot}
+      file_server
+    '';
   };
 }
 ```
 
-### Template 2: Reverse Proxy
+### Template 5: Long-Polling/SSE (ntfy-style)
 
-For proxying to a local service on a specific port:
-
-```nix
-{ config, ... }:
-
-{
-  # Register in service registry
-  services.cyberspace.registeredServices.my-app = {
-    name = "My Application";
-    description = "Application proxied to port 8080";
-    path = "/my-app";
-    icon = "🚀";
-    enabled = true;
-    port = 8080;
-    tags = ["app" "proxy"];
-  };
-
-  # Configure nginx reverse proxy
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/my-app/" = {
-      proxyPass = "http://127.0.0.1:8080/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
-  };
-}
-```
-
-### Template 3: Custom Application with systemd
-
-For running a custom application with systemd and proxying:
+For notification services with very long timeouts:
 
 ```nix
 { config, pkgs, ... }:
 
+let
+  domain = config.services.cyberspace.domain;
+  ports = config.services.cyberspace.ports;
+in
 {
-  # Create systemd service
-  systemd.services.my-custom-app = {
-    description = "My Custom Application";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.python3}/bin/python3 -m http.server 8090";
-      WorkingDirectory = "/var/lib/my-app";
-      Restart = "always";
-      User = "my-app";
-    };
-  };
-
-  # Create user for the service
-  users.users.my-app = {
-    isSystemUser = true;
-    group = "my-app";
-    home = "/var/lib/my-app";
-    createHome = true;
-  };
-
-  users.groups.my-app = {};
-
-  # Register in service registry
-  services.cyberspace.registeredServices.my-custom-app = {
-    name = "My Custom App";
-    description = "Custom application with systemd service";
-    path = "/my-custom-app";
-    icon = "⚡";
+  services.cyberspace.registeredServices.notifications = {
+    name = "Notifications";
+    description = "Push notification service";
+    url = "https://notify.${domain}";
+    icon = "🔔";
     enabled = true;
-    port = 8090;
-    tags = ["custom" "app"];
+    port = ports.apps.notify;
+    tags = [ "notification" "messaging" ];
   };
 
-  # Configure nginx reverse proxy
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/my-custom-app/" = {
-      proxyPass = "http://127.0.0.1:8090/";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-      '';
-    };
+  services.caddy.virtualHosts."notify.${domain}" = {
+    extraConfig = ''
+      ${config.services.cyberspace.tlsConfig}
+      reverse_proxy http://127.0.0.1:${toString ports.apps.notify} {
+        # Disable buffering for SSE
+        flush_interval -1
+
+        # 24-hour timeout for long-polling
+        transport http {
+          read_timeout 86400s
+        }
+      }
+    '';
   };
 }
 ```
@@ -227,148 +359,135 @@ All services must register with this schema:
 
 ```nix
 services.cyberspace.registeredServices.<service-name> = {
-  name = "Display Name";              # Required: Human-readable name
-  description = "What this does";     # Required: Short description
-  path = "/service-path";             # Required: URL path (default: "/")
-  icon = "🎯";                        # Optional: Emoji icon (default: "🔧")
-  enabled = true;                     # Optional: Active status (default: true)
-  port = 8080;                        # Optional: Backend port for display (default: null)
-  tags = ["category" "type"];         # Optional: Categories (default: [])
+  name = "Display Name";                    # Required: Human-readable name
+  description = "What this does";           # Required: Short description
+  url = "https://myapp.${domain}";          # Required: Full URL to service
+  icon = "🎯";                              # Optional: Emoji icon (default: "🔧")
+  enabled = true;                           # Optional: Active status (default: true)
+  port = 8080;                              # Optional: Backend port for display
+  tags = ["category" "type"];               # Optional: Categories (default: [])
 };
 ```
 
+## TLS Configuration
+
+Every virtualHost MUST include the shared TLS config:
+
+```nix
+services.caddy.virtualHosts."myapp.${domain}" = {
+  extraConfig = ''
+    ${config.services.cyberspace.tlsConfig}
+    # ... rest of config
+  '';
+};
+```
+
+This ensures:
+- TLS via Let's Encrypt DNS-01 challenge
+- Cloudflare DNS provider for certificate verification
+- Public DNS resolvers (1.1.1.1, 8.8.8.8) for ACME verification
+
 ## File Locations
 
-- **Service Registry Module**: `@hosts/cyberspace/nginx/service-registry.nix`
-- **Services Directory**: `@hosts/cyberspace/nginx/services/`
-- **Services Index**: `@hosts/cyberspace/nginx/services/default.nix`
-- **Reference Example**: `@hosts/cyberspace/nginx/services/system-info.nix`
-- **Main nginx Config**: `@hosts/cyberspace/nginx/default.nix`
+- **Service Registry Module**: `@hosts/cyberspace/service-registry.nix`
+- **Caddy Config**: `@hosts/cyberspace/caddy/default.nix`
+- **Services Directory**: `@hosts/cyberspace/caddy/services/`
+- **Services Index**: `@hosts/cyberspace/caddy/services/default.nix`
+- **Port Allocations**: `@hosts/cyberspace/ports.nix`
+- **Sops Secrets**: `@hosts/cyberspace/sops.nix`
+
+## Port Management
+
+Ports are centrally managed in `hosts/cyberspace/ports.nix`:
+
+```nix
+services.cyberspace.ports = {
+  apps = {
+    transmission = 9091;
+    ntfy = 2586;
+    # ... add new app ports here
+  };
+  media = {
+    jellyfin = 8096;
+    sonarr = 8989;
+    # ... media-related ports
+  };
+  monitoring = {
+    prometheus = 9090;
+    # ... monitoring ports
+  };
+  # ... other categories
+};
+```
+
+Always:
+1. Check for conflicts before adding ports
+2. Use descriptive categories
+3. Reference via `config.services.cyberspace.ports.<category>.<service>`
 
 ## Best Practices
 
 ### Naming Conventions
 - Service files: kebab-case (e.g., `my-service.nix`)
 - Registry keys: kebab-case (e.g., `my-service`)
-- Paths: lowercase with hyphens (e.g., `/my-service`)
+- Subdomains: lowercase, no hyphens preferred (e.g., `myservice`)
 
-### Path Management
-- Choose unique paths (check existing services first)
-- Use sub-paths for related services (e.g., `/media/jellyfin`, `/media/navidrome`)
-- Root path (`/`) is reserved for the dashboard
+### Always Include TLS Config
+Every virtualHost must include `${config.services.cyberspace.tlsConfig}` or TLS won't work.
 
-### Port Management
-- Document the port even if it's internal
-- Avoid port conflicts (check existing services)
-- Common ports: 8080-8099 for apps, 3000-3999 for Node.js, 5000-5999 for Python
+### Use Port Variables
+Always use `config.services.cyberspace.ports` instead of hardcoding:
+```nix
+# Good
+reverse_proxy http://127.0.0.1:${toString ports.apps.myapp}
+
+# Bad
+reverse_proxy http://127.0.0.1:8080
+```
 
 ### Security
-- Services are only accessible via Tailscale network
-- nginx binds to tailscale0 interface only
+- Services are only accessible via Tailscale + proper TLS
+- Caddy binds to tailscale0 interface only
 - No public internet exposure
-- Use systemd hardening when running custom services
-
-### Icons and Tags
-- Choose descriptive emoji icons
-- Common tags: "media", "productivity", "monitoring", "system", "app", "web"
-- Tags help organize services in the dashboard
-
-## Common Patterns
-
-### Serving Static HTML from Nix
-
-Use `pkgs.writeTextFile` or `pkgs.runCommand` to generate static content:
-
-```nix
-let
-  htmlPage = pkgs.writeTextFile {
-    name = "page.html";
-    text = ''
-      <!DOCTYPE html>
-      <html>
-        <body><h1>Generated at build time</h1></body>
-      </html>
-    '';
-  };
-in
-{
-  services.nginx.virtualHosts."cyberspace" = {
-    locations."/page" = {
-      alias = htmlPage;
-    };
-  };
-}
-```
-
-### Proxying WebSocket Applications
-
-Add WebSocket support to reverse proxy:
-
-```nix
-services.nginx.virtualHosts."cyberspace" = {
-  locations."/websocket-app/" = {
-    proxyPass = "http://127.0.0.1:8080/";
-    extraConfig = ''
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
-    '';
-  };
-}
-```
-
-### Multiple Paths for One Service
-
-A service can have multiple nginx locations:
-
-```nix
-services.nginx.virtualHosts."cyberspace" = {
-  locations."/app" = {
-    proxyPass = "http://127.0.0.1:8080/";
-  };
-
-  locations."/app-api" = {
-    proxyPass = "http://127.0.0.1:8080/api/";
-  };
-}
-```
+- Use sops-nix for secrets
 
 ## Troubleshooting
 
+### TLS Certificate Issues
+
+1. Check Caddy logs: `journalctl -u caddy -n 100`
+2. Look for ACME errors
+3. Verify `config.services.cyberspace.tlsConfig` is included
+4. Ensure Cloudflare API token is valid
+5. Check DNS propagation: `dig myapp.cyberspace.pcasaretto.com`
+
 ### Service doesn't appear in dashboard
 
-1. Check service is imported in `services/default.nix`
+1. Check service is imported in `caddy/services/default.nix`
 2. Verify registry entry has `enabled = true`
-3. Run `sudo nixos-rebuild switch --flake .#cyberspace`
-4. Clear browser cache and refresh
+3. Check URL format: `url = "https://myapp.${domain}"`
+4. Rebuild: `sudo nixos-rebuild switch --flake .#cyberspace`
 
-### nginx fails to start
+### Caddy fails to start
 
-1. Check nginx config syntax: `sudo nginx -t`
-2. View errors: `sudo journalctl -u nginx.service -n 50`
+1. Check config: `caddy validate --config /etc/caddy/caddy_config`
+2. View errors: `journalctl -u caddy -n 50`
 3. Common issues:
-   - Duplicate location paths
-   - Invalid proxy addresses
-   - Port already in use
+   - Missing TLS config
+   - Port conflicts
+   - Invalid Caddyfile syntax
 
-### Service returns 404
+### Service returns 502
 
-1. Verify path matches registry entry
-2. Check nginx location configuration
-3. Test backend is running: `curl http://127.0.0.1:<port>`
-4. Review nginx access logs: `sudo journalctl -u nginx.service | grep "GET /your-path"`
+1. Verify backend is running: `systemctl status <service>`
+2. Test backend directly: `curl http://127.0.0.1:<port>`
+3. Check backend logs: `journalctl -u <service>`
 
-### Port conflicts
+### DNS doesn't resolve
 
-1. List all registered ports: `grep -r "port =" hosts/cyberspace/nginx/services/`
-2. Check listening ports: `sudo ss -tulpn`
-3. Choose a different port for your service
-
-## Examples
-
-For detailed examples, see [@.claude/skills/cyberspace-services/examples.md](./examples.md)
-
-For complete service templates, see [@.claude/skills/cyberspace-services/service-templates.md](./service-templates.md)
+1. Check Cloudflare DNS for CNAME record
+2. Verify: `dig myapp.cyberspace.pcasaretto.com`
+3. Should return CNAME → `cyberspace.tyrannosaurus-regulus.ts.net`
 
 ## Commands
 
@@ -377,14 +496,19 @@ For complete service templates, see [@.claude/skills/cyberspace-services/service
 sudo nixos-rebuild switch --flake .#cyberspace
 ```
 
-### Check nginx Configuration
+### Check Caddy Configuration
 ```bash
-sudo nginx -t
+caddy validate --config /etc/caddy/caddy_config --adapter caddyfile
 ```
 
-### View nginx Logs
+### View Caddy Logs
 ```bash
-sudo journalctl -u nginx.service -f
+journalctl -u caddy -f
+```
+
+### Restart Caddy (for TLS issues)
+```bash
+sudo systemctl restart caddy
 ```
 
 ### Test Service Locally
@@ -392,9 +516,9 @@ sudo journalctl -u nginx.service -f
 curl http://127.0.0.1:<port>
 ```
 
-### Get Tailscale IP
+### Check DNS Resolution
 ```bash
-tailscale ip -4
+dig myapp.cyberspace.pcasaretto.com
 ```
 
 ### Validate Nix Syntax
@@ -404,6 +528,7 @@ nix flake check --no-build
 
 ## References
 
-- NixOS nginx options: https://search.nixos.org/options?query=services.nginx
-- nginx reverse proxy guide: https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/
-- Tailscale best practices: https://tailscale.com/kb/1019/
+- Caddy documentation: https://caddyserver.com/docs/
+- Caddy Cloudflare DNS: https://github.com/caddy-dns/cloudflare
+- Let's Encrypt DNS-01: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge
+- Tailscale: https://tailscale.com/kb/

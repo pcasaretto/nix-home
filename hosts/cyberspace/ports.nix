@@ -68,6 +68,12 @@
             default = 8080;
             description = "Open WebUI interface port";
           };
+
+          ntfy = lib.mkOption {
+            type = lib.types.int;
+            default = 2586;
+            description = "ntfy notification service HTTP port";
+          };
         };
 
         # Core Monitoring Services (9000-9099)
@@ -124,6 +130,12 @@
             type = lib.types.int;
             default = 9711;
             description = "Transmission exporter port";
+          };
+
+          ntfy = lib.mkOption {
+            type = lib.types.int;
+            default = 9713;
+            description = "ntfy metrics exporter port";
           };
         };
 

@@ -42,6 +42,14 @@ let
     url = "https://grafana.com/api/dashboards/10428/revisions/1/download";
     hash = "sha256-VxfwdVZeNFzlLGMxibMSXVGQ8cmuZ21u5mNvwKpHQb4=";
   };
+
+  # Fetch ntfy notification service dashboard
+  # Note: This dashboard requires both Prometheus (for metrics) and Loki (for logs)
+  # Only Prometheus panels will work until Loki is configured
+  ntfyDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/21873/revisions/1/download";
+    hash = "sha256-a6IdUbZaqRj3Mboc0aFvddZjO5+u7K1YgYAVbJr3OoI=";
+  };
 in
 {
   services.grafana = {
@@ -49,13 +57,12 @@ in
 
     settings = {
       server = {
-        # Listen on localhost only - nginx proxies
+        # Listen on localhost only - Caddy proxies
         protocol = "http";
         http_addr = "127.0.0.1";
         http_port = grafanaPort;
-        domain = "cyberspace";
-        root_url = "%(protocol)s://%(domain)s/grafana/";
-        serve_from_sub_path = true;
+        domain = "grafana.${config.services.cyberspace.domain}";
+        root_url = "https://grafana.${config.services.cyberspace.domain}/";
       };
 
       # Security settings
@@ -89,7 +96,8 @@ in
           name = "Prometheus";
           type = "prometheus";
           access = "proxy";
-          url = "http://${prometheusConfig.listenAddress}:${toString prometheusConfig.port}/prometheus";
+          # Updated: Prometheus no longer has /prometheus prefix
+          url = "http://${prometheusConfig.listenAddress}:${toString prometheusConfig.port}";
           isDefault = true;
           jsonData = {
             timeInterval = "15s";
@@ -127,6 +135,7 @@ in
     "L+ /var/lib/grafana/dashboards/lidarr-dashboard.json - - - - ${lidarrDashboard}"
     "L+ /var/lib/grafana/dashboards/prowlarr-dashboard.json - - - - ${prowlarrDashboard}"
     "L+ /var/lib/grafana/dashboards/transmission-dashboard.json - - - - ${transmissionDashboard}"
+    "L+ /var/lib/grafana/dashboards/ntfy-dashboard.json - - - - ${ntfyDashboard}"
   ];
 
   # Ensure Grafana starts after Prometheus

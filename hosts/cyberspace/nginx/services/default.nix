@@ -16,6 +16,9 @@
     ./radarr.nix
     ./prowlarr.nix
 
+    # Notification Services
+    ./ntfy.nix
+
     # Future service configurations will be imported here
     # Example:
     # ./nextcloud.nix
