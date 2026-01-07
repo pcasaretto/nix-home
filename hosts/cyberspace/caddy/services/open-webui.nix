@@ -20,6 +20,7 @@ in
       PORT = toString openWebUIPort;
       ANONYMIZED_TELEMETRY = "False";
       HOST = "127.0.0.1";
+      WEBUI_AUTH = "False";
     };
 
     serviceConfig = {
