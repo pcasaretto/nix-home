@@ -11,15 +11,16 @@
   palette = builtins.fromJSON (builtins.readFile "${config.catppuccin.sources.palette}/palette.json");
   colors = lib.mapAttrs (_: v: v.hex) palette.${flavor}.colors;
 
-  worldPromptScript = pkgs.writeText "world-prompt.nu" ''
+  # Combined path script - handles both world zones and regular paths in one tec gps call
+  pathPromptScript = pkgs.writeText "path-prompt.nu" ''
     #!/usr/bin/env nu
 
-    # World prompt script for starship
-    # Colors from catppuccin macchiato palette
+    # Path prompt script for starship
+    # Shows world path when in a zone, regular path otherwise
 
     let gps = (do -i { tec gps --json } | from json)
 
-    if ($gps | get -o zone_path | is-not-empty) {
+    if ($gps | get -o zone_path | is-not-empty) and ($gps.zone_path | str starts-with "//") {
       let green = (ansi { fg: "${colors.green}" })
       let teal = (ansi { fg: "${colors.teal}" })
       let reset = (ansi reset)
@@ -49,14 +50,23 @@
 
       $"🌍 ($green)+($tree)($reset)($teal)//($substrate)($project)($reset)"
     } else {
-      ""
+      # Not in a world zone - show abbreviated current directory
+      let cyan = (ansi { fg: "${colors.sapphire}" })
+      let reset = (ansi reset)
+      let home = $env.HOME
+      let cwd = (pwd)
+      let display = if ($cwd | str starts-with $home) {
+        $cwd | str replace $home "~"
+      } else {
+        $cwd
+      }
+      $"($cyan)($display)($reset)"
     }
   '';
 in {
   programs.starship.settings = {
-    # Override format to include world_path
+    # Override format - single path module handles both world zones and regular paths
     format = lib.mkForce (lib.concatStrings [
-      ("$" + "{custom.world_path}")
       ("$" + "{custom.path}")
       ("$" + "{custom.git_branch_workaround}")
       "$git_status"
@@ -66,17 +76,15 @@ in {
     ]);
 
     custom = {
-      world_path = {
-        shell = ["${pkgs.unstable.nushell}/bin/nu" "-c"];
-        command = "nu ${worldPromptScript}";
-        when = ''tec gps --json 2>/dev/null | grep -q '"zone_path": "//' '';
-        format = "$output ";
+      # Single path module - calls tec gps once, shows world path or regular path
+      path = {
+        shell = lib.mkForce ["${pkgs.unstable.nushell}/bin/nu" "-c"];
+        command = lib.mkForce "nu ${pathPromptScript}";
+        when = lib.mkForce "true";
+        format = lib.mkForce "$output ";
       };
-      # Override path to only show outside world zones
-      path.when = lib.mkForce ''! tec gps --json 2>/dev/null | grep -q '"zone_path": "//' '';
     };
 
-    # tec gps can be slow
-    command_timeout = lib.mkForce 200;
+    command_timeout = lib.mkForce 100;
   };
 }
