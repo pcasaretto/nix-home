@@ -384,6 +384,7 @@
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "sops-nix": "sops-nix",
+        "tabline-wez": "tabline-wez",
         "tmux-git-worktree": "tmux-git-worktree",
         "try": "try"
       }
@@ -465,6 +466,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tabline-wez": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1760643624,
+        "narHash": "sha256-J5h9wVnXiQdgtiFVjf20QkTYNbekBbI8Q/W3nWfCTf4=",
+        "owner": "michaelbrusegard",
+        "repo": "tabline.wez",
+        "rev": "4f7b8789549a906833e3ae42433455ca7f14fb3c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "michaelbrusegard",
+        "repo": "tabline.wez",
         "type": "github"
       }
     },

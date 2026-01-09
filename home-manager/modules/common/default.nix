@@ -10,6 +10,8 @@
 
     inputs.nix-index-database.homeModules.nix-index
 
+    ./../../../modules/home-manager/wezterm-plugins.nix
+
     ./claude-code
     ./direnv.nix
     ./ghostty.nix

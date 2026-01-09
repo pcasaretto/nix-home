@@ -1,4 +1,6 @@
 {...}: {
+  xdg.configFile."wezterm/statusbar.lua".source = ./wezterm/statusbar.lua;
+
   programs.wezterm = {
     enable = true;
     extraConfig = ''
@@ -11,6 +13,14 @@
 
       config.default_cwd = wezterm.home_dir
       config.enable_kitty_keyboard = true
+
+      -- Use retro tab bar for status line support
+      config.use_fancy_tab_bar = false
+      config.tab_bar_at_bottom = false
+
+      -- Load status bar module
+      local statusbar = dofile(wezterm.config_dir .. "/statusbar.lua")
+      statusbar.setup()
 
       config.keys = {
         -- New window from home (not inherit cwd)

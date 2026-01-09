@@ -57,6 +57,11 @@
     tmux-git-worktree.url = "github:pcasaretto/tmux-git-worktree";
     tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs";
 
+    tabline-wez = {
+      url = "github:michaelbrusegard/tabline.wez";
+      flake = false;
+    };
+
     # mysecrets = {
     #    url = "git+ssh://git@github.com/pcasaretto/nix-secrets.git?shallow=1";
     #    flake = false;
