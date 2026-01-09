@@ -20,6 +20,7 @@
     ./starship.nix
     ./tmux.nix
     ./try.nix
+    ./wezterm.nix
     ./xdg.nix
     ./zsh.nix
   ];
