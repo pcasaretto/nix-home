@@ -1,7 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
   piholeWebPort = ports.apps.piholeWeb;  # Custom port for Pi-hole web interface
   piholeDnsPort = ports.dns.pihole;      # Standard DNS port
 in

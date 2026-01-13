@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+_:
 
 let
   certDomain = "cyberspace.tyrannosaurus-regulus.ts.net";

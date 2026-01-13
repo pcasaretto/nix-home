@@ -1,7 +1,7 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
 in
 {
   # Enable Transmission BitTorrent daemon

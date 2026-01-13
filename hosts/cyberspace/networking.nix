@@ -1,6 +1,11 @@
-_: {
+{ config, ... }: {
   networking = {
    hostName = "cyberspace";
+
+   # Allow internal services to resolve cyberspace domains locally
+   hosts."127.0.0.1" = [
+     "nextcloud.${config.services.cyberspace.domain}"
+   ];
    wireless.iwd = {
      enable = true;
      settings.General.EnableNetworkConfiguration = true;

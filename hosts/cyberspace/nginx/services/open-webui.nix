@@ -1,10 +1,9 @@
 { config, pkgs, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
   ollamaConfig = config.services.ollama;
   openWebUIPort = ports.apps.openWebUI;
-  openWebUIPath = config.services.cyberspace.registeredServices.open-webui.path;
 in
 {
   # Create systemd service for Open WebUI

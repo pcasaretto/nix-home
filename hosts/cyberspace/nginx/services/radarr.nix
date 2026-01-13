@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
 in
 {
   # Enable Radarr movie management

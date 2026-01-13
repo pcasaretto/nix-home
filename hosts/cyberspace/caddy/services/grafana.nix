@@ -1,7 +1,7 @@
 { config, ... }:
 
 let
-  domain = config.services.cyberspace.domain;
+  inherit (config.services.cyberspace) domain;
   grafanaConfig = config.services.grafana.settings.server;
   grafanaPort = grafanaConfig.http_port;
 in
