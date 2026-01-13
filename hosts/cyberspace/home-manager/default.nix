@@ -1,9 +1,5 @@
 {
-  inputs,
-  outputs,
-  config,
   pkgs,
-  lib,
   ...
 }: {
   # You can import other home-manager modules here

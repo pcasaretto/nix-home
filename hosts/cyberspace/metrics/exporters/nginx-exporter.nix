@@ -1,7 +1,7 @@
-{ config, lib, pkgs, ... }:
+{ config, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
   nginxExporterPort = ports.exporters.nginx;
   nginxStatusPort = ports.monitoring.nginxStatus;  # Changed from 8080 to avoid conflict with Open WebUI
 in

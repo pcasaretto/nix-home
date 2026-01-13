@@ -1,25 +1,25 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
   # Get all registered metrics
-  registeredMetrics = config.services.cyberspace.metrics.registeredMetrics;
+  inherit (config.services.cyberspace.metrics) registeredMetrics;
 
   # Convert metrics registry to Prometheus scrape configs
   # Only include enabled metrics
   metricsToScrapeConfigs = lib.mapAttrsToList
     (name: metricsConfig: {
-      job_name = metricsConfig.job_name;
-      scrape_interval = metricsConfig.scrape_interval;
+      inherit (metricsConfig) job_name;
+      inherit (metricsConfig) scrape_interval;
       static_configs = [{
-        targets = metricsConfig.targets;
+        inherit (metricsConfig) targets;
         labels = metricsConfig.labels // {
           # Add source identifier
           metrics_source = name;
         };
       }];
     })
-    (lib.filterAttrs (name: m: m.enabled) registeredMetrics);
+    (lib.filterAttrs (_name: m: m.enabled) registeredMetrics);
 in
 {
   services.prometheus = {

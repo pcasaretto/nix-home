@@ -1,35 +1,23 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: {
+_: {
   # Create dedicated group for external drive access
   users.groups.external = {
     gid = 1001;
   };
 
-  # Mount external SanDisk Extreme drive
-  # UUID: 6941-B41D (exFAT partition)
+  # Mount external SanDisk Extreme drive (ext4)
   fileSystems."/mnt/external" = {
-    device = "/dev/disk/by-uuid/6941-B41D";
-    fsType = "exfat";
+    device = "/dev/disk/by-uuid/cc461254-dbd7-43fb-9d5d-06c4ccec15f7";
+    fsType = "ext4";
     options = [
       "nofail" # Don't fail boot if drive is not connected
-      "uid=1000" # Set owner to pcasaretto
-      "gid=1001" # Set group to external
-      "dmask=0002" # Directory permissions: rwxrwxr-x (group writable)
-      "fmask=0113" # File permissions: rw-rw-r--
     ];
   };
 
-  # Ensure the mount point exists
+  # Ensure the mount point and subdirectories exist with proper permissions
   systemd.tmpfiles.rules = [
-    "d /mnt/external 0755 pcasaretto external -"
-  ];
-
-  # Install exfat utilities
-  environment.systemPackages = with pkgs; [
-    exfatprogs
+    "d /mnt/external 0775 root external -"
+    "d /mnt/external/nextcloud 0750 nextcloud nextcloud -"
+    "d /mnt/external/media 0775 pcasaretto external -"
+    "d /mnt/external/downloads 0775 pcasaretto external -"
   ];
 }

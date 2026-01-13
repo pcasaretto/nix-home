@@ -1,7 +1,7 @@
 { config, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
   radarrExporterPort = ports.appExporters.radarr;
 in
 {

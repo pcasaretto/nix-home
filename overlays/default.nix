@@ -3,13 +3,13 @@
   # This one brings our custom packages from the 'pkgs' directory
   additions = final: _prev: import ../pkgs {
     pkgs = final;
-    callPackage = final.callPackage;
+    inherit (final) callPackage;
   };
 
   # This one contains whatever you want to overlay
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  modifications = final: prev: {
+  modifications = final: _prev: {
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });
@@ -42,7 +42,7 @@
   };
 
   # Add access to x86 packages when system is running Apple Silicon
-  apple-silicon = final: prev:
+  apple-silicon = _final: prev:
     inputs.nixpkgs-darwin.lib.optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
       pkgs-x86 = import inputs.nixpkgs-unstable {
         system = "x86_64-darwin";

@@ -1,8 +1,8 @@
-{ config, pkgs, lib, ... }:
+{ config, ... }:
 
 let
-  domain = config.services.cyberspace.domain;
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) domain;
+  inherit (config.services.cyberspace) ports;
   piholeWebPort = ports.apps.piholeWeb;
   piholeDnsPort = ports.dns.pihole;
 in

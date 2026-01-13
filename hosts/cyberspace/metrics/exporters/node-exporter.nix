@@ -1,7 +1,7 @@
-{ config, lib, pkgs, ... }:
+{ config, ... }:
 
 let
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) ports;
   nodeExporterPort = ports.exporters.node;
 in
 {

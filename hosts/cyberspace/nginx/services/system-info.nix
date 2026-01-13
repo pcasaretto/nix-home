@@ -2,10 +2,10 @@
 
 let
   # Get all registered services
-  registeredServices = config.services.cyberspace.registeredServices;
+  inherit (config.services.cyberspace) registeredServices;
 
   # Generate HTML for a single service
-  serviceHtml = name: service: ''
+  serviceHtml = _name: service: ''
     <li class="service-item">
       <a href="${service.path}">
         <div>
@@ -22,12 +22,12 @@ let
   # Generate HTML for all services, sorted by name
   servicesListHtml = lib.concatStrings (
     lib.mapAttrsToList serviceHtml (
-      lib.filterAttrs (name: service: service.enabled) registeredServices
+      lib.filterAttrs (_name: service: service.enabled) registeredServices
     )
   );
 
   # Count of active services
-  serviceCount = lib.length (lib.attrNames (lib.filterAttrs (name: service: service.enabled) registeredServices));
+  serviceCount = lib.length (lib.attrNames (lib.filterAttrs (_name: service: service.enabled) registeredServices));
 
   # Create a static HTML page with system information
   systemInfoPage = pkgs.writeTextFile {

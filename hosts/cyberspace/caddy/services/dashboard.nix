@@ -1,11 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  domain = config.services.cyberspace.domain;
-  registeredServices = config.services.cyberspace.registeredServices;
+  inherit (config.services.cyberspace) domain;
+  inherit (config.services.cyberspace) registeredServices;
 
   # Generate HTML for a single service - using url instead of path
-  serviceHtml = name: service: ''
+  serviceHtml = _name: service: ''
     <li class="service-item">
       <a href="${service.url}">
         <div>
@@ -21,11 +21,11 @@ let
 
   servicesListHtml = lib.concatStrings (
     lib.mapAttrsToList serviceHtml (
-      lib.filterAttrs (name: service: service.enabled) registeredServices
+      lib.filterAttrs (_name: service: service.enabled) registeredServices
     )
   );
 
-  serviceCount = lib.length (lib.attrNames (lib.filterAttrs (name: service: service.enabled) registeredServices));
+  serviceCount = lib.length (lib.attrNames (lib.filterAttrs (_name: service: service.enabled) registeredServices));
 
   systemInfoPage = pkgs.writeTextFile {
     name = "system-info.html";

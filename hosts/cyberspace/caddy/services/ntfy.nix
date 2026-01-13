@@ -1,8 +1,8 @@
 { config, pkgs, lib, ... }:
 
 let
-  domain = config.services.cyberspace.domain;
-  ports = config.services.cyberspace.ports;
+  inherit (config.services.cyberspace) domain;
+  inherit (config.services.cyberspace) ports;
 in
 {
   # Enable ntfy notification service

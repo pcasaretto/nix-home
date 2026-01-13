@@ -1,7 +1,7 @@
 { config, ... }:
 
 let
-  domain = config.services.cyberspace.domain;
+  inherit (config.services.cyberspace) domain;
   prometheusConfig = config.services.prometheus;
 in
 {
@@ -12,7 +12,7 @@ in
     url = "https://prometheus.${domain}";
     icon = "🔥";
     enabled = true;
-    port = prometheusConfig.port;
+    inherit (prometheusConfig) port;
     tags = [ "monitoring" "metrics" "database" ];
   };
 

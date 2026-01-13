@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
 let
   prometheusConfig = config.services.prometheus;
@@ -11,7 +11,7 @@ in
     path = "/prometheus";
     icon = "🔥";
     enabled = true;
-    port = prometheusConfig.port;
+    inherit (prometheusConfig) port;
     tags = [ "monitoring" "metrics" "database" ];
   };
 

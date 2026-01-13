@@ -137,6 +137,36 @@
             default = 9713;
             description = "ntfy metrics exporter port";
           };
+
+          nextcloud = lib.mkOption {
+            type = lib.types.int;
+            default = 9714;
+            description = "Nextcloud exporter port";
+          };
+        };
+
+        # Smart Home / IoT Services (10000-10999)
+        smartHome = {
+          homeAssistant = lib.mkOption {
+            type = lib.types.int;
+            default = 10123;
+            description = "Home Assistant home automation platform port";
+          };
+          wyomingPiper = lib.mkOption {
+            type = lib.types.int;
+            default = 10200;
+            description = "Wyoming Piper TTS service port";
+          };
+          wyomingWhisper = lib.mkOption {
+            type = lib.types.int;
+            default = 10300;
+            description = "Wyoming Faster Whisper STT service port";
+          };
+          wyomingOpenWakeWord = lib.mkOption {
+            type = lib.types.int;
+            default = 10400;
+            description = "Wyoming OpenWakeWord detection service port";
+          };
         };
 
         # AI/ML Services (11000-11999)
@@ -169,6 +199,7 @@
       - 9000-9099: Core monitoring services
       - 9100-9199: System/infrastructure exporters
       - 9700-9799: Application exporters
+      - 10000-10999: Smart home / IoT services
       - 11000-11999: AI/ML services
       - 51000-51999: P2P and peer ports
     '';
