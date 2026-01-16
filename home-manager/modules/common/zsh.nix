@@ -4,10 +4,11 @@
   pkgs,
   ...
 }: let
+  gitFilesScript = ./zsh/git-files.nu;
   customZshStuff =
     builtins.concatStringsSep "\n"
     (
-      map builtins.readFile [
+      (map builtins.readFile [
         ./zsh/functions/current_branch.zsh
         ./zsh/functions/current_repository.zsh
         ./zsh/functions/e.zsh
@@ -17,7 +18,9 @@
         ./zsh/completion.zsh
         ./zsh/history.zsh
         ./zsh/vi-mode.zsh
-      ]
+        ./zsh/fzf-git.zsh
+      ])
+      ++ ["export FZF_GIT_FILES_SCRIPT=${gitFilesScript}"]
     );
 in {
   programs.zsh = {
