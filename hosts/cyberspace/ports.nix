@@ -83,12 +83,6 @@
             default = 9090;
             description = "Prometheus metrics server port";
           };
-
-          nginxStatus = lib.mkOption {
-            type = lib.types.int;
-            default = 9080;
-            description = "Nginx stub_status endpoint port";
-          };
         };
 
         # System Exporters (9100-9199)
@@ -97,12 +91,6 @@
             type = lib.types.int;
             default = 9100;
             description = "Node exporter port for system metrics";
-          };
-
-          nginx = lib.mkOption {
-            type = lib.types.int;
-            default = 9113;
-            description = "Nginx exporter port";
           };
         };
 
