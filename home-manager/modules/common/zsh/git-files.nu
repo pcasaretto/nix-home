@@ -10,8 +10,13 @@ def main [] {
     return
   }
 
-  # Use git status --porcelain for speed - gives us staged, modified, untracked in one call
-  let status_lines = (do { git status --porcelain } | complete | get stdout | lines)
+  # Get path prefix to strip (path from git root to cwd)
+  let git_root = (git rev-parse --show-toplevel | str trim)
+  let cwd = (pwd)
+  let prefix = if $cwd == $git_root { "" } else { ($cwd | str replace $"($git_root)/" "") + "/" }
+
+  # Use git status --porcelain . for current dir only
+  let status_lines = (do { git status --porcelain . } | complete | get stdout | lines)
 
   mut staged = []
   mut modified = []
@@ -20,7 +25,9 @@ def main [] {
   for line in $status_lines {
     let index_status = ($line | str substring 0..0)
     let worktree_status = ($line | str substring 1..1)
-    let file = ($line | str substring 3..)
+    let raw_file = ($line | str substring 3..)
+    # Strip prefix to make path relative to cwd
+    let file = if ($prefix | is-empty) { $raw_file } else { $raw_file | str replace $prefix "" }
 
     # Staged: something in index (not ? or !)
     if $index_status in ["A", "M", "D", "R", "C"] {
