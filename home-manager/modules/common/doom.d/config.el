@@ -112,3 +112,13 @@
   :hook (after-init . global-kkp-mode))
 
 (setq insert-directory-program "gls")
+
+;; Fix auto-save path issue with Emacs 30
+;; Doom's default regex only matches the filename, causing the replacement path
+;; to be concatenated incorrectly. Using ".*" matches the entire path.
+;; See: https://github.com/doomemacs/doomemacs/issues/8636
+(after! doom-editor
+  (setq auto-save-file-name-transforms
+        `(("\\`/[^/]*:\\([^/]*/\\)*\\([^/]*\\)\\'"
+           ,(expand-file-name "tramp/" (concat doom-profile-cache-dir "autosave/")) t)
+          (".*" ,(expand-file-name "" (concat doom-profile-cache-dir "autosave/")) t))))
