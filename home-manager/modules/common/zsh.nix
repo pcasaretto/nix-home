@@ -9,10 +9,8 @@
     builtins.concatStringsSep "\n"
     (
       (map builtins.readFile [
-        ./zsh/functions/current_branch.zsh
-        ./zsh/functions/current_repository.zsh
+        ./zsh/functions/git-utils.zsh
         ./zsh/functions/e.zsh
-        ./zsh/functions/git_functions.zsh
         ./zsh/functions/dev.zsh
         ./zsh/correction.zsh
         ./zsh/completion.zsh
@@ -30,7 +28,6 @@ in {
     enableCompletion = true;
     shellAliases = {
       l = "eza -lAh";
-      gst = "git status";
     };
 
     initContent = customZshStuff;

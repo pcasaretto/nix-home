@@ -10,7 +10,7 @@
       edit_mode = "vi";
     };
     shellAliases = {
-      l = "ls -la";
+      l = "eza -lAh";
     };
     extraConfig = ''
       def ngs [ ...args: any] {
