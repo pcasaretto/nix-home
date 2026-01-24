@@ -5,6 +5,8 @@
     ./metrics-registry.nix
     ./prometheus.nix
     ./grafana.nix
+    ./loki.nix
+    ./alloy.nix
     ./exporters
   ];
 

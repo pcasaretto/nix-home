@@ -62,6 +62,17 @@ let
     url = "https://grafana.com/api/dashboards/15832/revisions/1/download";
     hash = "sha256-SQzTMMwqcZPp21PmD1chDijYqwy1eYCmZYTnPboW9IA=";
   };
+
+  # Fetch Loki dashboards
+  lokiDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/13186/revisions/latest/download";
+    hash = "sha256-pe6LFUzy6OB3hCsALCmhdxX8MH92IW9HgXquid0IHYY=";
+  };
+
+  loggingDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/18042/revisions/latest/download";
+    hash = "sha256-jYVkvvCqn/wW/DAcOo2zzeIMKW4RjOuaz0zWKr/VnEo=";
+  };
 in
 {
   services.grafana = {
@@ -114,6 +125,15 @@ in
           jsonData = {
             timeInterval = "15s";
             httpMethod = "POST";
+          };
+        }
+        {
+          name = "Loki";
+          type = "loki";
+          access = "proxy";
+          url = "http://127.0.0.1:${toString ports.monitoring.loki}";
+          jsonData = {
+            maxLines = 1000;
           };
         }
       ];
@@ -191,11 +211,13 @@ in
     "L+ /var/lib/grafana/dashboards/ntfy-dashboard.json - - - - ${ntfyDashboard}"
     "L+ /var/lib/grafana/dashboards/nextcloud-dashboard.json - - - - ${nextcloudDashboard}"
     "L+ /var/lib/grafana/dashboards/home-assistant-dashboard.json - - - - ${homeAssistantDashboard}"
+    "L+ /var/lib/grafana/dashboards/loki-dashboard.json - - - - ${lokiDashboard}"
+    "L+ /var/lib/grafana/dashboards/logging-dashboard.json - - - - ${loggingDashboard}"
   ];
 
-  # Ensure Grafana starts after Prometheus
+  # Ensure Grafana starts after Prometheus and Loki
   systemd.services.grafana = {
-    after = [ "prometheus.service" "network-online.target" ];
+    after = [ "prometheus.service" "loki.service" "network-online.target" ];
     wants = [ "network-online.target" ];
   };
 }

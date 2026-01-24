@@ -83,6 +83,16 @@
             default = 9090;
             description = "Prometheus metrics server port";
           };
+          loki = lib.mkOption {
+            type = lib.types.int;
+            default = 3100;
+            description = "Loki log aggregation server port";
+          };
+          alloy = lib.mkOption {
+            type = lib.types.int;
+            default = 12345;
+            description = "Grafana Alloy metrics and logs collection port";
+          };
         };
 
         # System Exporters (9100-9199)
@@ -91,6 +101,11 @@
             type = lib.types.int;
             default = 9100;
             description = "Node exporter port for system metrics";
+          };
+          caddy = lib.mkOption {
+            type = lib.types.int;
+            default = 9113;
+            description = "Caddy metrics exporter port";
           };
         };
 
