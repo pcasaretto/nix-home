@@ -40,12 +40,22 @@ in
         sleep 1
       done
 
-      sleep 2
-
       ADMIN_USER=$(cat ${config.sops.secrets.jellyfin-admin-username.path})
       ADMIN_PASS=$(cat ${config.sops.secrets.jellyfin-admin-password.path})
 
-      USER_COUNT=$(${pkgs.curl}/bin/curl -s http://127.0.0.1:${toString ports.media.jellyfin}/Users/Public 2>/dev/null | ${pkgs.jq}/bin/jq '. | length')
+      # Wait for the Users API to return valid JSON (may take a few seconds after health check passes)
+      USER_COUNT=""
+      for i in {1..10}; do
+        RESPONSE=$(${pkgs.curl}/bin/curl -s http://127.0.0.1:${toString ports.media.jellyfin}/Users/Public 2>/dev/null)
+        USER_COUNT=$(echo "$RESPONSE" | ${pkgs.jq}/bin/jq -e '. | length' 2>/dev/null) && break
+        echo "Waiting for Users API to be ready (attempt $i)..."
+        sleep 2
+      done
+
+      if [ -z "$USER_COUNT" ]; then
+        echo "Failed to get user count from Jellyfin API after 10 attempts"
+        exit 1
+      fi
 
       if [ "$USER_COUNT" = "0" ]; then
         echo "No users found. Creating initial admin user: $ADMIN_USER"

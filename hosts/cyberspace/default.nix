@@ -91,7 +91,7 @@
 
   home-manager = {
     extraSpecialArgs = {inherit inputs outputs;};
-    useGlobalPkgs = true;
+    # useGlobalPkgs = true;
     useUserPackages = true;
     users = {
       # Import your home-manager configuration
@@ -111,7 +111,7 @@
       name = "nix/path/${name}";
       value.source = value.flake;
     })
-    config.nix.registry;
+    (lib.filterAttrs (_: value: value.flake != null) config.nix.registry);
 
   environment.systemPackages =
     with pkgs;

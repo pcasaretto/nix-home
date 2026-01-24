@@ -54,8 +54,8 @@ in
         '';
       };
 
-      # Metrics endpoint on the standard nginx-exporter port
-      virtualHosts."localhost:${toString ports.exporters.nginx}" = {
+      # Metrics endpoint for Caddy
+      virtualHosts."localhost:${toString ports.exporters.caddy}" = {
         extraConfig = ''
           metrics /metrics
         '';

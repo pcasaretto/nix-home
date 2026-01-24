@@ -5,6 +5,7 @@
     ./dashboard.nix
     ./grafana.nix
     ./prometheus.nix
+    ./loki.nix
     ./ollama.nix
     ./open-webui.nix
     ./jellyfin.nix

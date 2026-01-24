@@ -58,5 +58,6 @@ in {
       command_timeout = 50;
     };
   };
-  catppuccin.starship.enable = true;
+  # Disabled due to derivation issues with nixpkgs version mismatch
+  # catppuccin.starship.enable = true;
 }

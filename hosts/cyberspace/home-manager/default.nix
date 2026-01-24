@@ -12,9 +12,9 @@
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
-    ../../../home-manager/common
+    ../../../home-manager/modules/common
     ../../../home-manager/linux
-    ../../../home-manager/common/doom.nix
+    ../../../home-manager/modules/common/doom.nix
   ];
 
   home = {
@@ -39,20 +39,21 @@
     ];
   };
 
-  catppuccin.nvim.enable = true;
-  programs.neovim = {
-    enable = true;
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
-    plugins = with pkgs.vimPlugins; [
-      nvim-lspconfig
-      nvim-treesitter
-      plenary-nvim
-      mini-nvim
-    ];
-    extraConfig = ''
-      set clipboard=unnamedplus
-    '';
-  };
+  # Disabled due to home-manager/nixpkgs version mismatch
+  # catppuccin.nvim.enable = true;
+  # programs.neovim = {
+  #   enable = true;
+  #   viAlias = true;
+  #   vimAlias = true;
+  #   vimdiffAlias = true;
+  #   plugins = with pkgs.vimPlugins; [
+  #     nvim-lspconfig
+  #     nvim-treesitter
+  #     plenary-nvim
+  #     mini-nvim
+  #   ];
+  #   extraConfig = ''
+  #     set clipboard=unnamedplus
+  #   '';
+  # };
 }

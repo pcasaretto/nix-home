@@ -20,4 +20,31 @@ _: {
     "d /mnt/external/media 0775 pcasaretto external -"
     "d /mnt/external/downloads 0775 pcasaretto external -"
   ];
+
+  # Self-healing: restart media services when external drive is (re)mounted
+  systemd.services.external-drive-services-restart = {
+    description = "Restart services after external drive mount";
+    after = [ "mnt-external.mount" ];
+    bindsTo = [ "mnt-external.mount" ];
+    wantedBy = [ "mnt-external.mount" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      # Wait for mount to stabilize before restarting services
+      ExecStartPre = "/run/current-system/sw/bin/sleep 3";
+      ExecStart = "/run/current-system/sw/bin/systemctl restart --no-block jellyfin sonarr radarr transmission phpfpm-nextcloud";
+    };
+
+    # Only restart if services were previously running (avoid restart on boot)
+    unitConfig = {
+      ConditionPathExists = "/run/systemd/units/invocation:jellyfin.service";
+    };
+  };
+
+  # Disable USB autosuspend for SanDisk drives to prevent disconnects
+  services.udev.extraRules = ''
+    # Disable autosuspend for SanDisk USB devices
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0781", ATTR{power/autosuspend}="-1"
+  '';
 }
