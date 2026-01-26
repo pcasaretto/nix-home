@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   ...
 }: let
@@ -7,8 +8,10 @@
     builtins.concatStringsSep "\n"
     (
       (map builtins.readFile [
-        ./zsh/functions/git-utils.zsh
+        ./zsh/functions/current_branch.zsh
+        ./zsh/functions/current_repository.zsh
         ./zsh/functions/e.zsh
+        ./zsh/functions/git_functions.zsh
         ./zsh/functions/dev.zsh
         ./zsh/correction.zsh
         ./zsh/completion.zsh
@@ -20,13 +23,14 @@
     );
 in {
   programs.zsh = {
-    dotDir = config.home.homeDirectory;
+    dotDir = "${config.xdg.configHome}/zsh";
     autocd = true;
     defaultKeymap = "viins";
     enable = true;
     enableCompletion = true;
     shellAliases = {
       l = "eza -lAh";
+      gst = "git status";
     };
 
     initContent = customZshStuff;
