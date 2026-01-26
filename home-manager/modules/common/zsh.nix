@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   ...
 }: let
@@ -22,6 +23,7 @@
     );
 in {
   programs.zsh = {
+    dotDir = "${config.xdg.configHome}/zsh";
     autocd = true;
     defaultKeymap = "viins";
     enable = true;

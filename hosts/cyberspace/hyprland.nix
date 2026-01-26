@@ -5,6 +5,7 @@
 }: {
 	programs.hyprland = {
 		enable = true;
+		withUWSM = true;  # Proper systemd integration
 # set the flake package
 		package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
 # portal package in sync
@@ -23,7 +24,7 @@
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --cmd Hyprland";
+          command = "${pkgs.tuigreet}/bin/tuigreet --cmd 'uwsm start hyprland-uwsm.desktop'";
           user = "greeter";
         };
       };
