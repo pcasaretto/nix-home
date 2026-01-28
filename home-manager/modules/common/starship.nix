@@ -13,7 +13,7 @@ in {
     enable = true;
     settings = {
       format = lib.concatStrings [
-        ("$" + "{custom.path}")
+        ("$path")
         ("$" + "{custom.git_branch_workaround}")
         "$git_status"
         "$cmd_duration"
@@ -29,7 +29,6 @@ in {
       custom = {
         path = {
           command = "echo $PWD | sed \"s|$HOME|~|\"";
-          when = "true";
           style = "${colors.teal}";
           format = "[$output]($style) ";
         };

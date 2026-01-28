@@ -91,17 +91,22 @@
     (setq parinfer-rust-library
           (concat (file-name-directory binary-path) "../lib/libparinfer_rust.dylib"))))
 
-;; Use consult-fd for project file finding - no cache, better fuzzy search
-(after! consult
+;; Use fzf.el for project file finding - same fuzzy search as Ctrl+T in shell
+(use-package! fzf
+  :config
+  (setq fzf/args "-x --print-query --bind 'ctrl-a:select-all,ctrl-d:deselect-all'")
+  (setq fzf/executable "fzf")
+  (setq fzf/git-grep-args "-i --line-number %s")
+  (setq fzf/position-bottom t)
+  (setq fzf/window-height 15)
+  ;; Use the same fd command as zsh Ctrl+T
+  (setenv "FZF_DEFAULT_COMMAND" "fd --type f --strip-cwd-prefix")
   (map! :leader
-        "SPC" #'consult-fd))
+        "SPC" #'fzf-find-file))
 
-;; Configure orderless with flex matching for fzf-like fuzzy search
-(after! orderless
-  (setq orderless-matching-styles '(orderless-flex orderless-literal orderless-regexp)))
-
-;; Remove xref backend from lookup-definition-functions
+;; Remove fallback backends from lookup-definition-functions that spawn rg and freeze Emacs
 (remove-hook '+lookup-definition-functions #'+lookup-xref-definitions-backend-fn)
+(remove-hook '+lookup-definition-functions #'+lookup-dumb-jump-backend-fn)
 
 (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
 (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)

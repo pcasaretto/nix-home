@@ -80,7 +80,6 @@ in {
       path = {
         shell = lib.mkForce ["${pkgs.unstable.nushell}/bin/nu" "-c"];
         command = lib.mkForce "nu ${pathPromptScript}";
-        when = lib.mkForce "true";
         format = lib.mkForce "$output ";
       };
     };

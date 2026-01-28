@@ -61,3 +61,5 @@
 (package! kkp)
 
 (package! chordpro-mode)
+
+(package! fzf)
