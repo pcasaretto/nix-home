@@ -39,23 +39,6 @@
           set -g @offline_icon "nok"
         '';
       }
-      {
-        plugin = git-worktree;
-        extraConfig = ''
-          # status left look and feel
-          set -g status-left-length 100
-          set -g status-left ""
-          set -ga status-left "#{?client_prefix,#{#[bg=#{@thm_red},fg=#{@thm_bg},bold]  #S },#{#[bg=#{@thm_bg},fg=#{@thm_green}]  #S }}"
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_maroon}]  #{pane_current_command} "
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_blue}]  #{=/-32/...:#{s|$USER|~|:#{b:pane_current_path}}} "
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]#{?#{!=:#{git_worktree},},│,}"
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_lavender}]#{?#{!=:#{git_worktree},}, 󰐅 #{git_worktree} ,}"
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]#{?window_zoomed_flag,│,}"
-          set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_yellow}]#{?window_zoomed_flag,  zoom ,}"
-        '';
-      }
     ];
 
     enable = true;
@@ -72,6 +55,17 @@
 
       # this removes ESC key delay
       set -s escape-time 0
+
+      # status left look and feel
+      set -g status-left-length 100
+      set -g status-left ""
+      set -ga status-left "#{?client_prefix,#{#[bg=#{@thm_red},fg=#{@thm_bg},bold]  #S },#{#[bg=#{@thm_bg},fg=#{@thm_green}]  #S }}"
+      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
+      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_maroon}]  #{pane_current_command} "
+      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]│"
+      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_blue}]  #{=/-32/...:#{s|$USER|~|:#{b:pane_current_path}}} "
+      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_overlay_0},none]#{?window_zoomed_flag,│,}"
+      set -ga status-left "#[bg=#{@thm_bg},fg=#{@thm_yellow}]#{?window_zoomed_flag,  zoom ,}"
 
       set -ga status-right "#[bg=#{@thm_bg},fg=#{@thm_overlay_0}, none]│"
       set -ga status-right "#[bg=#{@thm_bg},fg=#{@thm_blue}] 󰭦 %Y-%m-%d 󰅐 %H:%M "
