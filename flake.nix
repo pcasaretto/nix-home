@@ -54,6 +54,10 @@
     try.url = "github:tobi/try";
     try.inputs.nixpkgs.follows = "nixpkgs";
 
+    qmd.url = "github:tobi/qmd";
+    qmd.inputs.nixpkgs.follows = "nixpkgs";
+    qmd.inputs.flake-utils.follows = "flake-utils";
+
     tmux-git-worktree.url = "github:pcasaretto/tmux-git-worktree";
     tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs";
 

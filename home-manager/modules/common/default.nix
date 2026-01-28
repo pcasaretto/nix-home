@@ -22,6 +22,7 @@
     ./starship.nix
     ./tmux.nix
     ./try.nix
+    ./qmd.nix
     ./wezterm.nix
     ./xdg.nix
     ./zsh.nix

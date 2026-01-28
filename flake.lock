@@ -371,6 +371,29 @@
         "type": "github"
       }
     },
+    "qmd": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1769580182,
+        "narHash": "sha256-0yWy0KhlMIbl3OM3nCMNR3XDtLppGVb7aNmjm+KA008=",
+        "owner": "tobi",
+        "repo": "qmd",
+        "rev": "64c6e6c2e30d6063e0020db0b5eb515c56f7f08e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tobi",
+        "repo": "qmd",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "catppuccin": "catppuccin",
@@ -383,6 +406,7 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "qmd": "qmd",
         "sops-nix": "sops-nix",
         "tabline-wez": "tabline-wez",
         "tmux-git-worktree": "tmux-git-worktree",
