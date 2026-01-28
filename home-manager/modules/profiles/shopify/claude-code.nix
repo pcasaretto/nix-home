@@ -31,16 +31,120 @@
   # Shopify-specific settings to merge (adds MCP tool permissions)
   shopifySettings = {
     permissions.allow = [
+      # MCP tools - Shopify internal
       "mcp__vault-set-search__search_vault_set"
       "mcp__experiments-mcp__flag_status"
       "mcp__experiments-mcp__flag_create"
+      "mcp__experiments-mcp__search"
+      "mcp__shopify-internal__grokt_search"
+
+      # MCP tools - Data portal
       "mcp__data-portal__list_data_platform_docs"
       "mcp__data-portal__search_data_platform"
       "mcp__data-portal__get_entry_metadata"
       "mcp__data-portal__query_bigquery"
       "mcp__data-portal__analyze_query_results"
+
+      # MCP tools - Google Workspace
       "mcp__gworkspace-mcp__get_file_content"
+      "mcp__gworkspace-mcp__read_file"
+
+      # MCP tools - Slack
+      "mcp__playground-slack-mcp__get_messages"
+      "mcp__playground-slack-mcp__slack_search"
+      "mcp__playground-slack-mcp__slack_get_thread_replies"
+
+      # MCP tools - Notifications
       "mcp__macos-notify__notify"
+
+      # Bash - File utilities (read-only)
+      "Bash(ls:*)"
+      "Bash(find:*)"
+      "Bash(cat:*)"
+      "Bash(head:*)"
+      "Bash(wc:*)"
+      "Bash(lsof:*)"
+
+      # Bash - Search/text processing
+      "Bash(grep:*)"
+      "Bash(rg:*)"
+      "Bash(jq:*)"
+      "Bash(awk:*)"
+
+      # Bash - System info
+      "Bash(scutil:*)"
+      "Bash(brew list:*)"
+      "Bash(launchctl list:*)"
+      "Bash(dig:*)"
+      "Bash(time:*)"
+      "Bash(echo $GEM_HOME)"
+
+      # Bash - Git (read-only)
+      "Bash(git status:*)"
+      "Bash(git log:*)"
+      "Bash(git diff:*)"
+      "Bash(git branch:*)"
+      "Bash(git show:*)"
+      "Bash(git reflog:*)"
+      "Bash(git rev-parse:*)"
+      "Bash(git merge-base:*)"
+      "Bash(git ls-tree:*)"
+      "Bash(git remote get-url:*)"
+
+      # Bash - GitHub CLI
+      "Bash(gh pr:*)"
+      "Bash(gh issue:*)"
+      "Bash(gh api:*)"
+      "Bash(gh repo view:*)"
+      "Bash(gh search:*)"
+
+      # Bash - Nix ecosystem
+      "Bash(nix-store:*)"
+      "Bash(nix fmt:*)"
+      "Bash(nix build:*)"
+      "Bash(nix flake:*)"
+      "Bash(nix flake check:*)"
+      "Bash(nix develop:*)"
+      "Bash(nix-shell:*)"
+      "Bash(nix eval:*)"
+
+      # Bash - Dev tools
+      "Bash(ruby:*)"
+      "Bash(python3:*)"
+      "Bash(make:*)"
+      "Bash(mkdir:*)"
+      "Bash(/usr/bin/osascript:*)"
+      "Bash(monobus --help:*)"
+
+      # Bash - Shopify dev commands
+      "Bash(/opt/dev/bin/dev version)"
+      "Bash(/opt/dev/bin/dev test:*)"
+      "Bash(/opt/dev/bin/dev style:*)"
+      "Bash(/opt/dev/bin/dev typecheck:*)"
+      "Bash(/opt/dev/bin/dev up:*)"
+
+      # Bash - shadowenv exec combinations
+      "Bash(shadowenv exec:*)"
+      "Bash(shadowenv exec -- /opt/dev/bin/dev test:*)"
+      "Bash(shadowenv exec -- /opt/dev/bin/dev style:*)"
+      "Bash(shadowenv exec -- /opt/dev/bin/dev typecheck:*)"
+      "Bash(shadowenv exec -- /opt/dev/bin/dev up:*)"
+      "Bash(shadowenv exec -- bundle exec rspec:*)"
+      "Bash(shadowenv exec -- bundle exec ruby:*)"
+      "Bash(shadowenv exec -- bundle exec rake:*)"
+
+      # Skills
+      "Skill(shopify-verdict-flags)"
+      "Skill(macos-notify)"
+      "Skill(code-delta)"
+
+      # Web access
+      "WebSearch"
+      "WebFetch(domain:github.com)"
+      "WebFetch(domain:raw.githubusercontent.com)"
+
+      # Read access
+      "Read(/Users/paulo.casaretto/world/**)"
     ];
   };
   shopifySettingsFile = pkgs.writeText "claude-settings-shopify.json" (builtins.toJSON shopifySettings);
