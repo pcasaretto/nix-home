@@ -13,7 +13,7 @@ in {
     enable = true;
     settings = {
       format = lib.concatStrings [
-        ("$path")
+        "$path"
         ("$" + "{custom.git_branch_workaround}")
         "$git_status"
         "$cmd_duration"
