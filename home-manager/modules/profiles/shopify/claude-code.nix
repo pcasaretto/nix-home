@@ -6,16 +6,19 @@
   pkgs,
   ...
 }: let
+  cc-safety-net = pkgs.callPackage ../../../../pkgs/cc-safety-net {};
+
   # Read memory content from both sources
   personalMemory = builtins.readFile ../../common/claude-code/memory-personal.md;
   shopifyMemory = builtins.readFile ./claude-code-memory.md;
 
-  # Merge command directories (common + shopify)
+  # Merge command directories (common + shopify + safety-net)
   mergedCommands = pkgs.symlinkJoin {
     name = "claude-code-commands";
     paths = [
       ../../common/claude-code/commands
       ./commands
+      "${cc-safety-net}/share/cc-safety-net/commands"
     ];
   };
 

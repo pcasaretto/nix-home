@@ -5,11 +5,28 @@
   pkgs,
   ...
 }: let
+  cc-safety-net = pkgs.callPackage ../../../../pkgs/cc-safety-net {};
+
   # Settings we want to control via nix (merged with existing settings.json)
   nixSettings = {
     model = "opus";
     alwaysThinkingEnabled = true;
     permissions.deny = ["Bash(git rebase)"];
+    # Disable the plugin since we manage it via nix
+    enabledPlugins."safety-net@cc-marketplace" = false;
+    hooks = {
+      PreToolUse = [
+        {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = "${cc-safety-net}/bin/cc-safety-net --claude-code";
+            }
+          ];
+        }
+      ];
+    };
   };
   nixSettingsFile = pkgs.writeText "claude-settings-nix.json" (builtins.toJSON nixSettings);
 in {
