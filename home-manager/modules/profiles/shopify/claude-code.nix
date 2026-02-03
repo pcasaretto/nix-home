@@ -57,6 +57,15 @@
       "mcp__playground-slack-mcp__slack_search"
       "mcp__playground-slack-mcp__slack_get_thread_replies"
 
+
+      "mcp__observe__*"
+      "mcp__observe__query_dataset"
+      "mcp__observe__get_datasets_by_signal"
+      "mcp__observe__get_error_groups"
+      "mcp__observe__get_observe_metrics"
+      "mcp__observe__get_investigate_query_docs"
+      "mcp__observe__range_metrics_query"
+
       # MCP tools - Notifications
       "mcp__macos-notify__notify"
 

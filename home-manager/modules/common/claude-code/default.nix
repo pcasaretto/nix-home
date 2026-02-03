@@ -11,6 +11,7 @@
   nixSettings = {
     model = "opus";
     alwaysThinkingEnabled = true;
+    includeCoAuthoredBy = false;
     permissions.deny = ["Bash(git rebase)"];
     # Disable the plugin since we manage it via nix
     enabledPlugins."safety-net@cc-marketplace" = false;
