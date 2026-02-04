@@ -22,6 +22,22 @@
       local statusbar = dofile(wezterm.config_dir .. "/statusbar.lua")
       statusbar.setup()
 
+      -- Only open links when CMD is held
+      config.mouse_bindings = {
+        -- CMD-click opens the link under the mouse cursor
+        {
+          event = { Up = { streak = 1, button = 'Left' } },
+          mods = 'CMD',
+          action = wezterm.action.OpenLinkAtMouseCursor,
+        },
+        -- Regular click just completes selection (no link opening)
+        {
+          event = { Up = { streak = 1, button = 'Left' } },
+          mods = 'NONE',
+          action = wezterm.action.CompleteSelection 'ClipboardAndPrimarySelection',
+        },
+      }
+
       config.keys = {
         -- New window from home (not inherit cwd)
         {
