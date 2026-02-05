@@ -10,6 +10,9 @@ _: {
     fsType = "ext4";
     options = [
       "nofail" # Don't fail boot if drive is not connected
+      "x-systemd.automount" # Auto-mount when accessed and on reconnect
+      "x-systemd.idle-timeout=0" # Never unmount due to idle
+      "x-systemd.mount-timeout=30" # Give it time to mount
     ];
   };
 
