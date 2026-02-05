@@ -40,51 +40,41 @@ in
         sleep 1
       done
 
+      # Check if Jellyfin is still in startup wizard mode
+      WIZARD_CODE=$(${pkgs.curl}/bin/curl -s -o /dev/null -w "%{http_code}" \
+        http://127.0.0.1:${toString ports.media.jellyfin}/Startup/Configuration)
+
+      if [ "$WIZARD_CODE" != "200" ]; then
+        echo "Startup wizard already completed (HTTP $WIZARD_CODE), nothing to do"
+        exit 0
+      fi
+
+      echo "Startup wizard is active, proceeding with admin user creation"
       ADMIN_USER=$(cat ${config.sops.secrets.jellyfin-admin-username.path})
       ADMIN_PASS=$(cat ${config.sops.secrets.jellyfin-admin-password.path})
 
-      # Wait for the Users API to return valid JSON (may take a few seconds after health check passes)
-      USER_COUNT=""
-      for i in {1..10}; do
-        RESPONSE=$(${pkgs.curl}/bin/curl -s http://127.0.0.1:${toString ports.media.jellyfin}/Users/Public 2>/dev/null)
-        USER_COUNT=$(echo "$RESPONSE" | ${pkgs.jq}/bin/jq -e '. | length' 2>/dev/null) && break
-        echo "Waiting for Users API to be ready (attempt $i)..."
-        sleep 2
+      for attempt in {1..3}; do
+        HTTP_CODE=$(${pkgs.curl}/bin/curl -s -w "%{http_code}" -o /tmp/jellyfin-response.txt \
+          -X POST "http://127.0.0.1:${toString ports.media.jellyfin}/Startup/User" \
+          -H "Content-Type: application/json" \
+          -d "{\"Name\": \"$ADMIN_USER\", \"Password\": \"$ADMIN_PASS\"}")
+
+        if [ "$HTTP_CODE" = "204" ] || [ "$HTTP_CODE" = "200" ]; then
+          echo "Admin user created successfully (HTTP $HTTP_CODE)"
+          ${pkgs.curl}/bin/curl -s -X POST "http://127.0.0.1:${toString ports.media.jellyfin}/Startup/Complete" \
+            -H "Content-Type: application/json" > /dev/null
+          echo "Startup wizard completed"
+          exit 0
+        else
+          echo "Attempt $attempt failed with HTTP $HTTP_CODE: $(cat /tmp/jellyfin-response.txt)"
+          if [ $attempt -lt 3 ]; then
+            sleep 2
+          fi
+        fi
       done
 
-      if [ -z "$USER_COUNT" ]; then
-        echo "Failed to get user count from Jellyfin API after 10 attempts"
-        exit 1
-      fi
-
-      if [ "$USER_COUNT" = "0" ]; then
-        echo "No users found. Creating initial admin user: $ADMIN_USER"
-
-        for attempt in {1..3}; do
-          HTTP_CODE=$(${pkgs.curl}/bin/curl -s -w "%{http_code}" -o /tmp/jellyfin-response.txt \
-            -X POST "http://127.0.0.1:${toString ports.media.jellyfin}/Startup/User" \
-            -H "Content-Type: application/json" \
-            -d "{\"Name\": \"$ADMIN_USER\", \"Password\": \"$ADMIN_PASS\"}")
-
-          if [ "$HTTP_CODE" = "204" ] || [ "$HTTP_CODE" = "200" ]; then
-            echo "Admin user created successfully (HTTP $HTTP_CODE)"
-            ${pkgs.curl}/bin/curl -s -X POST "http://127.0.0.1:${toString ports.media.jellyfin}/Startup/Complete" \
-              -H "Content-Type: application/json" > /dev/null
-            echo "Startup wizard completed"
-            exit 0
-          else
-            echo "Attempt $attempt failed with HTTP $HTTP_CODE: $(cat /tmp/jellyfin-response.txt)"
-            if [ $attempt -lt 3 ]; then
-              sleep 2
-            fi
-          fi
-        done
-
-        echo "Failed to create admin user after 3 attempts"
-        exit 1
-      else
-        echo "Users already exist ($USER_COUNT users), skipping admin user creation"
-      fi
+      echo "Failed to create admin user after 3 attempts"
+      exit 1
     '';
   };
 
