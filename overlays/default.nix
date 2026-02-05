@@ -49,6 +49,11 @@
       };
     };
 
+  # Spellbook D&D 5e spell reference SPA from external flake
+  spellbook = final: _prev: {
+    spellbook = inputs.spellbook.packages.${final.system}.default;
+  };
+
   # Add tmux-git-worktree plugin to tmuxPlugins
   tmux-git-worktree = final: prev: {
     tmuxPlugins =

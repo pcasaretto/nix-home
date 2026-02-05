@@ -17,5 +17,6 @@
     ./ntfy.nix
     ./nextcloud.nix
     ./home-assistant.nix
+    ./spellbook.nix
   ];
 }
