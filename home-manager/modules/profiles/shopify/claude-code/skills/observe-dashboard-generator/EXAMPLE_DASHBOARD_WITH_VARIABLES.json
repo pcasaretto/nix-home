@@ -1,0 +1,594 @@
+{
+  "_comment": "Example dashboard demonstrating template variables for dynamic filtering. This dashboard monitors billing change verifiers with a dropdown to filter by verifier_type.",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "metrics_mainorg"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "_comment": "Note: verifier_type=~\"$verifier_type\" uses regex match (~) to filter by the variable",
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "metrics_mainorg"
+          },
+          "editorMode": "builder",
+          "expr": "sum by (verifier_type)(rate(merchant_subscriptions_billing_change_verifiers_validation{verifier_type=~\"$verifier_type\"}[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "{{verifier_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Validation Calls by Verifier Type",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "metrics_mainorg"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 3,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "metrics_mainorg"
+          },
+          "editorMode": "code",
+          "expr": "sum by (verifier_type)(rate(merchant_subscriptions_billing_change_verifiers_validation{valid=\"true\", verifier_type=~\"$verifier_type\"}[$__rate_interval])) / sum by (verifier_type)(rate(merchant_subscriptions_billing_change_verifiers_validation{verifier_type=~\"$verifier_type\"}[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "{{verifier_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Validation Pass Rate by Verifier Type",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 4,
+      "panels": [],
+      "title": "Detail for Selected Verifier Type",
+      "type": "row"
+    },
+    {
+      "_comment": "This single panel replaces 4 separate hardcoded panels (one per verifier_type). The title uses ${verifier_type} to show what's selected.",
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "metrics_mainorg"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Valid"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Invalid"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "id": 5,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "metrics_mainorg"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_billing_change_verifiers_validation{verifier_type=~\"$verifier_type\", valid=\"true\"}[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "Valid",
+          "range": true,
+          "refId": "Valid"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "metrics_mainorg"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_billing_change_verifiers_validation{verifier_type=~\"$verifier_type\", valid=\"false\"}[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "Invalid",
+          "range": true,
+          "refId": "Invalid"
+        }
+      ],
+      "title": "Validation: ${verifier_type}",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "metrics_mainorg"
+      },
+      "description": "Comparison results for selected verifier type(s)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Match"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mismatch"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "id": 6,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "metrics_mainorg"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_billing_change_verifiers_comparison{verifier_type=~\"$verifier_type\", match=\"true\"}[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "Match",
+          "range": true,
+          "refId": "Match"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "metrics_mainorg"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_billing_change_verifiers_comparison{verifier_type=~\"$verifier_type\", match=\"false\"}[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "Mismatch",
+          "range": true,
+          "refId": "Mismatch"
+        }
+      ],
+      "title": "Comparison: ${verifier_type}",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [
+    "Example",
+    "Template Variables"
+  ],
+  "templating": {
+    "_comment": "CRITICAL: The query object must include mode, metric, and label fields for promql-query-builder datasource. A plain label_values() string won't populate the dropdown.",
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "datasource": {
+          "type": "promql-query-builder",
+          "uid": "metrics_mainorg"
+        },
+        "definition": "label_values(merchant_subscriptions_billing_change_verifiers_validation, verifier_type)",
+        "includeAll": true,
+        "label": "Verifier Type",
+        "multi": true,
+        "name": "verifier_type",
+        "options": [],
+        "query": {
+          "advanced_query": "",
+          "label": "verifier_type",
+          "metric": "merchant_subscriptions_billing_change_verifiers_validation",
+          "metricLabels": [],
+          "mode": "builder",
+          "qryType": 1,
+          "query": "label_values(merchant_subscriptions_billing_change_verifiers_validation, verifier_type)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "15s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "utc",
+  "title": "Example Dashboard with Template Variables",
+  "uid": "example-with-variables",
+  "version": 1,
+  "weekStart": ""
+}

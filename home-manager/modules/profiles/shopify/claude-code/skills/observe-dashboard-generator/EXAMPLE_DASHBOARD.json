@@ -1,0 +1,1402 @@
+{
+  "_comment": "Example dashboard for an entitlements validation consumer. Monitors correctness (event vs DB match), freshness (replication lag), and operational health (errors, skips).",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.95
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval])) / (sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval])) + sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_mismatch[$__rate_interval])))",
+          "instant": true,
+          "legendFormat": "Match Rate",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Event Correctness Rate",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5000
+              },
+              {
+                "color": "red",
+                "value": 30000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_event_to_db_lag_ms[$__rate_interval])) by (le))",
+          "instant": true,
+          "legendFormat": "p50",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Event-to-DB Lag (p50)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10000
+              },
+              {
+                "color": "red",
+                "value": 60000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_consumer_lag_ms[$__rate_interval])) by (le))",
+          "instant": true,
+          "legendFormat": "p50",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Consumer Lag (p50)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "(sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval])) + sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_mismatch[$__rate_interval]))) * 60",
+          "instant": true,
+          "legendFormat": "Throughput",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Events Validated (rpm)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Correctness: Event vs Database",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "id": 7,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "min"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval])) / (sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval])) + sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_mismatch[$__rate_interval])))",
+          "instant": false,
+          "legendFormat": "Match Rate",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Event Correctness Rate Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Match"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mismatch"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "id": 8,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval])) * 60",
+          "instant": false,
+          "legendFormat": "Match",
+          "range": true,
+          "refId": "Match"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_mismatch[$__rate_interval])) * 60",
+          "instant": false,
+          "legendFormat": "Mismatch",
+          "range": true,
+          "refId": "Mismatch"
+        }
+      ],
+      "title": "Match vs Mismatch Volume",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Freshness: Replication Lag",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "description": "Time between when the event was created (message_timestamp) and when the DB record was last updated. Low values indicate events are emitted soon after DB changes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5000
+              },
+              {
+                "color": "red",
+                "value": 30000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 10,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_event_to_db_lag_ms[$__rate_interval])) by (le))",
+          "instant": false,
+          "legendFormat": "p50",
+          "range": true,
+          "refId": "p50"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_event_to_db_lag_ms[$__rate_interval])) by (le))",
+          "instant": false,
+          "legendFormat": "p90",
+          "range": true,
+          "refId": "p90"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_event_to_db_lag_ms[$__rate_interval])) by (le))",
+          "instant": false,
+          "legendFormat": "p99",
+          "range": true,
+          "refId": "p99"
+        }
+      ],
+      "title": "Event-to-DB Lag (Event Emission Delay)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "description": "Time between when the event was created and when the consumer processed it. High values indicate Kafka consumer lag.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10000
+              },
+              {
+                "color": "red",
+                "value": 60000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 11,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_consumer_lag_ms[$__rate_interval])) by (le))",
+          "instant": false,
+          "legendFormat": "p50",
+          "range": true,
+          "refId": "p50"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_consumer_lag_ms[$__rate_interval])) by (le))",
+          "instant": false,
+          "legendFormat": "p90",
+          "range": true,
+          "refId": "p90"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(merchant_subscriptions_entitlements_validation_consumer_freshness_consumer_lag_ms[$__rate_interval])) by (le))",
+          "instant": false,
+          "legendFormat": "p99",
+          "range": true,
+          "refId": "p99"
+        }
+      ],
+      "title": "Consumer Lag (Kafka Processing Delay)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Operational Health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "description": "Events skipped during processing, broken down by reason",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "flag_disabled"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cache_missing"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "deserialize_failed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "invalid_shop_id"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 13,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum by (reason)(rate(merchant_subscriptions_entitlements_validation_consumer_skipped[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "{{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Skipped Events by Reason",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "description": "Errors encountered during message processing",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqpm"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "transient_retry"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "skipped"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "unexpected"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 14,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum by (action)(rate(merchant_subscriptions_entitlements_validation_consumer_error[$__rate_interval]) * 60)",
+          "instant": false,
+          "legendFormat": "{{action}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Errors by Action",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "promql-query-builder",
+        "uid": "YOUR_DATASOURCE_UID"
+      },
+      "description": "Breakdown of all message outcomes: validated (match/mismatch), skipped, and errors",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "percent"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Match"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mismatch"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Skipped"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Error"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 15,
+      "maxDataPoints": 200,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_match[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "Match",
+          "range": true,
+          "refId": "Match"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_correctness_mismatch[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "Mismatch",
+          "range": true,
+          "refId": "Mismatch"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_skipped[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "Skipped",
+          "range": true,
+          "refId": "Skipped"
+        },
+        {
+          "datasource": {
+            "type": "promql-query-builder",
+            "uid": "YOUR_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(merchant_subscriptions_entitlements_validation_consumer_error[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "Error",
+          "range": true,
+          "refId": "Error"
+        }
+      ],
+      "title": "Message Outcome Distribution",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [
+    "Monetization Foundations",
+    "Entitlements"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "15s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "utc",
+  "title": "Entitlements Validation Consumer",
+  "uid": "entitlements-validation-consumer",
+  "version": 1,
+  "weekStart": ""
+}

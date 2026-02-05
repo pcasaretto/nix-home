@@ -7,7 +7,7 @@
   ...
 }: {
   imports = [
-    ./shopify/claude-code.nix
+    ./shopify/claude-code
     ./shopify/starship.nix
   ];
 
