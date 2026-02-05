@@ -461,6 +461,7 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "qmd": "qmd",
         "sops-nix": "sops-nix",
+        "spellbook": "spellbook",
         "tabline-wez": "tabline-wez",
         "try": "try"
       }
@@ -483,6 +484,26 @@
         "owner": "mic92",
         "repo": "sops-nix",
         "type": "github"
+      }
+    },
+    "spellbook": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-nixos"
+        ]
+      },
+      "locked": {
+        "lastModified": 1770207241,
+        "narHash": "sha256-nmrP/jEUdKpnyWUtJFbSBNybTPPJj4Tj69I448LnXj4=",
+        "ref": "refs/heads/main",
+        "rev": "6b2707511f1c055239cb13fdd25bc3e69635a8d3",
+        "revCount": 12,
+        "type": "git",
+        "url": "ssh://git@github.com/pcasaretto/spellbook"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/pcasaretto/spellbook"
       }
     },
     "systems": {

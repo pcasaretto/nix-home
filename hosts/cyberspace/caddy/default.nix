@@ -72,6 +72,9 @@ in
       };
     };
 
+    # Provide MIME types database so Caddy/Go serves correct Content-Type headers
+    environment.etc."mime.types".source = "${pkgs.mailcap}/etc/mime.types";
+
     # Firewall: allow HTTPS on Tailscale interface only
     networking.firewall.interfaces.tailscale0 = {
       allowedTCPPorts = [ 80 443 ];
