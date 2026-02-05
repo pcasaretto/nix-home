@@ -44,6 +44,7 @@
     ./openssh.nix
     ./sops.nix
     ./tailscale.nix
+    ./tailscale-funnel.nix
     ./hyprland.nix
     # Caddy replaces nginx - auto-manages Tailscale TLS certs
     ./caddy
