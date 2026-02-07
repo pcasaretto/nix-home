@@ -160,7 +160,6 @@
       iw
       wirelesstools
 
-      pkgs.unstable.beads
       pkgs.unstable.claude-code
     ];
 
