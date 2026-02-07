@@ -155,25 +155,23 @@ in
         ];
       };
 
-      # Configure alerting with ntfy webhook
+      # Configure alerting with Telegram
       alerting = {
         contactPoints.settings = {
           apiVersion = 1;
           contactPoints = [
             {
               orgId = 1;
-              name = "ntfy-alerts";
+              name = "telegram-alerts";
               receivers = [
                 {
-                  uid = "ntfy-webhook";
-                  type = "webhook";
+                  uid = "telegram-contact";
+                  type = "telegram";
                   disableResolveMessage = false;
                   settings = {
-                    url = "https://ntfy.${config.services.cyberspace.domain}/grafana";
-                    httpMethod = "POST";
-                    username = "$__file{${config.sops.secrets.ntfy-grafana-username.path}}";
-                    password = "$__file{${config.sops.secrets.ntfy-grafana-password.path}}";
-                    maxAlerts = "10";
+                    bottoken = "$__file{${config.sops.secrets.telegram-token-grafana.path}}";
+                    chatid = "$__file{${config.sops.secrets.telegram-chat-id-grafana.path}}";
+                    parse_mode = "HTML";
                   };
                 }
               ];
@@ -186,7 +184,7 @@ in
           policies = [
             {
               orgId = 1;
-              receiver = "ntfy-alerts";
+              receiver = "telegram-alerts";
               group_by = [ "alertname" "grafana_folder" ];
               group_wait = "30s";
               group_interval = "5m";

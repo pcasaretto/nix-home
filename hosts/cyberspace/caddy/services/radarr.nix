@@ -222,10 +222,10 @@ EOF
     '';
   };
 
-  # Configure ntfy notifications via API
-  systemd.services.radarr-ntfy-setup = {
-    description = "Configure Radarr ntfy notifications";
-    after = [ "radarr.service" "ntfy-sh.service" ];
+  # Configure Telegram notifications via API
+  systemd.services.radarr-telegram-setup = {
+    description = "Configure Radarr Telegram notifications";
+    after = [ "radarr.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
@@ -239,10 +239,10 @@ EOF
       sleep 3
 
       API_KEY=$(cat ${config.sops.secrets.radarr-api-key.path})
-      NTFY_USER=$(cat ${config.sops.secrets.ntfy-username.path})
-      NTFY_PASS=$(cat ${config.sops.secrets.ntfy-password.path})
+      BOT_TOKEN=$(cat ${config.sops.secrets.telegram-token.path})
+      CHAT_ID=$(cat ${config.sops.secrets.clawdbot-telegram-chat-id.path})
 
-      if [ -z "$API_KEY" ] || [ -z "$NTFY_USER" ] || [ -z "$NTFY_PASS" ]; then
+      if [ -z "$API_KEY" ] || [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
         echo "Failed to get required secrets"
         exit 1
       fi
@@ -252,19 +252,18 @@ EOF
         sleep 2
       done
 
-      # Check if ntfy notification already exists
-      if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.radarr}/api/v3/notification -H "X-Api-Key: $API_KEY" | ${pkgs.jq}/bin/jq -e '.[] | select(.name == "ntfy")' > /dev/null 2>&1; then
-        echo "ntfy notification already configured"
+      # Check if Telegram notification already exists
+      if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString ports.media.radarr}/api/v3/notification -H "X-Api-Key: $API_KEY" | ${pkgs.jq}/bin/jq -e '.[] | select(.name == "Telegram")' > /dev/null 2>&1; then
+        echo "Telegram notification already configured"
         exit 0
       fi
 
-      echo "Configuring ntfy notification for Radarr..."
+      echo "Configuring Telegram notification for Radarr..."
 
-      # Build payload from schema template (more reliable than manual JSON)
       PAYLOAD=$(${pkgs.curl}/bin/curl -sf "http://127.0.0.1:${toString ports.media.radarr}/api/v3/notification/schema" -H "X-Api-Key: $API_KEY" | \
-        ${pkgs.jq}/bin/jq --arg user "$NTFY_USER" --arg pass "$NTFY_PASS" '
-          .[] | select(.implementation == "Ntfy") |
-          .name = "ntfy" |
+        ${pkgs.jq}/bin/jq --arg token "$BOT_TOKEN" --arg chatid "$CHAT_ID" '
+          .[] | select(.implementation == "Telegram") |
+          .name = "Telegram" |
           .onGrab = true |
           .onDownload = true |
           .onUpgrade = true |
@@ -273,17 +272,16 @@ EOF
           .onHealthRestored = true |
           .onApplicationUpdate = true |
           .includeHealthWarnings = true |
-          (.fields[] | select(.name == "serverUrl").value) = "http://127.0.0.1:${toString ports.apps.ntfy}" |
-          (.fields[] | select(.name == "userName").value) = $user |
-          (.fields[] | select(.name == "password").value) = $pass |
-          (.fields[] | select(.name == "topics").value) = ["radarr"] |
-          (.fields[] | select(.name == "clickUrl").value) = "https://radarr.${domain}"
+          (.fields[] | select(.name == "botToken").value) = $token |
+          (.fields[] | select(.name == "chatId").value) = $chatid |
+          (.fields[] | select(.name == "sendSilently").value) = false |
+          (.fields[] | select(.name == "includeAppNameInTitle").value) = true
         ')
 
       ${pkgs.curl}/bin/curl -sf -X POST http://127.0.0.1:${toString ports.media.radarr}/api/v3/notification \
         -H "Content-Type: application/json" \
         -H "X-Api-Key: $API_KEY" \
-        -d "$PAYLOAD" && echo "ntfy notification configured successfully" || echo "Failed to configure ntfy notification"
+        -d "$PAYLOAD" && echo "Telegram notification configured successfully" || echo "Failed to configure Telegram notification"
     '';
   };
 }

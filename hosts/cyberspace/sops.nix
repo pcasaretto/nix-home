@@ -129,6 +129,47 @@
     mode = "0400";
   };
 
+  # Telegram bot token for clawdbot service
+  sops.secrets.clawdbot-telegram-token = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "clawdbot";
+    group = "clawdbot";
+    mode = "0400";
+  };
+
+  # Telegram bot token readable by Grafana for native Telegram alerting
+  sops.secrets.telegram-token-grafana = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    key = "clawdbot-telegram-token";
+    owner = "grafana";
+    group = "grafana";
+    mode = "0400";
+  };
+
+  # Telegram bot token readable by *arr services
+  sops.secrets.telegram-token = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    key = "clawdbot-telegram-token";
+    group = "media";
+    mode = "0440";
+  };
+
+  # Telegram chat ID for *arr services
+  sops.secrets.clawdbot-telegram-chat-id = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    group = "media";
+    mode = "0440";
+  };
+
+  # Telegram chat ID readable by Grafana
+  sops.secrets.telegram-chat-id-grafana = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    key = "clawdbot-telegram-chat-id";
+    owner = "grafana";
+    group = "grafana";
+    mode = "0400";
+  };
+
   # Home Assistant Long-Lived Access Token for Prometheus scraping
   # Generate from Home Assistant UI: Profile -> Security -> Long-Lived Access Tokens
   # Only enabled when services.cyberspace.homeAssistant.enableMetrics = true

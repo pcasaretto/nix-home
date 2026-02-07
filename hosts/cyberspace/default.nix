@@ -49,6 +49,7 @@
     # Caddy replaces nginx - auto-manages Tailscale TLS certs
     ./caddy
     ./metrics
+    ./clawdbot.nix
     ./external-drive.nix
     # No longer needed - Caddy handles TLS certs automatically:
     # ./tailscale-certs.nix
@@ -135,6 +136,7 @@
       mprocs
       pv
       killall
+      trash-cli
 
       # System tools
       vim
