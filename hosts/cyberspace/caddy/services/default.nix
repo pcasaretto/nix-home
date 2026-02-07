@@ -14,7 +14,7 @@
     ./prowlarr.nix
     ./transmission.nix
     ./pihole.nix
-    ./ntfy.nix
+
     ./nextcloud.nix
     ./home-assistant.nix
     ./spellbook.nix

@@ -43,14 +43,6 @@ let
     hash = "sha256-VxfwdVZeNFzlLGMxibMSXVGQ8cmuZ21u5mNvwKpHQb4=";
   };
 
-  # Fetch ntfy notification service dashboard
-  # Note: This dashboard requires both Prometheus (for metrics) and Loki (for logs)
-  # Only Prometheus panels will work until Loki is configured
-  ntfyDashboard = pkgs.fetchurl {
-    url = "https://grafana.com/api/dashboards/21873/revisions/1/download";
-    hash = "sha256-a6IdUbZaqRj3Mboc0aFvddZjO5+u7K1YgYAVbJr3OoI=";
-  };
-
   # Fetch Nextcloud dashboard
   nextcloudDashboard = pkgs.fetchurl {
     url = "https://grafana.com/api/dashboards/11033/revisions/1/download";
@@ -206,7 +198,7 @@ in
     "L+ /var/lib/grafana/dashboards/lidarr-dashboard.json - - - - ${lidarrDashboard}"
     "L+ /var/lib/grafana/dashboards/prowlarr-dashboard.json - - - - ${prowlarrDashboard}"
     "L+ /var/lib/grafana/dashboards/transmission-dashboard.json - - - - ${transmissionDashboard}"
-    "L+ /var/lib/grafana/dashboards/ntfy-dashboard.json - - - - ${ntfyDashboard}"
+
     "L+ /var/lib/grafana/dashboards/nextcloud-dashboard.json - - - - ${nextcloudDashboard}"
     "L+ /var/lib/grafana/dashboards/home-assistant-dashboard.json - - - - ${homeAssistantDashboard}"
     "L+ /var/lib/grafana/dashboards/loki-dashboard.json - - - - ${lokiDashboard}"

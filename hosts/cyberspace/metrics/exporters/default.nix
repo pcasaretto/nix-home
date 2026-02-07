@@ -9,7 +9,7 @@
     ./radarr-exporter.nix
     ./prowlarr-exporter.nix
     ./transmission-exporter.nix
-    ./ntfy-exporter.nix
+
     ./nextcloud-exporter.nix
     ./home-assistant-exporter.nix
   ];

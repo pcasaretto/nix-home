@@ -69,11 +69,6 @@
             description = "Open WebUI interface port";
           };
 
-          ntfy = lib.mkOption {
-            type = lib.types.int;
-            default = 2586;
-            description = "ntfy notification service HTTP port";
-          };
         };
 
         # Core Monitoring Services (9000-9099)
@@ -135,11 +130,6 @@
             description = "Transmission exporter port";
           };
 
-          ntfy = lib.mkOption {
-            type = lib.types.int;
-            default = 9713;
-            description = "ntfy metrics exporter port";
-          };
 
           nextcloud = lib.mkOption {
             type = lib.types.int;

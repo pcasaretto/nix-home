@@ -57,52 +57,6 @@
     mode = "0400";
   };
 
-  # ntfy notification service credentials
-  sops.secrets.ntfy-admin-username = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    owner = "ntfy-sh";
-    group = "ntfy-sh";
-    mode = "0400";
-  };
-
-  sops.secrets.ntfy-admin-password = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    owner = "ntfy-sh";
-    group = "ntfy-sh";
-    mode = "0400";
-  };
-
-  # ntfy credentials readable by *arr services for notification integration
-  sops.secrets.ntfy-username = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    key = "ntfy-admin-username";
-    group = "media";
-    mode = "0440";
-  };
-
-  sops.secrets.ntfy-password = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    key = "ntfy-admin-password";
-    group = "media";
-    mode = "0440";
-  };
-
-  # ntfy credentials for Grafana alerting
-  sops.secrets.ntfy-grafana-username = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    key = "ntfy-admin-username";
-    owner = "grafana";
-    group = "grafana";
-    mode = "0400";
-  };
-
-  sops.secrets.ntfy-grafana-password = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    key = "ntfy-admin-password";
-    owner = "grafana";
-    group = "grafana";
-    mode = "0400";
-  };
 
   # Nextcloud admin credentials
   sops.secrets.nextcloud-admin-password = {
