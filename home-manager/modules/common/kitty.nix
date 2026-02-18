@@ -4,14 +4,13 @@
   pkgs,
   ...
 }: {
-  home.sessionVariables = {
-    TERMINAL = "kitty";
-  };
-
   catppuccin.kitty.enable = true;
 
   programs.kitty = {
     enable = true;
+    environment = {
+      TERMINAL = "kitty";
+    };
     font = {
       name = "FiraCode Nerd Font Mono";
       size = 18;

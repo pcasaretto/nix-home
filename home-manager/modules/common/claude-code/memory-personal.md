@@ -112,3 +112,19 @@ Before starting any implementation:
   - Completing a set of file changes
   - Finishing a major task or milestone
   - Before asking for permission to proceed with significant actions
+
+## Context Preservation Using Subagents
+
+As much as possible, use subagents for mechanical tasks like calling MCPs. This preserves context on the main agent and opens up parallelization avenues.
+
+### Examples
+
+**Codebase exploration**: Use an Explore subagent to find files/patterns rather than running multiple Grep/Glob calls that fill up context with intermediate results.
+
+**Multi-step investigations**: Each investigation dimension gets its own subagent. Main agent synthesizes findings without accumulating raw data.
+
+**File operations**: For bulk moves/renames, a subagent handles the mechanics while the main agent tracks the higher-level reorganization.
+
+### The pattern
+Main agent: decides what to do, synthesizes results, talks to the user
+Subagents: execute mechanical operations, return summaries

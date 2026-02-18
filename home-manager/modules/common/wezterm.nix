@@ -58,6 +58,12 @@
           mods = 'CMD|SHIFT',
           action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
         },
+        -- Zoom pane (matches kitty/iTerm cmd+shift+enter)
+        {
+          key = 'Enter',
+          mods = 'CMD|SHIFT',
+          action = wezterm.action.TogglePaneZoomState,
+        },
       }
 
       return config
