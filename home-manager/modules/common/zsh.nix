@@ -22,6 +22,7 @@
     );
 in {
   programs.zsh = {
+    dotDir = config.home.homeDirectory;
     autocd = true;
     defaultKeymap = "viins";
     enable = true;

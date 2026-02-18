@@ -25,7 +25,7 @@
 
     # Home manager
     home-manager.url = "github:nix-community/home-manager"; # master branch for programs.claude-code
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     darwin.url = "github:lnl7/nix-darwin/nix-darwin-25.11";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
@@ -107,7 +107,7 @@
     # Available through 'home-manager switch --flake .#username'
     homeConfigurations = {
       "paulo.casaretto" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        pkgs = inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
           ./home-manager/users/paulo.casaretto.nix
@@ -115,7 +115,7 @@
       };
 
       "pcasaretto@littlelover" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        pkgs = inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
           ./home-manager/users/pcasaretto-littlelover.nix
