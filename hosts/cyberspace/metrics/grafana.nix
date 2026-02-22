@@ -147,44 +147,6 @@ in
         ];
       };
 
-      # Configure alerting with Telegram
-      alerting = {
-        contactPoints.settings = {
-          apiVersion = 1;
-          contactPoints = [
-            {
-              orgId = 1;
-              name = "telegram-alerts";
-              receivers = [
-                {
-                  uid = "telegram-contact";
-                  type = "telegram";
-                  disableResolveMessage = false;
-                  settings = {
-                    bottoken = "$__file{${config.sops.secrets.telegram-token-grafana.path}}";
-                    chatid = "$__file{${config.sops.secrets.telegram-chat-id-grafana.path}}";
-                    parse_mode = "HTML";
-                  };
-                }
-              ];
-            }
-          ];
-        };
-
-        policies.settings = {
-          apiVersion = 1;
-          policies = [
-            {
-              orgId = 1;
-              receiver = "telegram-alerts";
-              group_by = [ "alertname" "grafana_folder" ];
-              group_wait = "30s";
-              group_interval = "5m";
-              repeat_interval = "4h";
-            }
-          ];
-        };
-      };
     };
   };
 
