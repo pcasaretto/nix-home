@@ -22,6 +22,10 @@
       name = "notify.ts";
       path = ./extensions/notify.ts;
     }
+    {
+      name = "ask-user-question.ts";
+      path = ./extensions/ask-user-question.ts;
+    }
   ];
 
   # Settings we want to control via nix (merged with existing settings.json)
