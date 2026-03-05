@@ -26,6 +26,10 @@
       name = "ask-user-question.ts";
       path = ./extensions/ask-user-question.ts;
     }
+    {
+      name = "subagent.ts";
+      path = ./extensions/subagent.ts;
+    }
   ];
 
   # Settings we want to control via nix (merged with existing settings.json)
