@@ -13,6 +13,7 @@
     ./../../../modules/home-manager/wezterm-plugins.nix
 
     ./claude-code
+    ./pi
     ./direnv.nix
     ./ghostty.nix
     ./git.nix

@@ -41,7 +41,7 @@ in {
     memory.source = ./memory-personal.md;
 
     commandsDir = ./commands;
-    skillsDir = ./skills;
+    skillsDir = ../skills;
     agentsDir = ./agents;
   };
 

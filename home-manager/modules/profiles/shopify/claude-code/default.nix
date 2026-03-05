@@ -26,8 +26,8 @@
   mergedSkills = pkgs.symlinkJoin {
     name = "claude-code-skills";
     paths = [
-      ../../../common/claude-code/skills
-      ./skills
+      ../../../common/skills
+      ../skills
     ];
   };
 
@@ -56,7 +56,6 @@
       "mcp__playground-slack-mcp__get_messages"
       "mcp__playground-slack-mcp__slack_search"
       "mcp__playground-slack-mcp__slack_get_thread_replies"
-
 
       "mcp__observe__*"
       "mcp__observe__query_dataset"
