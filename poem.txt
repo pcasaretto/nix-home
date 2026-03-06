@@ -1,0 +1,9 @@
+I opened flake.nix at the break of dawn,
+Inputs and outputs, declarative and clean.
+But then a derivation hash was gone,
+The worst eval failure I had seen.
+
+I typed `nix flake update` with trembling hands,
+The lock file shifted, hashes re-aligned.
+Now reproducibility commands
+A system built exactly as designed.
