@@ -1,8 +1,9 @@
-{...}: {
+{pkgs, ...}: {
   xdg.configFile."wezterm/statusbar.lua".source = ./wezterm/statusbar.lua;
 
   programs.wezterm = {
     enable = true;
+    package = pkgs.wezterm-bin; # Use pre-built binary with proper code signing
     extraConfig = ''
       local config = wezterm.config_builder()
 
