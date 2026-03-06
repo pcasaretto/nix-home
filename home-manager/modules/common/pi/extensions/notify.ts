@@ -14,10 +14,19 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 const notify = (title: string, body: string): void => {
-	const isITerm = process.env.TERM_PROGRAM === "iTerm.app";
-	const payload = isITerm
-		? `\x1b]9;${title}: ${body}\x07`       // OSC 9  — iTerm2
-		: `\x1b]777;notify;${title};${body}\x07`; // OSC 777 — Ghostty and others
+	const termProgram = process.env.TERM_PROGRAM;
+	let payload: string;
+	
+	if (termProgram === "iTerm.app") {
+		// iTerm2: OSC 9 with BEL terminator
+		payload = `\x1b]9;${title}: ${body}\x07`;
+	} else if (termProgram === "WezTerm") {
+		// WezTerm: OSC 777 with ESC \ terminator
+		payload = `\x1b]777;notify;${title};${body}\x1b\\`;
+	} else {
+		// Ghostty and others: OSC 777 with BEL terminator
+		payload = `\x1b]777;notify;${title};${body}\x07`;
+	}
 
 	try {
 		const fs = require("node:fs");
@@ -25,8 +34,12 @@ const notify = (title: string, body: string): void => {
 		fs.writeSync(ttyFd, payload);
 		fs.closeSync(ttyFd);
 	} catch {
-		// Fallback if /dev/tty unavailable
-		process.stderr.write(payload);
+		// Fallback if /dev/tty unavailable - try both stderr and stdout
+		try {
+			process.stdout.write(payload);
+		} catch {
+			process.stderr.write(payload);
+		}
 	}
 };
 
