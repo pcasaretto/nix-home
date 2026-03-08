@@ -9,28 +9,10 @@
   # This one contains whatever you want to overlay
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  modifications = final: _prev: {
+  modifications = _final: _prev: {
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });
-
-    pcasaretto = import inputs.nixpkgs-pcasaretto {
-      system = final.stdenv.hostPlatform.system;
-      config.allowUnfree = true;
-    };
-  };
-
-  # Add nu_plugin_dns to nushellPlugins (built with unstable for Rust compatibility)
-  nushell-plugins = final: prev: let
-    unstable = import inputs.nixpkgs-unstable {
-      inherit (final) system;
-    };
-  in {
-    nushellPlugins =
-      prev.nushellPlugins
-      // {
-        dns = unstable.callPackage ../pkgs/nu_plugin_dns {};
-      };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
