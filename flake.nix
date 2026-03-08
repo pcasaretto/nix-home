@@ -42,17 +42,17 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     catppuccin.url = "github:catppuccin/nix";
-    catppuccin.inputs.nixpkgs.follows = "nixpkgs-darwin";
+    catppuccin.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     mac-app-util.url = "github:hraban/mac-app-util";
     # mac-app-util.inputs.nixpkgs.follows = "nixpkgs-darwin";
     # mac-app-util.inputs.treefmt-nix.nixpkgs.follows = "nixpkgs-darwin";
 
     nix-index-database.url = "github:nix-community/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "nixpkgs-darwin";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nix-doom-emacs-unstraightened.url = "github:marienz/nix-doom-emacs-unstraightened";
-    nix-doom-emacs-unstraightened.inputs.nixpkgs.follows = "nixpkgs-darwin";
+    nix-doom-emacs-unstraightened.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     try.url = "github:tobi/try";
     try.inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -62,7 +62,7 @@
     qmd.inputs.flake-utils.follows = "flake-utils";
 
     tmux-git-worktree.url = "github:pcasaretto/tmux-git-worktree";
-    tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs-darwin";
+    tmux-git-worktree.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     tabline-wez = {
       url = "github:michaelbrusegard/tabline.wez";
