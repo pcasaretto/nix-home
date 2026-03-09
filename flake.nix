@@ -70,7 +70,7 @@
     };
 
     hyprland.url = "github:hyprwm/Hyprland";
-    hyprland.inputs.nixpkgs.follows = "nixpkgs-nixos";
+    # Don't override nixpkgs - Hyprland needs its own nixpkgs for glaze and other deps
 
     nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
     nixos-apple-silicon.inputs.nixpkgs.follows = "nixpkgs-nixos";
