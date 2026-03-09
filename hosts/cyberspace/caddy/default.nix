@@ -7,7 +7,7 @@ let
   # Caddy with Cloudflare DNS plugin for Let's Encrypt DNS-01 challenge
   caddyWithCloudflare = pkgs.caddy.withPlugins {
     plugins = [ "github.com/caddy-dns/cloudflare@v0.2.2" ];
-    hash = "sha256-dnhEjopeA0UiI+XVYHYpsjcEI6Y1Hacbi28hVKYQURg=";
+    hash = "sha256-Gb1nC5fZfj7IodQmKmEPGygIHNYhKWV1L0JJiqnVtbs=";
   };
 
   # Common TLS config for all services
