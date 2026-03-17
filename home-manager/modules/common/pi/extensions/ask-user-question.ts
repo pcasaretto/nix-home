@@ -11,6 +11,33 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Editor, type EditorTheme, Key, matchesKey, Text, truncateToWidth } from "@mariozechner/pi-tui";
 import { Type } from "@sinclair/typebox";
 
+/** Word-wrap text to fit within a given width, preserving explicit newlines. */
+function wrapText(text: string, width: number): string[] {
+	const result: string[] = [];
+	for (const paragraph of text.split("\n")) {
+		if (paragraph.length === 0) {
+			result.push("");
+			continue;
+		}
+		const words = paragraph.split(/\s+/);
+		let currentLine = "";
+		for (const word of words) {
+			if (currentLine.length === 0) {
+				currentLine = word;
+			} else if (currentLine.length + 1 + word.length <= width) {
+				currentLine += " " + word;
+			} else {
+				result.push(currentLine);
+				currentLine = word;
+			}
+		}
+		if (currentLine.length > 0) {
+			result.push(currentLine);
+		}
+	}
+	return result;
+}
+
 interface AskDetails {
 	question: string;
 	options: string[] | null;
@@ -122,7 +149,9 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 						const add = (s: string) => lines.push(truncateToWidth(s, width));
 
 						add(theme.fg("accent", "─".repeat(width)));
-						add(theme.fg("text", ` ${params.question}`));
+						for (const qLine of wrapText(params.question, width - 2)) {
+							add(theme.fg("text", ` ${qLine}`));
+						}
 						lines.push("");
 						add(theme.fg("muted", " Your answer:"));
 						for (const line of editor.render(width - 2)) {
@@ -264,7 +293,9 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 						const add = (s: string) => lines.push(truncateToWidth(s, width));
 
 						add(theme.fg("accent", "─".repeat(width)));
-						add(theme.fg("text", ` ${params.question}`));
+						for (const qLine of wrapText(params.question, width - 2)) {
+							add(theme.fg("text", ` ${qLine}`));
+						}
 						lines.push("");
 
 						for (let i = 0; i < displayOptions.length; i++) {
