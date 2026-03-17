@@ -42,7 +42,11 @@ in {
   # Symlink extensions, skills, prompts, and AGENTS.md into ~/.pi/agent/
   home.file =
     # Global agent instructions
-    {".pi/agent/AGENTS.md".source = ./AGENTS.md;}
+    {
+      ".pi/agent/AGENTS.md".source = ./AGENTS.md;
+      # Directory extensions (multi-file)
+      ".pi/agent/extensions/vim-mode".source = ./extensions/vim-mode;
+    }
     # Common extensions
     // builtins.listToAttrs (map (ext: {
         name = ".pi/agent/extensions/${ext.name}";
