@@ -323,8 +323,8 @@ mcp__xcodebuildmcp__shutdown_simulator({ simulator_id: "[uuid]" })
 
 ## Integration with /workflows-review
 
-When reviewing PRs that touch iOS code, the `/workflows-review` command can spawn this as a subagent:
+When reviewing PRs that touch iOS code, the `/workflows-review` command can spawn this as a background task:
 
 ```
-Run subagent with agent="general-purpose" and task=""Run /xcode-test for scheme [name]. Build, install on simulator, test key screens, check for crashes."".
+spawn({ task: "Run /xcode-test for scheme [name]. Build, install on simulator, test key screens, check for crashes." })
 ```

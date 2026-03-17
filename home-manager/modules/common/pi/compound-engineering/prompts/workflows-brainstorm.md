@@ -40,7 +40,7 @@ Use **ask_user_question tool** to suggest: "Your requirements seem detailed enou
 
 Run a quick repo scan to understand existing patterns:
 
-- Run subagent with agent="repo-research-analyst" and task=""Understand existing patterns related to: <feature_description>"".
+- spawn({ task: "As a repo research analyst, understand existing patterns related to: <feature_description>" })
 
 Focus on: similar features, established patterns, CLAUDE.md guidance.
 

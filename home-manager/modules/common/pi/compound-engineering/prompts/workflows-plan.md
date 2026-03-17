@@ -81,8 +81,8 @@ First, I need to understand the project's conventions, existing patterns, and an
 
 Run these agents **in parallel** to gather local context:
 
-- Run subagent with agent="repo-research-analyst" and task="feature_description".
-- Run subagent with agent="learnings-researcher" and task="feature_description".
+- spawn({ task: "As a repo research analyst, analyze: {feature_description}" })
+- spawn({ task: "As a learnings researcher, find relevant past issues for: {feature_description}" })
 
 **What to look for:**
 - **Repo research:** existing patterns, CLAUDE.md guidance, technology familiarity, pattern consistency
@@ -112,8 +112,8 @@ Examples:
 
 Run these agents in parallel:
 
-- Run subagent with agent="best-practices-researcher" and task="feature_description".
-- Run subagent with agent="framework-docs-researcher" and task="feature_description".
+- spawn({ task: "As a best-practices researcher, find industry best practices for: {feature_description}" })
+- spawn({ task: "As a framework docs researcher, find relevant framework documentation for: {feature_description}" })
 
 ### 1.6. Consolidate Research
 
@@ -157,7 +157,7 @@ Think like a product manager - what would make this issue clear and actionable? 
 
 After planning the issue structure, run SpecFlow Analyzer to validate and refine the feature specification:
 
-- Run subagent with agent="spec-flow-analyzer" and task=(feature_description, research_findings)
+- spawn({ task: "As a spec flow analyzer, analyze the spec and flows for: {feature_description}. Research context: {research_findings}" })
 
 **SpecFlow Analyzer Output:**
 

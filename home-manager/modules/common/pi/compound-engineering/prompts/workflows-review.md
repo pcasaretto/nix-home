@@ -75,8 +75,8 @@ Task {agent-name}(PR content + review context from settings body)
 ```
 
 Additionally, always run these regardless of settings:
-- Run subagent with agent="agent-native-reviewer" and task="PR content". - Verify new features are agent-accessible
-- Run subagent with agent="learnings-researcher" and task="PR content". - Search docs/solutions/ for past issues related to this PR's modules and patterns
+- Use spawn({ task: "Act as agent-native-reviewer. PR content" }). - Verify new features are agent-accessible
+- Use spawn({ task: "Act as learnings-researcher. PR content" }). - Search docs/solutions/ for past issues related to this PR's modules and patterns
 
 </parallel_tasks>
 
@@ -88,9 +88,9 @@ These agents are run ONLY when the PR matches specific criteria. Check the PR fi
 
 **MIGRATIONS: If PR contains database migrations, schema.rb, or data backfills:**
 
-- Run subagent with agent="schema-drift-detector" and task="PR content". - Detects unrelated schema.rb changes by cross-referencing against included migrations (run FIRST)
-- Run subagent with agent="data-migration-expert" and task="PR content". - Validates ID mappings match production, checks for swapped values, verifies rollback safety
-- Run subagent with agent="deployment-verification-agent" and task="PR content". - Creates Go/No-Go deployment checklist with SQL verification queries
+- Use spawn({ task: "Act as schema-drift-detector. PR content" }). - Detects unrelated schema.rb changes by cross-referencing against included migrations (run FIRST)
+- Use spawn({ task: "Act as data-migration-expert. PR content" }). - Validates ID mappings match production, checks for swapped values, verifies rollback safety
+- Use spawn({ task: "Act as deployment-verification-agent. PR content" }). - Creates Go/No-Go deployment checklist with SQL verification queries
 
 **When to run:**
 - PR includes files matching `db/migrate/*.rb` or `db/schema.rb`
@@ -483,13 +483,13 @@ After presenting the Summary Report, offer appropriate testing based on project 
 
 #### If User Accepts Web Testing:
 
-Spawn a subagent to run browser tests (preserves main context):
+Spawn a background task to run browser tests (preserves main context):
 
 ```
-Run subagent with agent="general-purpose" and task=""Run /test-browser for PR #[number]. Test all affected pages, check for console errors, handle failures by creating todos and fixing."".
+spawn({ task: "Run /test-browser for PR #[number]. Test all affected pages, check for console errors, handle failures by creating todos and fixing." })
 ```
 
-The subagent will:
+The spawn task will:
 1. Identify pages affected by the PR
 2. Navigate to each page and capture snapshots (using Playwright MCP or agent-browser CLI)
 3. Check for console errors
@@ -502,13 +502,13 @@ The subagent will:
 
 #### If User Accepts iOS Testing:
 
-Spawn a subagent to run Xcode tests (preserves main context):
+Spawn a background task to run Xcode tests (preserves main context):
 
 ```
-Run subagent with agent="general-purpose" and task=""Run /xcode-test for scheme [name]. Build for simulator, install, launch, take screenshots, check for crashes."".
+spawn({ task: "Run /xcode-test for scheme [name]. Build for simulator, install, launch, take screenshots, check for crashes." })
 ```
 
-The subagent will:
+The spawn task will:
 1. Verify XcodeBuildMCP is installed
 2. Discover project and schemes
 3. Build for iOS Simulator

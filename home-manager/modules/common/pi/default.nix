@@ -27,8 +27,8 @@
       path = ./extensions/ask-user-question.ts;
     }
     {
-      name = "subagent.ts";
-      path = ./extensions/subagent.ts;
+      name = "spawn.ts";
+      path = ./extensions/spawn.ts;
     }
   ];
 

@@ -25,7 +25,7 @@ So if there are 3 comments, it will spawn 3 pr-comment-resolver agents in parall
 2. Task pr-comment-resolver(comment2)
 3. Task pr-comment-resolver(comment3)
 
-Always run all in parallel subagents/Tasks for each Todo item.
+Always run all in parallel using spawn for each Todo item.
 
 ### 4. Commit & Resolve
 

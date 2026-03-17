@@ -5,11 +5,11 @@ argument-hint: "[optional: brief context about the fix]"
 
 # /compound
 
-Coordinate multiple subagents working in parallel to document a recently solved problem.
+Coordinate multiple spawn tasks working in parallel to document a recently solved problem.
 
 ## Purpose
 
-Captures problem solutions while context is fresh, creating structured documentation in `docs/solutions/` with YAML frontmatter for searchability and future reference. Uses parallel subagents for maximum efficiency.
+Captures problem solutions while context is fresh, creating structured documentation in `docs/solutions/` with YAML frontmatter for searchability and future reference. Uses parallel spawn tasks for maximum efficiency.
 
 **Why "compound"?** Each documented solution compounds your team's knowledge. The first time you solve a problem takes research. Document it, and the next occurrence takes minutes. Knowledge compounds.
 
@@ -25,14 +25,14 @@ Captures problem solutions while context is fresh, creating structured documenta
 <critical_requirement>
 **Only ONE file gets written - the final documentation.**
 
-Phase 1 subagents return TEXT DATA to the orchestrator. They must NOT use Write, Edit, or create any files. Only the orchestrator (Phase 2) writes the final documentation file.
+Phase 1 spawn tasks return TEXT DATA to the orchestrator. They must NOT use Write, Edit, or create any files. Only the orchestrator (Phase 2) writes the final documentation file.
 </critical_requirement>
 
 ### Phase 1: Parallel Research
 
 <parallel_tasks>
 
-Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
+Launch these spawn tasks IN PARALLEL. Each returns text data to the orchestrator.
 
 #### 1. **Context Analyzer**
    - Extracts conversation history
@@ -70,11 +70,11 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 
 <sequential_tasks>
 
-**WAIT for all Phase 1 subagents to complete before proceeding.**
+**WAIT for all Phase 1 spawn tasks to complete before proceeding.**
 
 The orchestrating agent (main conversation) performs these steps:
 
-1. Collect all text results from Phase 1 subagents
+1. Collect all text results from Phase 1 spawn tasks
 2. Assemble complete markdown file from the collected pieces
 3. Validate YAML frontmatter against schema
 4. Create directory if needed: `mkdir -p docs/solutions/[category]/`
@@ -143,7 +143,7 @@ Based on problem type, optionally invoke specialized agents to review the docume
 
 | ❌ Wrong | ✅ Correct |
 |----------|-----------|
-| Subagents write files like `context-analysis.md`, `solution-draft.md` | Subagents return text data; orchestrator writes one final file |
+| Spawn tasks write files like `context-analysis.md`, `solution-draft.md` | Spawn tasks return text data; orchestrator writes one final file |
 | Research and assembly run in parallel | Research completes → then assembly runs |
 | Multiple files created during workflow | Single file: `docs/solutions/[category]/[filename].md` |
 
@@ -152,7 +152,7 @@ Based on problem type, optionally invoke specialized agents to review the docume
 ```
 ✓ Documentation complete
 
-Subagent Results:
+Spawn Task Results:
   ✓ Context Analyzer: Identified performance_issue in brief_system
   ✓ Solution Extractor: 3 code fixes
   ✓ Related Docs Finder: 2 related issues
