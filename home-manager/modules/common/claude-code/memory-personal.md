@@ -105,13 +105,6 @@ Before starting any implementation:
 3. Follow established patterns rather than inventing new approaches
 4. Verify implementations with full test suite runs before considering work complete
 
-## Notification System
-- **Always send desktop notifications** after completing tasks or making significant changes to files
-- **Preferred method**: Use the macos-notify skill
-- Send notifications when:
-  - Completing a set of file changes
-  - Finishing a major task or milestone
-  - Before asking for permission to proceed with significant actions
 
 ## Context Preservation Using Subagents
 

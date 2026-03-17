@@ -51,9 +51,10 @@ async function checkCommand(command: string, cwd: string): Promise<{ blocked: bo
       try {
         const result: SafetyNetOutput = JSON.parse(trimmed);
         if (result.hookSpecificOutput?.permissionDecision === "deny") {
+          const reason = result.hookSpecificOutput.permissionDecisionReason || "Blocked by safety net";
           resolve({
             blocked: true,
-            reason: result.hookSpecificOutput.permissionDecisionReason || "Blocked by safety net",
+            reason: `${reason}. This command requires user intervention — use the notify_user tool (urgency='action_needed') to alert the user and ask them to run it manually.`,
           });
         } else {
           resolve({ blocked: false });
