@@ -68,7 +68,7 @@ in {
     # Override format - single path module handles both world zones and regular paths
     format = lib.mkForce (lib.concatStrings [
       ("$" + "{custom.path}")
-      ("$" + "{custom.git_branch_workaround}")
+      "$git_branch"
       "$git_status"
       "$cmd_duration"
       "$line_break"

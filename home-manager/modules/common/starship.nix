@@ -14,31 +14,22 @@ in {
     settings = {
       format = lib.concatStrings [
         "$path"
-        ("$" + "{custom.git_branch_workaround}")
+        "$git_branch"
         "$git_status"
         "$cmd_duration"
         "$line_break"
         "$character"
       ];
 
+      git_branch = {
+        style = "bold purple";
+        format = "on [$symbol$branch]($style) ";
+        symbol = "";
+      };
+
       git_status = {
         style = "bold yellow";
         format = "[$all_status$ahead_behind]($style) ";
-      };
-
-      custom = {
-        path = {
-          command = "echo $PWD | sed \"s|$HOME|~|\"";
-          style = "${colors.teal}";
-          format = "[$output]($style) ";
-        };
-        git_branch_workaround = {
-          command = "git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null";
-          when = "git rev-parse --git-dir 2>/dev/null";
-          symbol = "";
-          style = "bold purple";
-          format = "on [$symbol$output]($style) ";
-        };
       };
 
       cmd_duration = {
