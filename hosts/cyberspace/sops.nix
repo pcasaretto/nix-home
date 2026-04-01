@@ -91,6 +91,14 @@
     mode = "0400";
   };
 
+  # Anthropic API key for clawdbot Pi agent
+  sops.secrets.clawdbot-anthropic-key = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "clawdbot";
+    group = "clawdbot";
+    mode = "0400";
+  };
+
   # Telegram bot token readable by *arr services
   sops.secrets.telegram-token = {
     sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";

@@ -5,36 +5,52 @@
     isSystemUser = true;
     group = "clawdbot";
     description = "clawdbot Telegram bot service user";
+    home = "/var/lib/clawdbot"; # needed for Pi session/state persistence
   };
 
   users.groups.clawdbot = {};
 
   systemd.services.clawdbot = {
-    description = "clawdbot Telegram bot";
+    description = "Pi-powered Telegram bot (clawdbot)";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
 
     environment = {
       TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.clawdbot-telegram-token.path;
+      ANTHROPIC_API_KEY_FILE  = config.sops.secrets.clawdbot-anthropic-key.path;
+
+      # Comma-separated list of Telegram user IDs allowed to use the bot.
+      # Find yours by sending /chatid to the bot before locking this down.
+      ALLOWED_USER_IDS = "";  # <-- fill in your Telegram user ID
+
+      NODE_ENV = "production";
+
+      # Optional: set a specific project path for the agent to work in.
+      # Defaults to STATE_DIRECTORY when unset.
+      # WORKING_DIRECTORY = "/home/pcasaretto/src/github.com/pcasaretto/nix-home";
     };
 
     serviceConfig = {
       ExecStart = "${pkgs.clawdbot}/bin/clawdbot";
-      User = "clawdbot";
+      User  = "clawdbot";
       Group = "clawdbot";
-      Restart = "on-failure";
+      Restart    = "on-failure";
       RestartSec = 10;
 
-      NoNewPrivileges = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
-      PrivateTmp = true;
-      PrivateDevices = true;
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectControlGroups = true;
-      RestrictSUIDSGID = true;
+      # systemd sets $STATE_DIRECTORY automatically to /var/lib/clawdbot
+      StateDirectory = "clawdbot";
+
+      # Hardening — relaxed just enough for the agent's tools to work
+      NoNewPrivileges         = true;
+      ProtectSystem           = "full";   # less strict than "strict" — agent writes to STATE_DIRECTORY
+      ProtectHome             = "read-only";
+      PrivateTmp              = true;
+      PrivateDevices          = true;
+      ProtectKernelTunables   = true;
+      ProtectKernelModules    = true;
+      ProtectControlGroups    = true;
+      RestrictSUIDSGID        = true;
     };
   };
 }

@@ -18,5 +18,6 @@
     ./nextcloud.nix
     ./home-assistant.nix
     ./spellbook.nix
+    ./planarally.nix
   ];
 }

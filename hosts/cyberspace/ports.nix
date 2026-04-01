@@ -69,6 +69,12 @@
             description = "Open WebUI interface port";
           };
 
+          planarally = lib.mkOption {
+            type = lib.types.int;
+            default = 8000;
+            description = "PlanarAlly virtual tabletop service port";
+          };
+
         };
 
         # Core Monitoring Services (9000-9099)

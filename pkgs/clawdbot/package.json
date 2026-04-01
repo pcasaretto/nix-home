@@ -1,0 +1,19 @@
+{
+  "name": "clawdbot",
+  "version": "0.2.0",
+  "description": "Pi-powered Telegram bot for AI coding assistance",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "0.62.0",
+    "grammy": "^1.41.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
