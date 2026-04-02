@@ -50,12 +50,7 @@
     wants = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
 
-    # Give the agent access to the full system PATH so bash, git, nix,
-    # nixos-rebuild, and sudo are all reachable.
-    path = [
-      "/run/current-system/sw/bin"  # all system-installed packages
-      "/run/wrappers/bin"           # SUID wrappers (sudo)
-    ];
+
 
     environment = {
       TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.clawdbot-ai-telegram-token.path;
@@ -74,6 +69,11 @@
 
       # Optional: override the model (default: claude-sonnet-4-5)
       # CLAWDBOT_MODEL = "claude-opus-4-5";
+
+      # Full system PATH so bash, git, nix, nixos-rebuild, and sudo are findable.
+      # (Don't use the systemd `path` option with raw strings — NixOS appends
+      # /bin to each entry, turning /run/current-system/sw/bin into .../bin/bin)
+      PATH = "/run/current-system/sw/bin:/run/wrappers/bin";
     };
 
     serviceConfig = {
