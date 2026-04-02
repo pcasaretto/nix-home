@@ -50,6 +50,13 @@
     wants = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
 
+    # Give the agent access to the full system PATH so bash, git, nix,
+    # nixos-rebuild, and sudo are all reachable.
+    path = [
+      "/run/current-system/sw/bin"  # all system-installed packages
+      "/run/wrappers/bin"           # SUID wrappers (sudo)
+    ];
+
     environment = {
       TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.clawdbot-ai-telegram-token.path;
       ANTHROPIC_API_KEY_FILE  = config.sops.secrets.clawdbot-anthropic-key.path;
