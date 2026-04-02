@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   # ── Shared group for nix-home repo access ──────────────────────────────────
@@ -73,7 +73,7 @@
       # Full system PATH so bash, git, nix, nixos-rebuild, and sudo are findable.
       # (Don't use the systemd `path` option with raw strings — NixOS appends
       # /bin to each entry, turning /run/current-system/sw/bin into .../bin/bin)
-      PATH = "/run/current-system/sw/bin:/run/wrappers/bin";
+      PATH = lib.mkForce "/run/current-system/sw/bin:/run/wrappers/bin";
     };
 
     serviceConfig = {
