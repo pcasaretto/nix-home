@@ -15,6 +15,7 @@
 import { readFileSync } from "fs";
 import { mkdirSync } from "fs";
 import { Bot, type Context } from "grammy";
+import { getModel } from "@mariozechner/pi-ai";
 import {
   AuthStorage,
   createAgentSession,
@@ -30,6 +31,13 @@ import {
   SettingsManager,
   type AgentSession,
 } from "@mariozechner/pi-coding-agent";
+
+const MODEL_ID = (process.env.CLAWDBOT_MODEL ?? "claude-sonnet-4-5") as Parameters<typeof getModel>[1] & string;
+const model = getModel("anthropic", MODEL_ID as never);
+if (!model) {
+  console.error(`[clawdbot] Unknown model: ${MODEL_ID}`);
+  process.exit(1);
+}
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -91,6 +99,7 @@ async function getOrCreateSession(chatId: number): Promise<AgentSession> {
 
   const { session } = await createAgentSession({
     cwd: WORKING_DIR,
+    model,
     authStorage,
     modelRegistry,
     settingsManager,
@@ -413,7 +422,7 @@ process.on("SIGTERM", () => void shutdown("SIGTERM"));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-console.log(`[clawdbot] Starting (working dir: ${WORKING_DIR}, state dir: ${STATE_DIR})`);
+console.log(`[clawdbot] Starting (model: ${model.id}, working dir: ${WORKING_DIR}, state dir: ${STATE_DIR})`);
 if (ALLOWED_USER_IDS.size > 0) {
   console.log(`[clawdbot] Allowed user IDs: ${[...ALLOWED_USER_IDS].join(", ")}`);
 } else {
