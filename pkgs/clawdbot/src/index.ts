@@ -5,11 +5,13 @@
  * coding-agent capabilities (read, bash, edit, write tools) over chat.
  *
  * Environment variables (set by systemd / sops-nix):
- *   TELEGRAM_BOT_TOKEN_FILE  — path to file containing Telegram bot token
- *   ANTHROPIC_API_KEY_FILE   — path to file containing Anthropic API key
- *   ALLOWED_USER_IDS         — comma-separated Telegram user IDs allowed to use the bot
- *   STATE_DIRECTORY          — systemd StateDirectory (defaults to ./state)
- *   WORKING_DIRECTORY        — working directory for the agent (defaults to STATE_DIRECTORY)
+ *   TELEGRAM_BOT_TOKEN_FILE    — path to file containing Telegram bot token
+ *   ANTHROPIC_API_KEY_FILE     — path to file containing Anthropic API key
+ *   ALLOWED_USER_IDS           — comma-separated Telegram user IDs allowed to use the bot
+ *   STATE_DIRECTORY            — systemd StateDirectory (defaults to ./state)
+ *   WORKING_DIRECTORY          — working directory for the agent (defaults to STATE_DIRECTORY)
+ *   CLAWDBOT_MODEL             — Anthropic model ID (default: claude-sonnet-4-5)
+ *   SESSION_TIMEOUT_MINUTES    — inactivity timeout before a new session starts (default: 60)
  */
 
 import { readFileSync } from "fs";
@@ -68,7 +70,10 @@ const ALLOWED_USER_IDS = new Set(
 const STATE_DIR = process.env.STATE_DIRECTORY ?? "./state";
 const WORKING_DIR = process.env.WORKING_DIRECTORY ?? STATE_DIR;
 
-// Ensure session directory exists
+// After this many minutes of silence, the next message starts a fresh session.
+const SESSION_TIMEOUT_MS =
+  parseInt(process.env.SESSION_TIMEOUT_MINUTES ?? "60", 10) * 60_000;
+
 mkdirSync(`${STATE_DIR}/sessions`, { recursive: true });
 
 const START_TIME = Date.now();
@@ -79,19 +84,44 @@ const bot = new Bot(telegramToken);
 
 // ─── Pi Session management ────────────────────────────────────────────────────
 
-const sessions = new Map<number, AgentSession>();
+interface ChatState {
+  session: AgentSession;
+  lastActive: number; // ms timestamp of the last completed prompt
+}
+
+const chats = new Map<number, ChatState>();
+
+function formatAge(ms: number): string {
+  const m = Math.round(ms / 60_000);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
 
 async function getOrCreateSession(chatId: number): Promise<AgentSession> {
-  if (sessions.has(chatId)) return sessions.get(chatId)!;
+  const now = Date.now();
+  const existing = chats.get(chatId);
 
+  if (existing) {
+    const idle = now - existing.lastActive;
+    if (idle > SESSION_TIMEOUT_MS) {
+      // Too long since last message — start a fresh conversation
+      console.log(
+        `[clawdbot] [chat=${chatId}] idle for ${formatAge(idle)}, starting new session`,
+      );
+      await existing.session.newSession();
+    }
+    return existing.session;
+  }
+
+  // First access since startup — resume the most recent session from disk,
+  // or create a new one if none exists.
   const sessionDir = `${STATE_DIR}/sessions/${chatId}`;
   mkdirSync(sessionDir, { recursive: true });
 
   const authStorage = AuthStorage.create(`${STATE_DIR}/auth.json`);
   authStorage.setRuntimeApiKey("anthropic", anthropicKey);
-
   const modelRegistry = new ModelRegistry(authStorage);
-
   const settingsManager = SettingsManager.inMemory({
     compaction: { enabled: true },
     retry: { enabled: true, maxRetries: 3 },
@@ -112,24 +142,46 @@ async function getOrCreateSession(chatId: number): Promise<AgentSession> {
       createFindTool(WORKING_DIR),
       createLsTool(WORKING_DIR),
     ],
-    sessionManager: SessionManager.create(WORKING_DIR, sessionDir),
+    sessionManager: SessionManager.continueRecent(WORKING_DIR, sessionDir),
   });
 
-  sessions.set(chatId, session);
-  console.log(`[clawdbot] Created session for chat ${chatId} (dir: ${sessionDir})`);
+  // Check whether the resumed session is still within the timeout window.
+  // session.messages is the full conversation history; the last message's
+  // timestamp tells us when the chat was last active.
+  const messages = session.messages;
+  const lastMsg = messages[messages.length - 1] as { timestamp?: number } | undefined;
+  const lastTimestamp = lastMsg?.timestamp ?? 0;
+
+  if (lastTimestamp > 0) {
+    const age = now - lastTimestamp;
+    if (age > SESSION_TIMEOUT_MS) {
+      console.log(
+        `[clawdbot] [chat=${chatId}] resumed session is ${formatAge(age)} old — starting fresh`,
+      );
+      await session.newSession();
+    } else {
+      console.log(
+        `[clawdbot] [chat=${chatId}] resumed session (last active ${formatAge(age)} ago, ${messages.length} messages)`,
+      );
+    }
+  } else {
+    console.log(`[clawdbot] [chat=${chatId}] created new session`);
+  }
+
+  chats.set(chatId, { session, lastActive: lastTimestamp > 0 ? lastTimestamp : now });
   return session;
 }
 
+function touchSession(chatId: number): void {
+  const state = chats.get(chatId);
+  if (state) state.lastActive = Date.now();
+}
+
 async function resetSession(chatId: number): Promise<void> {
-  const existing = sessions.get(chatId);
-  if (existing) {
-    try {
-      await existing.newSession();
-    } catch {
-      // If newSession fails, remove and recreate on next message
-      existing.dispose();
-      sessions.delete(chatId);
-    }
+  const state = chats.get(chatId);
+  if (state) {
+    await state.session.newSession();
+    state.lastActive = Date.now();
   }
 }
 
@@ -144,19 +196,10 @@ function chunkText(text: string, limit = MAX_CHUNK): string[] {
   let remaining = text;
 
   while (remaining.length > limit) {
-    // Try to break at a paragraph boundary
     let cut = remaining.lastIndexOf("\n\n", limit);
-    if (cut < limit / 2) {
-      // Fall back to a newline
-      cut = remaining.lastIndexOf("\n", limit);
-    }
-    if (cut < limit / 2) {
-      // Fall back to a space
-      cut = remaining.lastIndexOf(" ", limit);
-    }
-    if (cut <= 0) {
-      cut = limit;
-    }
+    if (cut < limit / 2) cut = remaining.lastIndexOf("\n", limit);
+    if (cut < limit / 2) cut = remaining.lastIndexOf(" ", limit);
+    if (cut <= 0) cut = limit;
     chunks.push(remaining.slice(0, cut).trimEnd());
     remaining = remaining.slice(cut).trimStart();
   }
@@ -166,27 +209,74 @@ function chunkText(text: string, limit = MAX_CHUNK): string[] {
 }
 
 // ─── Markdown sanitization ────────────────────────────────────────────────────
-// Telegram MarkdownV2 is strict. We try HTML mode for robustness instead.
 
 function sanitizeForTelegram(text: string): string {
-  // Remove unsupported/problematic markdown patterns for Telegram Markdown mode
-  // Replace ~~strikethrough~~ and other unsupported syntax
   return text
-    .replace(/~~(.*?)~~/g, "$1")   // strikethrough not in basic Markdown
-    .replace(/^#{1,6}\s+/gm, "**") // ATX headings → bold prefix (simple)
-    .replace(/\*{3}(.*?)\*{3}/g, "*$1*"); // Bold-italic → just italic
+    .replace(/~~(.*?)~~/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "**")
+    .replace(/\*{3}(.*?)\*{3}/g, "*$1*");
 }
 
 // ─── Auth check ───────────────────────────────────────────────────────────────
 
 function isAllowed(ctx: Context): boolean {
   if (ALLOWED_USER_IDS.size === 0) {
-    // No allowlist configured — warn loudly and deny all
     console.warn("[clawdbot] ALLOWED_USER_IDS is empty — denying all users");
     return false;
   }
   const userId = ctx.from?.id;
   return userId !== undefined && ALLOWED_USER_IDS.has(userId);
+}
+
+// ─── Shared prompt runner ─────────────────────────────────────────────────────
+
+async function runPrompt(
+  ctx: Context & { chat: { id: number } },
+  session: AgentSession,
+  text: string,
+  options?: { images?: { type: "image"; data: string; mimeType: string }[] },
+): Promise<void> {
+  const chatId = ctx.chat.id;
+  let response = "";
+
+  const unsub = session.subscribe((event) => {
+    if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
+      response += event.assistantMessageEvent.delta;
+    }
+  });
+
+  await ctx.replyWithChatAction("typing");
+  const typingInterval = setInterval(() => {
+    ctx.replyWithChatAction("typing").catch(() => {});
+  }, 4_000);
+
+  try {
+    await session.prompt(text, options);
+    touchSession(chatId);
+
+    const sanitized = sanitizeForTelegram(response.trim());
+    if (!sanitized) {
+      await ctx.reply("_(no response)_", { parse_mode: "Markdown" });
+      return;
+    }
+
+    for (const chunk of chunkText(sanitized)) {
+      try {
+        await ctx.reply(chunk, { parse_mode: "Markdown" });
+      } catch {
+        await ctx.reply(chunk);
+      }
+    }
+
+    console.log(`[clawdbot] [chat=${chatId}] replied (${sanitized.length} chars)`);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[clawdbot] [chat=${chatId}] error: ${message}`);
+    await ctx.reply(`❌ Error: ${message}`);
+  } finally {
+    clearInterval(typingInterval);
+    unsub();
+  }
 }
 
 // ─── Commands ─────────────────────────────────────────────────────────────────
@@ -198,7 +288,7 @@ bot.command("start", async (ctx) => {
       "Just send me a message and I'll get to work.\n\n" +
       "Commands:\n" +
       "/new — Start a fresh session\n" +
-      "/status — Show bot status\n" +
+      "/status — Show bot and session status\n" +
       "/chatid — Show your Telegram chat ID\n" +
       "/help — This message",
   );
@@ -209,30 +299,38 @@ bot.command("help", async (ctx) => {
   await ctx.reply(
     "/start — Introduction\n" +
       "/new — Start a fresh session\n" +
-      "/status — Show bot status\n" +
+      "/status — Show bot and session status\n" +
       "/chatid — Show your Telegram chat ID\n" +
       "/help — This message",
   );
 });
 
 bot.command("chatid", async (ctx) => {
-  await ctx.reply(`Your chat ID is: \`${ctx.chat.id}\`\nYour user ID is: \`${ctx.from?.id ?? "unknown"}\``, {
-    parse_mode: "Markdown",
-  });
+  await ctx.reply(
+    `Your chat ID is: \`${ctx.chat.id}\`\nYour user ID is: \`${ctx.from?.id ?? "unknown"}\``,
+    { parse_mode: "Markdown" },
+  );
 });
 
 bot.command("status", async (ctx) => {
   if (!isAllowed(ctx)) return;
+
   const uptimeMs = Date.now() - START_TIME;
   const hours = Math.floor(uptimeMs / 3_600_000);
   const minutes = Math.floor((uptimeMs % 3_600_000) / 60_000);
   const seconds = Math.floor((uptimeMs % 60_000) / 1_000);
-  const activeSessions = sessions.size;
+
+  const state = chats.get(ctx.chat.id);
+  const sessionInfo = state
+    ? `Last active: ${formatAge(Date.now() - state.lastActive)} ago\nMessages: ${state.session.messages.length}\nTimeout: ${SESSION_TIMEOUT_MS / 60_000}m`
+    : "No active session";
+
   await ctx.reply(
     `✅ *clawdbot running*\n` +
       `Uptime: ${hours}h ${minutes}m ${seconds}s\n` +
-      `Active sessions: ${activeSessions}\n` +
-      `Working dir: \`${WORKING_DIR}\``,
+      `Model: \`${model.id}\`\n` +
+      `Working dir: \`${WORKING_DIR}\`\n\n` +
+      `*Session:*\n${sessionInfo}`,
     { parse_mode: "Markdown" },
   );
 });
@@ -241,6 +339,8 @@ bot.command("new", async (ctx) => {
   if (!isAllowed(ctx)) return;
   await ctx.reply("🔄 Starting a fresh session…");
   try {
+    // Ensure session exists then reset it
+    await getOrCreateSession(ctx.chat.id);
     await resetSession(ctx.chat.id);
     await ctx.reply("✅ New session started.");
   } catch (err: unknown) {
@@ -249,89 +349,29 @@ bot.command("new", async (ctx) => {
   }
 });
 
-// ─── Main message handler ─────────────────────────────────────────────────────
+// ─── Message handlers ─────────────────────────────────────────────────────────
 
 bot.on("message:text", async (ctx) => {
   if (!isAllowed(ctx)) return;
 
-  const chatId = ctx.chat.id;
   const userText = ctx.message.text;
+  if (userText.startsWith("/")) return; // handled by command handlers
 
-  // Skip messages that are commands (already handled above)
-  if (userText.startsWith("/")) return;
-
+  const chatId = ctx.chat.id;
   console.log(`[clawdbot] [chat=${chatId}] user: ${userText.slice(0, 80)}`);
 
   let session: AgentSession;
   try {
     session = await getOrCreateSession(chatId);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[clawdbot] Failed to create session for chat ${chatId}: ${message}`);
-    await ctx.reply(`❌ Failed to initialise session: ${message}`);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[clawdbot] Failed to get session for chat ${chatId}: ${msg}`);
+    await ctx.reply(`❌ Failed to initialise session: ${msg}`);
     return;
   }
 
-  // Accumulate streamed response
-  let response = "";
-  const unsub = session.subscribe((event) => {
-    if (event.type === "message_update") {
-      console.log(`[clawdbot] [chat=${chatId}] event: message_update (${event.assistantMessageEvent.type})`);
-      if (event.assistantMessageEvent.type === "text_delta") {
-        response += event.assistantMessageEvent.delta;
-      }
-    } else if (event.type === "message_end") {
-      const msg = event.message as any;
-      console.log(`[clawdbot] [chat=${chatId}] event: message_end role=${msg.role} stopReason=${msg.stopReason ?? "n/a"} error=${msg.errorMessage ?? "none"} contentLen=${JSON.stringify(msg.content)?.length ?? 0}`);
-    } else if (event.type === "turn_end") {
-      const msg = event.message as any;
-      console.log(`[clawdbot] [chat=${chatId}] event: turn_end stopReason=${msg.stopReason} error=${msg.errorMessage ?? "none"}`);
-    } else if (event.type === "auto_retry_start" || event.type === "auto_retry_end") {
-      console.log(`[clawdbot] [chat=${chatId}] event: ${event.type} ${JSON.stringify(event)}`);
-    } else {
-      console.log(`[clawdbot] [chat=${chatId}] event: ${event.type}`);
-    }
-  });
-
-  // Send typing indicator every 4 s while the agent is working
-  await ctx.replyWithChatAction("typing");
-  const typingInterval = setInterval(() => {
-    ctx.replyWithChatAction("typing").catch(() => {});
-  }, 4_000);
-
-  try {
-    console.log(`[clawdbot] [chat=${chatId}] calling session.prompt()`);
-    await session.prompt(userText);
-    console.log(`[clawdbot] [chat=${chatId}] session.prompt() resolved, response length: ${response.length}`);
-
-    const text = sanitizeForTelegram(response.trim());
-    if (!text) {
-      await ctx.reply("_(no response)_", { parse_mode: "Markdown" });
-      return;
-    }
-
-    const chunks = chunkText(text);
-    for (const chunk of chunks) {
-      try {
-        await ctx.reply(chunk, { parse_mode: "Markdown" });
-      } catch {
-        // If Markdown parse fails, fall back to plain text
-        await ctx.reply(chunk);
-      }
-    }
-
-    console.log(`[clawdbot] [chat=${chatId}] replied (${text.length} chars, ${chunks.length} chunk(s))`);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[clawdbot] [chat=${chatId}] error: ${message}`);
-    await ctx.reply(`❌ Error: ${message}`);
-  } finally {
-    clearInterval(typingInterval);
-    unsub();
-  }
+  await runPrompt(ctx, session, userText);
 });
-
-// ─── Photo handler ────────────────────────────────────────────────────────────
 
 bot.on("message:photo", async (ctx) => {
   if (!isAllowed(ctx)) return;
@@ -343,89 +383,41 @@ bot.on("message:photo", async (ctx) => {
   try {
     session = await getOrCreateSession(chatId);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    await ctx.reply(`❌ Failed to initialise session: ${message}`);
+    const msg = err instanceof Error ? err.message : String(err);
+    await ctx.reply(`❌ Failed to initialise session: ${msg}`);
     return;
   }
 
-  // Get the highest-resolution photo
-  const photos = ctx.message.photo;
-  const photo = photos[photos.length - 1];
+  const photo = ctx.message.photo[ctx.message.photo.length - 1];
 
   let imageData: string;
-  let mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-
   try {
     const file = await ctx.getFile();
     const fileUrl = `https://api.telegram.org/file/bot${telegramToken}/${file.file_path}`;
     const resp = await fetch(fileUrl);
-    const buf = await resp.arrayBuffer();
-    imageData = Buffer.from(buf).toString("base64");
-    // Telegram photos are always JPEG unless otherwise specified
-    mediaType = "image/jpeg";
-    console.log(`[clawdbot] [chat=${chatId}] photo: ${photo.file_size ?? "?"} bytes, file_id=${photo.file_id}`);
+    imageData = Buffer.from(await resp.arrayBuffer()).toString("base64");
+    console.log(`[clawdbot] [chat=${chatId}] photo: ${photo.file_size ?? "?"} bytes`);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    await ctx.reply(`❌ Failed to download image: ${message}`);
+    const msg = err instanceof Error ? err.message : String(err);
+    await ctx.reply(`❌ Failed to download image: ${msg}`);
     return;
   }
 
-  let response = "";
-  const unsub = session.subscribe((event) => {
-    if (
-      event.type === "message_update" &&
-      event.assistantMessageEvent.type === "text_delta"
-    ) {
-      response += event.assistantMessageEvent.delta;
-    }
+  await runPrompt(ctx, session, caption, {
+    images: [{ type: "image", data: imageData, mimeType: "image/jpeg" }],
   });
-
-  await ctx.replyWithChatAction("typing");
-  const typingInterval = setInterval(() => {
-    ctx.replyWithChatAction("typing").catch(() => {});
-  }, 4_000);
-
-  try {
-    await session.prompt(caption, {
-      images: [{ type: "image", data: imageData, mimeType: mediaType }],
-    });
-
-    const text = sanitizeForTelegram(response.trim());
-    const chunks = chunkText(text || "_(no response)_");
-    for (const chunk of chunks) {
-      try {
-        await ctx.reply(chunk, { parse_mode: "Markdown" });
-      } catch {
-        await ctx.reply(chunk);
-      }
-    }
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    await ctx.reply(`❌ Error: ${message}`);
-  } finally {
-    clearInterval(typingInterval);
-    unsub();
-  }
 });
 
 // ─── Graceful shutdown ────────────────────────────────────────────────────────
 
 async function shutdown(signal: string): Promise<void> {
   console.log(`[clawdbot] Received ${signal}, shutting down…`);
-  try {
-    await bot.stop();
-  } catch {
-    // ignore
-  }
-  for (const [chatId, session] of sessions) {
-    try {
-      session.dispose();
-    } catch {
-      // ignore
-    }
+  try { await bot.stop(); } catch { /* ignore */ }
+  for (const [chatId, { session }] of chats) {
+    try { session.dispose(); } catch { /* ignore */ }
     console.log(`[clawdbot] Disposed session for chat ${chatId}`);
   }
-  sessions.clear();
+  chats.clear();
   process.exit(0);
 }
 
@@ -434,7 +426,10 @@ process.on("SIGTERM", () => void shutdown("SIGTERM"));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-console.log(`[clawdbot] Starting (model: ${model.id}, working dir: ${WORKING_DIR}, state dir: ${STATE_DIR})`);
+console.log(
+  `[clawdbot] Starting (model: ${model.id}, timeout: ${SESSION_TIMEOUT_MS / 60_000}m, ` +
+  `working dir: ${WORKING_DIR}, state dir: ${STATE_DIR})`,
+);
 if (ALLOWED_USER_IDS.size > 0) {
   console.log(`[clawdbot] Allowed user IDs: ${[...ALLOWED_USER_IDS].join(", ")}`);
 } else {

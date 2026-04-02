@@ -26,6 +26,13 @@
 
       NODE_ENV = "production";
 
+      # Inactivity timeout in minutes before the next message starts a new session.
+      # Default: 60. Set to "0" to never auto-expire.
+      SESSION_TIMEOUT_MINUTES = "60";
+
+      # Optional: override the model (default: claude-sonnet-4-5)
+      # CLAWDBOT_MODEL = "claude-opus-4-5";
+
       # Optional: set a specific project path for the agent to work in.
       # Defaults to STATE_DIRECTORY when unset.
       # WORKING_DIRECTORY = "/home/pcasaretto/src/github.com/pcasaretto/nix-home";
