@@ -275,11 +275,21 @@ bot.on("message:text", async (ctx) => {
   // Accumulate streamed response
   let response = "";
   const unsub = session.subscribe((event) => {
-    if (
-      event.type === "message_update" &&
-      event.assistantMessageEvent.type === "text_delta"
-    ) {
-      response += event.assistantMessageEvent.delta;
+    if (event.type === "message_update") {
+      console.log(`[clawdbot] [chat=${chatId}] event: message_update (${event.assistantMessageEvent.type})`);
+      if (event.assistantMessageEvent.type === "text_delta") {
+        response += event.assistantMessageEvent.delta;
+      }
+    } else if (event.type === "message_end") {
+      const msg = event.message as any;
+      console.log(`[clawdbot] [chat=${chatId}] event: message_end role=${msg.role} stopReason=${msg.stopReason ?? "n/a"} error=${msg.errorMessage ?? "none"} contentLen=${JSON.stringify(msg.content)?.length ?? 0}`);
+    } else if (event.type === "turn_end") {
+      const msg = event.message as any;
+      console.log(`[clawdbot] [chat=${chatId}] event: turn_end stopReason=${msg.stopReason} error=${msg.errorMessage ?? "none"}`);
+    } else if (event.type === "auto_retry_start" || event.type === "auto_retry_end") {
+      console.log(`[clawdbot] [chat=${chatId}] event: ${event.type} ${JSON.stringify(event)}`);
+    } else {
+      console.log(`[clawdbot] [chat=${chatId}] event: ${event.type}`);
     }
   });
 
@@ -290,7 +300,9 @@ bot.on("message:text", async (ctx) => {
   }, 4_000);
 
   try {
+    console.log(`[clawdbot] [chat=${chatId}] calling session.prompt()`);
     await session.prompt(userText);
+    console.log(`[clawdbot] [chat=${chatId}] session.prompt() resolved, response length: ${response.length}`);
 
     const text = sanitizeForTelegram(response.trim());
     if (!text) {

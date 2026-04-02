@@ -17,12 +17,12 @@
     wantedBy = [ "multi-user.target" ];
 
     environment = {
-      TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.clawdbot-telegram-token.path;
+      TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.clawdbot-ai-telegram-token.path;
       ANTHROPIC_API_KEY_FILE  = config.sops.secrets.clawdbot-anthropic-key.path;
 
       # Comma-separated list of Telegram user IDs allowed to use the bot.
       # Find yours by sending /chatid to the bot before locking this down.
-      ALLOWED_USER_IDS = "";  # <-- fill in your Telegram user ID
+      ALLOWED_USER_IDS = "7363474774";  # <-- fill in your Telegram user ID
 
       NODE_ENV = "production";
 

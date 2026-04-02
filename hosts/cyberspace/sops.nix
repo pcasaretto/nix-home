@@ -83,8 +83,18 @@
     mode = "0400";
   };
 
-  # Telegram bot token for clawdbot service
+  # Telegram bot token for the notifications bot (*arr services)
+  # YAML key: clawdbot-telegram-token
   sops.secrets.clawdbot-telegram-token = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    owner = "clawdbot";
+    group = "clawdbot";
+    mode = "0400";
+  };
+
+  # Telegram bot token for the AI assistant bot (clawdbot Pi agent)
+  # YAML key: clawdbot-ai-telegram-token  ← add this new key to mysecrets/secrets/cyberspace.yaml
+  sops.secrets.clawdbot-ai-telegram-token = {
     sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
     owner = "clawdbot";
     group = "clawdbot";
@@ -99,7 +109,7 @@
     mode = "0400";
   };
 
-  # Telegram bot token readable by *arr services
+  # Telegram bot token readable by *arr services (same as clawdbot-telegram-token)
   sops.secrets.telegram-token = {
     sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
     key = "clawdbot-telegram-token";
