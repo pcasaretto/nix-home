@@ -73,24 +73,49 @@ const AskUserQuestionParams = Type.Object({
 });
 
 export default function askUserQuestion(pi: ExtensionAPI) {
-	// Inject a one-time persistent message at session start
-	pi.on("session_start", async (_event, _ctx) => {
+	pi.on("session_start", async (_event, ctx) => {
+		if (ctx.hasUI) {
+			// Interactive context: original behavior.
+			pi.sendMessage(
+				{
+					customType: "ask-user-question-reminder",
+					content:
+						"## IMPORTANT: Asking Questions\n" +
+						"NEVER ask the user a question by writing it in your text response. " +
+						"ALWAYS use the `ask_user_question` tool to ask questions interactively. " +
+						"This gives the user a proper interactive UI to respond. " +
+						"This applies to ALL questions: clarifications, preferences, decisions, confirmations, choices — everything. " +
+						"The only exception is rhetorical questions that don't need an answer.",
+					display: false,
+				},
+				{ deliverAs: "nextTurn" },
+			);
+			registerAskUserQuestionTool(pi);
+			return;
+		}
+
+		// Non-UI context (spawned subagent, print mode, or RPC):
+		// no human is available. Do NOT register the tool; instead inject a
+		// positive reminder so the LLM knows not to write inline questions
+		// even if AGENTS.md isn't loaded (e.g. --no-context-files).
 		pi.sendMessage(
 			{
-				customType: "ask-user-question-reminder",
+				customType: "no-ask-available-reminder",
 				content:
-					"## IMPORTANT: Asking Questions\n" +
-					"NEVER ask the user a question by writing it in your text response. " +
-					"ALWAYS use the `ask_user_question` tool to ask questions interactively. " +
-					"This gives the user a proper interactive UI to respond. " +
-					"This applies to ALL questions: clarifications, preferences, decisions, confirmations, choices — everything. " +
-					"The only exception is rhetorical questions that don't need an answer.",
+					"## Non-interactive context\n" +
+					"You are running in a non-interactive context (background subagent, print mode, or RPC). " +
+					"There is no human available to answer questions during this turn. " +
+					"Do NOT write clarifying questions inline in your response text. " +
+					"Do NOT attempt to call `ask_user_question`; it is not registered in this session. " +
+					"Proceed with reasonable defaults and state every assumption explicitly in your final answer.",
 				display: false,
 			},
 			{ deliverAs: "nextTurn" },
 		);
 	});
+}
 
+function registerAskUserQuestionTool(pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "ask_user_question",
 		label: "Ask User",
@@ -110,10 +135,15 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 			const multiSelect = params.multiSelect ?? false;
 			const hasOptions = params.options && params.options.length > 0;
 
-			// Non-interactive fallback
+			// Defensive fallback — should be unreachable under Option 1 gating in session_start,
+			// kept as defense-in-depth if the tool is ever registered without a UI.
 			if (!ctx.hasUI) {
 				return {
-					content: [{ type: "text", text: "Error: UI not available (running in non-interactive mode)" }],
+					content: [{ type: "text", text:
+						"No human is available to answer questions in this context. " +
+						"Proceed with reasonable defaults and state any assumption you made in your final answer. " +
+						"Do not call this tool again for this task."
+					}],
 					details: {
 						question: params.question,
 						options: params.options ?? null,
