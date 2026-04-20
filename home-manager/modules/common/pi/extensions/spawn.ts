@@ -4,6 +4,9 @@
  * Spawns a pi subprocess in the background and returns immediately.
  * Results are delivered via pi.sendMessage({ triggerTurn: true }) when the task completes.
  *
+ * Also provides query_task tool for checking if a background task is still alive
+ * and what it's been doing (by passively reading its JSONL output).
+ *
  * Call spawn multiple times for concurrent execution — each runs independently.
  * For sequential work: spawn task 1, wait for its result message, then spawn task 2.
  */
@@ -47,6 +50,14 @@ interface TaskInfo {
 	exitCode?: number;
 }
 
+interface QueryTaskDetails {
+	state: "alive" | "dead" | "not_found" | "already_done";
+	taskId: string;
+	alive?: boolean;
+	turns?: number;
+	elapsed?: string;
+}
+
 // --- Helpers ---
 
 function shellEscape(s: string): string {
@@ -76,6 +87,16 @@ function formatUsage(u: UsageStats, model?: string): string {
 	if (u.cost) parts.push(`$${u.cost.toFixed(4)}`);
 	if (model) parts.push(model);
 	return parts.join(" ");
+}
+
+/** Check if a process with the given PID is still alive. */
+function isProcessAlive(pid: number): boolean {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 function parseJsonlResult(jsonlPath: string): { output: string; usage: UsageStats; model?: string } {
@@ -119,6 +140,62 @@ function parseJsonlResult(jsonlPath: string): { output: string; usage: UsageStat
 
 	return { output: lastOutput || "(no output)", usage, model };
 }
+
+/**
+ * Parse partial JSONL output for progress info.
+ * Returns structured data about the subagent's activity.
+ */
+function parseJsonlProgress(jsonlPath: string): {
+	turns: number;
+	tools: Map<string, number>;
+	lastText: string;
+	fileSize: number;
+} {
+	const tools = new Map<string, number>();
+	let turns = 0;
+	let lastText = "";
+	let fileSize = 0;
+
+	try {
+		const stat = fs.statSync(jsonlPath);
+		fileSize = stat.size;
+	} catch {
+		return { turns, tools, lastText, fileSize };
+	}
+
+	let content = "";
+	try {
+		content = fs.readFileSync(jsonlPath, "utf-8");
+	} catch {
+		return { turns, tools, lastText, fileSize };
+	}
+
+	for (const line of content.split("\n")) {
+		if (!line.trim()) continue;
+		let event: any;
+		try {
+			event = JSON.parse(line);
+		} catch {
+			continue;
+		}
+
+		if (event.type === "message_end" && event.message?.role === "assistant") {
+			turns++;
+			for (const part of event.message.content || []) {
+				if (part.type === "text" && part.text) {
+					lastText = part.text.slice(0, 300);
+				}
+				if (part.type === "toolCall" && part.name) {
+					tools.set(part.name, (tools.get(part.name) || 0) + 1);
+				}
+			}
+		}
+	}
+
+	return { turns, tools, lastText, fileSize };
+}
+
+
 
 // --- Extension ---
 
@@ -221,10 +298,14 @@ export default function (pi: ExtensionAPI) {
 				try { process.kill(task.pid, "SIGTERM"); } catch {}
 			}
 		}
-		// Remove temp result files
+		// Remove only result files owned by THIS process (matching our TASK_PREFIX).
+		// Spawned pi subprocesses also load this extension, so without this filter
+		// they would delete the parent's JSONL output files on shutdown.
 		try {
 			for (const f of fs.readdirSync(RESULTS_DIR)) {
-				try { fs.unlinkSync(path.join(RESULTS_DIR, f)); } catch {}
+				if (f.startsWith(TASK_PREFIX)) {
+					try { fs.unlinkSync(path.join(RESULTS_DIR, f)); } catch {}
+				}
 			}
 		} catch {}
 	});
@@ -245,6 +326,8 @@ export default function (pi: ExtensionAPI) {
 			"Good uses: long-running analysis, parallel code investigations, code reviews, builds/tests, anything that takes >30 seconds.",
 			"Write fully self-contained task descriptions — the spawned agent has zero shared context with you.",
 			"Use /tasks to check status of running background tasks.",
+			"Use query_task to check on a running task's progress instead of just waiting.",
+			"query_task returns instantly — it passively reads the task's output file and checks if the process is alive.",
 		],
 		parameters: Type.Object({
 			task: Type.String({ description: "Task description for the background agent" }),
@@ -277,7 +360,7 @@ export default function (pi: ExtensionAPI) {
 			if (sysPromptPath) piArgs.push("--append-system-prompt", sysPromptPath);
 			piArgs.push(`Task: ${params.task}`);
 
-			// Write a shell script to a temp file — cleanest way to handle all quoting
+			// Write a shell script to a temp file — cleanest way to handle all quoting.
 			const scriptPath = path.join(os.tmpdir(), `pi-spawn-${id}.sh`);
 			const scriptLines = [
 				"#!/bin/sh",
@@ -342,6 +425,144 @@ export default function (pi: ExtensionAPI) {
 				fg("warning", "⏳") + ` ${fg("toolTitle", theme.bold("spawn "))}${fg("dim", `[${shortId}]${pidStr} running in background`)}`,
 				0,
 				0,
+			);
+		},
+	});
+
+	// --- Tool: query_task ---
+
+	pi.registerTool({
+		name: "query_task",
+		label: "Query Task",
+		description:
+			"Check whether a background task is still alive and what it's been doing. " +
+			"Returns instantly by checking the process and passively reading its output file.",
+		promptGuidelines: [
+			"Use query_task to check on a running background task's progress.",
+			"Pass the short task ID (first 8 chars shown in spawn output or /tasks).",
+			"query_task returns instantly — no blocking, no overhead.",
+		],
+		parameters: Type.Object({
+			taskId: Type.String({ description: "Task ID prefix (first 8 chars from spawn output or /tasks)" }),
+			timeout: Type.Optional(
+				Type.Number({ description: "Timeout in seconds (default 30)" }),
+			),
+		}),
+
+		async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
+			const prefix = params.taskId.trim();
+
+			// Prefix disambiguation
+			const matches = [...tasks.entries()].filter(
+				([id]) => id === prefix || id.startsWith(prefix) || id.slice(0, prefix.length) === prefix,
+			);
+
+			if (matches.length === 0) {
+				return {
+					content: [{ type: "text", text: `No task found with ID prefix "${prefix}". Use /tasks to see running tasks.` }],
+					details: { state: "not_found", taskId: prefix } as QueryTaskDetails,
+				};
+			}
+
+			if (matches.length > 1) {
+				const ids = matches.map(([id, t]) => `${id.slice(0, 8)} — ${t.task.slice(0, 50)}`).join("\n");
+				return {
+					content: [{ type: "text", text: `Ambiguous ID prefix "${prefix}" matches multiple tasks:\n${ids}\n\nPlease provide a longer prefix.` }],
+					details: { state: "not_found", taskId: prefix } as QueryTaskDetails,
+				};
+			}
+
+			const [fullId, task] = matches[0];
+			const shortId = fullId.slice(0, 8);
+			const elapsed = formatDuration(Date.now() - task.startTime);
+
+			// Already completed?
+			if (task.status !== "running") {
+				const statusText = task.status === "done" ? "completed successfully" : `failed (exit ${task.exitCode ?? "?"})`;
+				const outputSnippet = task.output ? `\n\nLast output:\n${task.output.slice(0, 300)}` : "";
+				return {
+					content: [{ type: "text", text: `Task [${shortId}] already ${statusText}.${outputSnippet}` }],
+					details: { state: "already_done", taskId: fullId } as QueryTaskDetails,
+				};
+			}
+
+			// Check process liveness
+			const alive = task.pid ? isProcessAlive(task.pid) : false;
+
+			// Parse JSONL for activity
+			const jsonlPath = path.join(RESULTS_DIR, `${fullId}.jsonl`);
+			const progress = parseJsonlProgress(jsonlPath);
+
+			const toolsSummary = [...progress.tools.entries()]
+				.map(([name, count]) => (count > 1 ? `${name} ×${count}` : name))
+				.join(", ");
+
+			// Build summary
+			const lines: string[] = [];
+
+			if (alive) {
+				lines.push(`Task [${shortId}] is **alive** (pid ${task.pid}), running for ${elapsed}.`);
+			} else {
+				lines.push(`Task [${shortId}] process appears **dead** (pid ${task.pid}), was running for ${elapsed}. The .done file may not have been written yet — check again shortly.`);
+			}
+
+			if (progress.turns > 0) {
+				lines.push(`Progress: ${progress.turns} turn${progress.turns !== 1 ? "s" : ""}, ${formatTokens(progress.fileSize)} output.`);
+				if (toolsSummary) lines.push(`Tools used: ${toolsSummary}`);
+				if (progress.lastText) {
+					const truncated = progress.lastText.length > 200 ? progress.lastText.slice(0, 200) + "..." : progress.lastText;
+					lines.push(`Last activity: ${truncated}`);
+				}
+			} else {
+				lines.push("No turns completed yet — still starting up.");
+			}
+
+			return {
+				content: [{ type: "text", text: lines.join("\n") }],
+				details: { state: alive ? "alive" : "dead", taskId: fullId, alive, turns: progress.turns, elapsed } as QueryTaskDetails,
+			};
+		},
+
+		renderCall(args, theme) {
+			const fg = theme.fg.bind(theme);
+			const taskId = (args.taskId as string) ?? "?";
+			return new Text(
+				`${fg("toolTitle", theme.bold("query_task "))}${fg("dim", `[${taskId}]`)}`,
+				0,
+				0,
+			);
+		},
+
+		renderResult(result, _options, theme) {
+			const fg = theme.fg.bind(theme);
+			const details = result.details as QueryTaskDetails | undefined;
+			const shortId = details?.taskId ? details.taskId.slice(0, 8) : "?";
+			const state = details?.state;
+
+			if (state === "not_found") {
+				return new Text(
+					`${fg("error", "✗")} ${fg("toolTitle", theme.bold("query_task "))}${fg("dim", `[${shortId}]`)} — not found`,
+					0, 0,
+				);
+			}
+
+			if (state === "already_done") {
+				return new Text(
+					`${fg("success", "✓")} ${fg("toolTitle", theme.bold("query_task "))}${fg("dim", `[${shortId}]`)} — already completed`,
+					0, 0,
+				);
+			}
+
+			const alive = details?.alive;
+			const turns = details?.turns ?? 0;
+			const elapsedStr = details?.elapsed ?? "";
+			const icon = alive ? fg("success", "●") : fg("error", "○");
+			const status = alive ? "alive" : "dead";
+			const turnsStr = turns > 0 ? `, ${turns} turn${turns !== 1 ? "s" : ""}` : "";
+
+			return new Text(
+				`${icon} ${fg("toolTitle", theme.bold("query_task "))}${fg("dim", `[${shortId}]`)} ${status} ${fg("dim", `${elapsedStr}${turnsStr}`)}`,
+				0, 0,
 			);
 		},
 	});

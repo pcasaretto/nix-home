@@ -4,12 +4,15 @@
  * Mirrors Claude's ask_user_question tool:
  * - With no options: shows a free-text input prompt
  * - With options: shows a selection list (optionally allowing a custom answer)
+ * - With options + multiSelect: shows a checkbox list for multiple selections
  * - Returns the user's response so the agent can continue
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Editor, type EditorTheme, Key, matchesKey, Text, truncateToWidth } from "@mariozechner/pi-tui";
 import { Type } from "@sinclair/typebox";
+
+const NOTIFICATION_DELAY_MS = 5_000;
 
 /** Word-wrap text to fit within a given width, preserving explicit newlines. */
 function wrapText(text: string, width: number): string[] {
@@ -42,7 +45,9 @@ interface AskDetails {
 	question: string;
 	options: string[] | null;
 	allowCustomAnswer: boolean;
+	multiSelect: boolean;
 	answer: string | null;
+	selectedOptions: string[] | null;
 	wasCustom: boolean;
 }
 
@@ -57,6 +62,12 @@ const AskUserQuestionParams = Type.Object({
 		Type.Boolean({
 			description:
 				'When options are provided, whether to also allow a free-text answer. Adds a "Type your own answer..." choice. Defaults to true.',
+		}),
+	),
+	multiSelect: Type.Optional(
+		Type.Boolean({
+			description:
+				'When options are provided, whether to allow selecting multiple options (checkbox style). Defaults to false. When true, allowCustomAnswer is ignored.',
 		}),
 	),
 });
@@ -84,17 +95,19 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 		name: "ask_user_question",
 		label: "Ask User",
 		description:
-			"Ask the user a question interactively. ALWAYS use this tool instead of writing questions in your response text. With no options: free-text input. With options: selection list (optionally allowing a custom answer).",
+			"Ask the user a question interactively. ALWAYS use this tool instead of writing questions in your response text. With no options: free-text input. With options: selection list (optionally allowing a custom answer). With options + multiSelect: checkbox list for multiple selections.",
 		promptGuidelines: [
 			"ALWAYS use ask_user_question to ask the user anything — never write questions in your text response.",
 			"This is the ONLY way to ask questions. Inline questions in text responses are forbidden.",
 			"When a request is ambiguous, has multiple valid interpretations, or you need specific details before proceeding, use this tool.",
 			"Don't overuse it — if the user's intent is clear, just proceed without asking.",
+			"Use multiSelect: true when the user should be able to choose multiple options (checkbox style). Defaults to single-select.",
 		],
 		parameters: AskUserQuestionParams,
 
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
 			const allowCustom = params.allowCustomAnswer ?? true;
+			const multiSelect = params.multiSelect ?? false;
 			const hasOptions = params.options && params.options.length > 0;
 
 			// Non-interactive fallback
@@ -105,7 +118,9 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 						question: params.question,
 						options: params.options ?? null,
 						allowCustomAnswer: allowCustom,
+						multiSelect,
 						answer: null,
+						selectedOptions: null,
 						wasCustom: false,
 					} as AskDetails,
 				};
@@ -113,8 +128,17 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 
 			// --- Free-text mode (no options) ---
 			if (!hasOptions) {
-				const answer = await ctx.ui.custom<string | null>((tui, theme, _kb, done) => {
+				const answer = await ctx.ui.custom<string | null>((tui, theme, _kb, rawDone) => {
 					let cachedLines: string[] | undefined;
+
+					// Notification timer: nudge user after 5s of inactivity
+					const notifyTimer = setTimeout(() => {
+						pi.events.emit("notify:desktop", { title: "pi", body: "Agent is waiting for your input" });
+					}, NOTIFICATION_DELAY_MS);
+					const done = (value: string | null) => {
+						clearTimeout(notifyTimer);
+						rawDone(value);
+					};
 
 					const editorTheme: EditorTheme = {
 						borderColor: (s) => theme.fg("accent", s),
@@ -181,7 +205,9 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 							question: params.question,
 							options: null,
 							allowCustomAnswer: allowCustom,
+							multiSelect: false,
 							answer: null,
+							selectedOptions: null,
 							wasCustom: false,
 						} as AskDetails,
 					};
@@ -193,8 +219,194 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 						question: params.question,
 						options: null,
 						allowCustomAnswer: allowCustom,
+						multiSelect: false,
 						answer,
+						selectedOptions: null,
 						wasCustom: true,
+					} as AskDetails,
+				};
+			}
+
+			// --- Multi-select mode (checkboxes) ---
+			if (multiSelect) {
+				const multiResult = await ctx.ui.custom<{ selectedOptions: string[] } | null>(
+					(tui, theme, _kb, rawDone) => {
+						let optionIndex = 0;
+						const checked = new Set<number>();
+						let cachedLines: string[] | undefined;
+
+						// Notification timer: nudge user after 5s of inactivity
+						const notifyTimer = setTimeout(() => {
+							pi.events.emit("notify:desktop", {
+								title: "pi",
+								body: "Agent is waiting for your input",
+							});
+						}, NOTIFICATION_DELAY_MS);
+						const done = (value: { selectedOptions: string[] } | null) => {
+							clearTimeout(notifyTimer);
+							rawDone(value);
+						};
+
+						function refresh() {
+							cachedLines = undefined;
+							tui.requestRender();
+						}
+
+						function handleInput(data: string) {
+							if (matchesKey(data, Key.up)) {
+								optionIndex = Math.max(0, optionIndex - 1);
+								refresh();
+								return;
+							}
+							if (matchesKey(data, Key.down)) {
+								optionIndex = Math.min(params.options!.length - 1, optionIndex + 1);
+								refresh();
+								return;
+							}
+
+							// Space to toggle current option
+							if (data === " ") {
+								if (checked.has(optionIndex)) {
+									checked.delete(optionIndex);
+								} else {
+									checked.add(optionIndex);
+								}
+								refresh();
+								return;
+							}
+
+							// Enter to submit
+							if (matchesKey(data, Key.enter)) {
+								const selectedOptions = params.options!.filter((_, i) => checked.has(i));
+								done({ selectedOptions });
+								return;
+							}
+
+							// 'a' to toggle all
+							if (data === "a" || data === "A") {
+								if (checked.size === params.options!.length) {
+									checked.clear();
+								} else {
+									params.options!.forEach((_, i) => checked.add(i));
+								}
+								refresh();
+								return;
+							}
+
+							// Number keys for quick toggle (1-9)
+							const num = parseInt(data, 10);
+							if (num >= 1 && num <= params.options!.length && num <= 9) {
+								const idx = num - 1;
+								if (checked.has(idx)) {
+									checked.delete(idx);
+								} else {
+									checked.add(idx);
+								}
+								refresh();
+								return;
+							}
+
+							if (matchesKey(data, Key.escape)) {
+								done(null);
+							}
+						}
+
+						function render(width: number): string[] {
+							if (cachedLines) return cachedLines;
+
+							const lines: string[] = [];
+							const add = (s: string) => lines.push(truncateToWidth(s, width));
+
+							add(theme.fg("accent", "─".repeat(width)));
+							for (const qLine of wrapText(params.question, width - 2)) {
+								add(theme.fg("text", ` ${qLine}`));
+							}
+							lines.push("");
+
+							for (let i = 0; i < params.options!.length; i++) {
+								const isCursor = i === optionIndex;
+								const isChecked = checked.has(i);
+								const prefix = isCursor ? theme.fg("accent", "> ") : "  ";
+								const checkbox = isChecked
+									? theme.fg("success", "[✓]")
+									: theme.fg("muted", "[ ]");
+								const label = `${i + 1}. ${params.options![i]}`;
+
+								if (isCursor) {
+									add(prefix + checkbox + " " + theme.fg("accent", label));
+								} else {
+									add(prefix + checkbox + " " + theme.fg("text", label));
+								}
+							}
+
+							lines.push("");
+							const selectedCount = checked.size;
+							if (selectedCount > 0) {
+								add(theme.fg("muted", ` ${selectedCount} selected`));
+							}
+							add(
+								theme.fg(
+									"dim",
+									" Space toggle • a toggle all • 1-9 quick toggle • Enter submit • Esc cancel",
+								),
+							);
+							add(theme.fg("accent", "─".repeat(width)));
+
+							cachedLines = lines;
+							return lines;
+						}
+
+						return {
+							render,
+							invalidate: () => {
+								cachedLines = undefined;
+							},
+							handleInput,
+						};
+					},
+				);
+
+				if (!multiResult) {
+					return {
+						content: [{ type: "text", text: "User cancelled the selection." }],
+						details: {
+							question: params.question,
+							options: params.options ?? null,
+							allowCustomAnswer: allowCustom,
+							multiSelect: true,
+							answer: null,
+							selectedOptions: [],
+							wasCustom: false,
+						} as AskDetails,
+					};
+				}
+
+				if (multiResult.selectedOptions.length === 0) {
+					return {
+						content: [{ type: "text", text: "User submitted with no options selected." }],
+						details: {
+							question: params.question,
+							options: params.options ?? null,
+							allowCustomAnswer: allowCustom,
+							multiSelect: true,
+							answer: null,
+							selectedOptions: [],
+							wasCustom: false,
+						} as AskDetails,
+					};
+				}
+
+				const answerText = multiResult.selectedOptions.join(", ");
+				return {
+					content: [{ type: "text", text: `User selected: ${answerText}` }],
+					details: {
+						question: params.question,
+						options: params.options ?? null,
+						allowCustomAnswer: allowCustom,
+						multiSelect: true,
+						answer: answerText,
+						selectedOptions: multiResult.selectedOptions,
+						wasCustom: false,
 					} as AskDetails,
 				};
 			}
@@ -206,10 +418,19 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 			}
 
 			const result = await ctx.ui.custom<{ answer: string; wasCustom: boolean } | null>(
-				(tui, theme, _kb, done) => {
+				(tui, theme, _kb, rawDone) => {
 					let optionIndex = 0;
 					let editMode = false;
 					let cachedLines: string[] | undefined;
+
+					// Notification timer: nudge user after 5s of inactivity
+					const notifyTimer = setTimeout(() => {
+						pi.events.emit("notify:desktop", { title: "pi", body: "Agent is waiting for your input" });
+					}, NOTIFICATION_DELAY_MS);
+					const done = (value: { answer: string; wasCustom: boolean } | null) => {
+						clearTimeout(notifyTimer);
+						rawDone(value);
+					};
 
 					const editorTheme: EditorTheme = {
 						borderColor: (s) => theme.fg("accent", s),
@@ -324,7 +545,12 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 						if (editMode) {
 							add(theme.fg("dim", " Enter to submit • Esc to go back"));
 						} else {
-							add(theme.fg("dim", " ↑↓ navigate • 1-9 quick select • Enter to select • Esc to cancel"));
+							add(
+								theme.fg(
+									"dim",
+									" ↑↓ navigate • 1-9 quick select • Enter to select • Esc to cancel",
+								),
+							);
 						}
 						add(theme.fg("accent", "─".repeat(width)));
 
@@ -349,7 +575,9 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 						question: params.question,
 						options: params.options ?? null,
 						allowCustomAnswer: allowCustom,
+						multiSelect: false,
 						answer: null,
+						selectedOptions: null,
 						wasCustom: false,
 					} as AskDetails,
 				};
@@ -362,7 +590,9 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 					question: params.question,
 					options: params.options ?? null,
 					allowCustomAnswer: allowCustom,
+					multiSelect: false,
 					answer: result.answer,
+					selectedOptions: null,
 					wasCustom: result.wasCustom,
 				} as AskDetails,
 			};
@@ -374,7 +604,8 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 			const opts = Array.isArray(args.options) ? args.options : [];
 			if (opts.length) {
 				const numbered = opts.map((o: string, i: number) => `${i + 1}. ${o}`);
-				text += `\n${theme.fg("dim", `  Options: ${numbered.join(", ")}`)}`;
+				const mode = args.multiSelect ? "multi-select" : "select";
+				text += `\n${theme.fg("dim", `  Options (${mode}): ${numbered.join(", ")}`)}`;
 			} else {
 				text += `\n${theme.fg("dim", "  (free-text input)")}`;
 			}
@@ -390,6 +621,19 @@ export default function askUserQuestion(pi: ExtensionAPI) {
 
 			if (details.answer === null) {
 				return new Text(theme.fg("warning", "⊘ Cancelled"), 0, 0);
+			}
+
+			// Multi-select: show count and items
+			if (details.multiSelect && details.selectedOptions) {
+				const count = details.selectedOptions.length;
+				const label = count === 1 ? "1 selected" : `${count} selected`;
+				return new Text(
+					theme.fg("success", "✓ ") +
+						theme.fg("muted", `(${label}) `) +
+						theme.fg("accent", details.selectedOptions.join(", ")),
+					0,
+					0,
+				);
 			}
 
 			if (details.wasCustom) {
