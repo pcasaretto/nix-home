@@ -1,0 +1,139 @@
+{
+  "meta": {
+    "title": "Subagent Invocation Patterns Analysis",
+    "total_invocations": 25,
+    "session_files_analyzed": 12,
+    "generated": "2026-03-05T18:25:03-03:00"
+  },
+  "patterns": [
+    {
+      "id": "pr-review-squad",
+      "name": "PR Review Squad",
+      "mode": "parallel",
+      "frequency": 7,
+      "frequency_rank": 1,
+      "description": "Most common pattern — spawns 5-8 specialized reviewer agents in parallel for comprehensive code review. Each agent has a distinct review lens.",
+      "named_agents": [
+        "architecture-strategist",
+        "security-sentinel",
+        "performance-oracle",
+        "code-simplicity-reviewer",
+        "agent-native-reviewer",
+        "learnings-researcher",
+        "kieran-rails-reviewer",
+        "pattern-recognition-specialist"
+      ],
+      "typical_config": {
+        "mode": "parallel",
+        "tasks_count": "5-8",
+        "model": null,
+        "tools": null
+      },
+      "use_cases": [
+        "Multi-perspective code review",
+        "PR quality assurance",
+        "Architecture and security auditing"
+      ]
+    },
+    {
+      "id": "lightweight-recon",
+      "name": "Lightweight Recon",
+      "mode": "single",
+      "frequency": null,
+      "frequency_rank": 2,
+      "description": "Single task using a smaller, faster model for quick reconnaissance and exploration. Prioritizes speed over depth.",
+      "named_agents": [],
+      "typical_config": {
+        "mode": "single",
+        "tasks_count": 1,
+        "model": "claude-haiku-4-5",
+        "tools": ["read", "bash", "ls", "grep", "find"]
+      },
+      "use_cases": [
+        "File listing and directory exploration",
+        "Code searching",
+        "Simple factual questions",
+        "Fast file content inspection"
+      ]
+    },
+    {
+      "id": "parallel-file-reading",
+      "name": "Parallel File Reading",
+      "mode": "parallel",
+      "frequency": null,
+      "frequency_rank": 3,
+      "description": "Multiple tasks dispatched in parallel to read different files simultaneously. Uses minimal toolsets and often a lighter model.",
+      "named_agents": [],
+      "typical_config": {
+        "mode": "parallel",
+        "tasks_count": "2-8",
+        "model": "claude-haiku-4-5",
+        "tools": ["read"]
+      },
+      "alternate_tools": ["read", "bash"],
+      "use_cases": [
+        "Reading multiple source files at once",
+        "Gathering context from scattered locations",
+        "Bulk file inspection before an edit"
+      ]
+    },
+    {
+      "id": "document-research",
+      "name": "Document / Research Tasks",
+      "mode": "single",
+      "frequency": null,
+      "frequency_rank": 4,
+      "description": "Single agent with a named persona assigned to a focused document review or research task.",
+      "named_agents": [
+        "document-review",
+        "repo-research-analyst",
+        "spec-flow-analyzer"
+      ],
+      "typical_config": {
+        "mode": "single",
+        "tasks_count": 1,
+        "model": null,
+        "tools": ["read", "bash", "grep", "find"]
+      },
+      "use_cases": [
+        "Reviewing specification documents",
+        "Researching a repository's structure or conventions",
+        "Analyzing data flows or control flows"
+      ]
+    },
+    {
+      "id": "creative-simple",
+      "name": "Creative / Simple Generation",
+      "mode": "single",
+      "frequency": null,
+      "frequency_rank": 5,
+      "description": "Single task with an empty tools array, relying purely on LLM generation with no file system or tool access.",
+      "named_agents": [],
+      "typical_config": {
+        "mode": "single",
+        "tasks_count": 1,
+        "model": null,
+        "tools": []
+      },
+      "use_cases": [
+        "Creative text generation",
+        "Brainstorming and ideation",
+        "Summarization from pre-supplied context",
+        "Pure reasoning tasks"
+      ]
+    }
+  ],
+  "summary": {
+    "modes_observed": {
+      "parallel": ["pr-review-squad", "parallel-file-reading"],
+      "single": ["lightweight-recon", "document-research", "creative-simple"]
+    },
+    "key_insights": [
+      "Parallel code review with named specialist agents is the dominant pattern.",
+      "Lighter models (claude-haiku-4-5) are preferred for recon and bulk-read tasks to save cost and latency.",
+      "Tool scoping is deliberate — read-only tools for recon, empty tools for pure generation.",
+      "Named agents add semantic clarity and allow persona-driven review angles.",
+      "Chain mode was not observed in the sampled invocations."
+    ]
+  }
+}

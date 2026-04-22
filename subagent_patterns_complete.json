@@ -1,0 +1,319 @@
+{
+  "meta": {
+    "title": "Subagent Invocation Patterns Analysis",
+    "description": "Comprehensive analysis of subagent usage patterns extracted from real session data",
+    "generated": "2026-03-05T18:25:55-03:00",
+    "total_invocations": 25
+  },
+  "mode_breakdown": {
+    "parallel": {
+      "count": 21,
+      "percentage": 84,
+      "description": "Tasks array mode — multiple concurrent subagents"
+    },
+    "single": {
+      "count": 4,
+      "percentage": 16,
+      "description": "Single task mode — one isolated subagent"
+    },
+    "chain": {
+      "count": 0,
+      "percentage": 0,
+      "description": "Sequential chain mode — never observed in sessions"
+    }
+  },
+  "patterns": [
+    {
+      "id": 1,
+      "name": "PR Review Squad",
+      "occurrences": 7,
+      "frequency_rank": 2,
+      "mode": "parallel",
+      "description": "Launches 5-8 named reviewer agents for comprehensive PR review. Each agent has a distinct persona/focus area.",
+      "example": {
+        "tasks": [
+          {
+            "agent": "architecture-strategist",
+            "task": "Review PR #... for architectural concerns, design patterns, and structural integrity.",
+            "cwd": "/Users/.../world/..."
+          },
+          {
+            "agent": "security-sentinel",
+            "task": "Security review of PR changes — identify vulnerabilities, auth issues, data exposure risks."
+          },
+          {
+            "agent": "performance-oracle",
+            "task": "Performance review — identify N+1 queries, memory leaks, unnecessary allocations, slow paths."
+          },
+          {
+            "agent": "code-simplicity-reviewer",
+            "task": "Simplicity review — flag over-engineering, unnecessary abstractions, complex logic."
+          },
+          {
+            "agent": "agent-native-reviewer",
+            "task": "Agent accessibility review — ensure code is readable and maintainable by AI coding agents."
+          },
+          {
+            "agent": "learnings-researcher",
+            "task": "Search docs/solutions/ for relevant prior learnings and context."
+          },
+          {
+            "agent": "pattern-recognition-specialist",
+            "task": "Pattern analysis — identify recurring patterns, anti-patterns, and consistency issues."
+          }
+        ]
+      },
+      "characteristics": {
+        "named_agents_seen": [
+          "architecture-strategist",
+          "security-sentinel",
+          "performance-oracle",
+          "code-simplicity-reviewer",
+          "agent-native-reviewer",
+          "learnings-researcher",
+          "kieran-rails-reviewer",
+          "pattern-recognition-specialist"
+        ],
+        "uses_agent_parameter": true,
+        "uses_cwd": true,
+        "uses_model_override": false,
+        "uses_tools_override": false,
+        "uses_system_prompt": false,
+        "typical_task_count": "5-8",
+        "max_concurrency_seen": 8
+      }
+    },
+    {
+      "id": 2,
+      "name": "Parallel File Reading",
+      "occurrences": 8,
+      "frequency_rank": 1,
+      "mode": "parallel",
+      "description": "Multiple parallel tasks to read documentation or source files. Always uses claude-haiku-4-5 for cost efficiency. Tools explicitly scoped to read-only.",
+      "example": {
+        "tasks": [
+          {
+            "task": "Read the pi extensions docs and summarize the key APIs and patterns.",
+            "tools": ["read"],
+            "model": "claude-haiku-4-5"
+          },
+          {
+            "task": "Clone and examine repository structure, identify main entry points.",
+            "tools": ["bash", "read"],
+            "model": "claude-haiku-4-5"
+          }
+        ]
+      },
+      "characteristics": {
+        "named_agents_seen": [],
+        "uses_agent_parameter": false,
+        "uses_cwd": false,
+        "uses_model_override": true,
+        "model_used": "claude-haiku-4-5",
+        "uses_tools_override": true,
+        "tools_seen": [["read"], ["read", "bash"]],
+        "uses_system_prompt": false,
+        "typical_task_count": "2-4"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Lightweight Single Recon",
+      "occurrences": 3,
+      "frequency_rank": 3,
+      "mode": "single",
+      "description": "Single task with haiku model for fast repository exploration and reconnaissance. Broad tool access for navigation.",
+      "example": {
+        "task": "List all nix files in this repository and give a brief summary of each one's purpose.",
+        "model": "claude-haiku-4-5",
+        "tools": ["read", "bash", "find", "ls"]
+      },
+      "characteristics": {
+        "named_agents_seen": [],
+        "uses_agent_parameter": false,
+        "uses_cwd": false,
+        "uses_model_override": true,
+        "model_used": "claude-haiku-4-5",
+        "uses_tools_override": true,
+        "tools_seen": [["read", "bash", "find", "ls"]],
+        "uses_system_prompt": false,
+        "typical_task_count": 1
+      }
+    },
+    {
+      "id": 4,
+      "name": "Named Agent Research",
+      "occurrences": 3,
+      "frequency_rank": 3,
+      "mode": "single",
+      "description": "Single agent with a named persona for focused research on a specific topic. Uses default model and tools.",
+      "example": {
+        "agent": "repo-research-analyst",
+        "task": "Understand existing patterns related to billing subscription lifecycle management in this codebase."
+      },
+      "characteristics": {
+        "named_agents_seen": [
+          "repo-research-analyst",
+          "document-review",
+          "spec-flow-analyzer"
+        ],
+        "uses_agent_parameter": true,
+        "uses_cwd": false,
+        "uses_model_override": false,
+        "uses_tools_override": false,
+        "uses_system_prompt": false,
+        "typical_task_count": 1
+      }
+    },
+    {
+      "id": 5,
+      "name": "Creative / Tool-less",
+      "occurrences": 1,
+      "frequency_rank": 6,
+      "mode": "single",
+      "description": "Pure LLM generation with explicitly empty tools array. No file access or execution — just text generation.",
+      "example": {
+        "task": "Write a single haiku poem about the joy of parallel computation.",
+        "model": "claude-haiku-4-5",
+        "tools": []
+      },
+      "characteristics": {
+        "named_agents_seen": [],
+        "uses_agent_parameter": false,
+        "uses_cwd": false,
+        "uses_model_override": true,
+        "model_used": "claude-haiku-4-5",
+        "uses_tools_override": true,
+        "tools_seen": [[]],
+        "uses_system_prompt": false,
+        "typical_task_count": 1
+      }
+    },
+    {
+      "id": 6,
+      "name": "Simple Parallel Test Tasks",
+      "occurrences": 3,
+      "frequency_rank": 3,
+      "mode": "parallel",
+      "description": "Very simple parallel tasks used for testing and debugging subagent behavior. Minimal prompts, no tools, haiku model.",
+      "example": {
+        "tasks": [
+          { "task": "What is 2 + 2?", "model": "claude-haiku-4-5", "tools": [] },
+          { "task": "What is 3 + 3?", "model": "claude-haiku-4-5", "tools": [] },
+          { "task": "What is 4 + 4?", "model": "claude-haiku-4-5", "tools": [] }
+        ]
+      },
+      "characteristics": {
+        "named_agents_seen": [],
+        "uses_agent_parameter": false,
+        "uses_cwd": false,
+        "uses_model_override": true,
+        "model_used": "claude-haiku-4-5",
+        "uses_tools_override": true,
+        "tools_seen": [[]],
+        "uses_system_prompt": false,
+        "typical_task_count": "3"
+      }
+    }
+  ],
+  "source_distribution": {
+    "by_project": [
+      {
+        "project": "nix-home",
+        "invocations": 18,
+        "files": 6,
+        "percentage": 72
+      },
+      {
+        "project": "world",
+        "invocations": 4,
+        "files": 4,
+        "percentage": 16
+      },
+      {
+        "project": "world/billing-refactor",
+        "invocations": 1,
+        "files": 1,
+        "percentage": 4
+      },
+      {
+        "project": "home-dir",
+        "invocations": 1,
+        "files": 1,
+        "percentage": 4
+      }
+    ],
+    "note": "nix-home dominates due to iterative subagent development/testing in that repo"
+  },
+  "key_observations": [
+    {
+      "id": 1,
+      "observation": "The `agent` parameter is used exclusively for named reviewer personas, primarily in PR review squads.",
+      "impact": "Provides role-based framing that shapes each subagent's review focus and tone."
+    },
+    {
+      "id": 2,
+      "observation": "`model: \"claude-haiku-4-5\"` is used for all lightweight and read-only tasks.",
+      "impact": "Cost optimization — haiku is ~10x cheaper and sufficient for file reading and simple generation."
+    },
+    {
+      "id": 3,
+      "observation": "`cwd` is set for World monorepo tasks to provide zone/service context.",
+      "impact": "Ensures subagents operate in the correct directory scope within large monorepos."
+    },
+    {
+      "id": 4,
+      "observation": "Tools are explicitly scoped — read-only for recon, empty for pure generation.",
+      "impact": "Principle of least privilege: subagents only get the capabilities they need."
+    },
+    {
+      "id": 5,
+      "observation": "No `systemPrompt` customizations were observed — all invocations use the default system prompt.",
+      "impact": "Task descriptions alone are sufficient for guiding subagent behavior in practice."
+    },
+    {
+      "id": 6,
+      "observation": "No chain mode usage was found across any sessions.",
+      "impact": "Sequential workflows are either handled in the main context or not yet adopted."
+    },
+    {
+      "id": 7,
+      "observation": "`maxConcurrency: 8` was seen once, in a PR review with 8 parallel reviewer agents.",
+      "impact": "Default concurrency is usually sufficient; explicit limits only needed for large fan-outs."
+    }
+  ],
+  "parameter_usage_summary": {
+    "task": {
+      "usage_rate": "100%",
+      "notes": "Always present — the core instruction for every subagent."
+    },
+    "tasks": {
+      "usage_rate": "84%",
+      "notes": "Parallel mode dominates; used for reviews, file reading, and testing."
+    },
+    "agent": {
+      "usage_rate": "40%",
+      "notes": "Named personas used in PR reviews and focused research tasks."
+    },
+    "model": {
+      "usage_rate": "60%",
+      "notes": "Overridden to claude-haiku-4-5 for lightweight tasks; default model used for complex work."
+    },
+    "tools": {
+      "usage_rate": "52%",
+      "notes": "Explicitly scoped when needed; omitted to use defaults for full-capability tasks."
+    },
+    "cwd": {
+      "usage_rate": "28%",
+      "notes": "Set for monorepo tasks requiring specific directory context."
+    },
+    "systemPrompt": {
+      "usage_rate": "0%",
+      "notes": "Never used — task descriptions provide sufficient guidance."
+    },
+    "chain": {
+      "usage_rate": "0%",
+      "notes": "Chain mode never observed in any session."
+    }
+  }
+}

@@ -360,12 +360,15 @@ function registerAskUserQuestionTool(pi: ExtensionAPI) {
 								const checkbox = isChecked
 									? theme.fg("success", "[✓]")
 									: theme.fg("muted", "[ ]");
-								const label = `${i + 1}. ${params.options![i]}`;
-
-								if (isCursor) {
-									add(prefix + checkbox + " " + theme.fg("accent", label));
-								} else {
-									add(prefix + checkbox + " " + theme.fg("text", label));
+								const numPrefix = `${i + 1}. `;
+								// "> [✓] N. " = 2 + 4 + numPrefix.length
+								const contentIndent = 6 + numPrefix.length;
+								const optLines = wrapText(params.options![i], width - contentIndent);
+								const colorFn = isCursor ? (s: string) => theme.fg("accent", s) : (s: string) => theme.fg("text", s);
+								add(prefix + checkbox + " " + colorFn(`${numPrefix}${optLines[0]}`));
+								const contPad = " ".repeat(contentIndent);
+								for (let j = 1; j < optLines.length; j++) {
+									add(contPad + colorFn(optLines[j]));
 								}
 							}
 
@@ -553,21 +556,27 @@ function registerAskUserQuestionTool(pi: ExtensionAPI) {
 							const selected = i === optionIndex;
 							const isCustom = allowCustom && i === displayOptions.length - 1;
 							const prefix = selected ? theme.fg("accent", "> ") : "  ";
-							const label = `${i + 1}. ${displayOptions[i]}`;
+							const numPrefix = `${i + 1}. `;
+							// "> N. " = 2 + numPrefix.length
+							const contentIndent = 2 + numPrefix.length;
 
 							if (isCustom && editMode) {
 								// Show the editor inline right where the option label was
-								const numPrefix = theme.fg("accent", `${i + 1}. `);
-								const editorLines = editor.render(width - 6);
-								add(prefix + numPrefix + (editorLines[0] ?? ""));
-								// If multi-line, indent continuation lines to align
+								const styledNumPrefix = theme.fg("accent", numPrefix);
+								const editorLines = editor.render(width - contentIndent);
+								add(prefix + styledNumPrefix + (editorLines[0] ?? ""));
+								const contPad = " ".repeat(contentIndent);
 								for (let j = 1; j < editorLines.length; j++) {
-									add(`      ${editorLines[j]}`);
+									add(`${contPad}${editorLines[j]}`);
 								}
-							} else if (selected) {
-								add(prefix + theme.fg("accent", label));
 							} else {
-								add(`  ${theme.fg("text", label)}`);
+								const colorFn = selected ? (s: string) => theme.fg("accent", s) : (s: string) => theme.fg("text", s);
+								const optLines = wrapText(displayOptions[i], width - contentIndent);
+								add(prefix + colorFn(`${numPrefix}${optLines[0]}`));
+								const contPad = " ".repeat(contentIndent);
+								for (let j = 1; j < optLines.length; j++) {
+									add(contPad + colorFn(optLines[j]));
+								}
 							}
 						}
 
@@ -633,9 +642,8 @@ function registerAskUserQuestionTool(pi: ExtensionAPI) {
 			text += theme.fg("muted", args.question ?? "");
 			const opts = Array.isArray(args.options) ? args.options : [];
 			if (opts.length) {
-				const numbered = opts.map((o: string, i: number) => `${i + 1}. ${o}`);
 				const mode = args.multiSelect ? "multi-select" : "select";
-				text += `\n${theme.fg("dim", `  Options (${mode}): ${numbered.join(", ")}`)}`;
+				text += `\n${theme.fg("dim", `  ${opts.length} options (${mode})`)}`;
 			} else {
 				text += `\n${theme.fg("dim", "  (free-text input)")}`;
 			}
