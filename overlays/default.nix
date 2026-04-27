@@ -10,6 +10,19 @@
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });
+
+    # Fix zsh SIGCHLD race on darwin with autoconf 2.73 / C23.
+    # The K&R handler in the sigsuspend probe fails to compile under -std=gnu23,
+    # causing zsh to use a racy pause() fallback that hangs on $(...) reaping.
+    # https://github.com/NixOS/nixpkgs/issues/513543
+    # Remove once nixpkgs-unstable includes PR #513971.
+    zsh = prev.zsh.overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''
+        # Fix K&R handler prototype for C23 compatibility in sigsuspend probe
+        sed -i '/void handler(sig)/{N;s/void handler(sig)\n    int sig;/void handler(int sig)/;}' configure.ac
+      '';
+    });
+
     pcasaretto = import inputs.nixpkgs-pcasaretto {
       system = final.system;
       config.allowUnfree = true;
