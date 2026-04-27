@@ -22,14 +22,18 @@
     ];
   };
 
-  # Merge skill directories (common + shopify)
-  mergedSkills = pkgs.symlinkJoin {
-    name = "claude-code-skills";
-    paths = [
-      ../../../common/skills
-      ../skills
-    ];
-  };
+  # Merge skill directories (common + shopify) as an attrset
+  # (the new programs.claude-code.skills option treats derivations as
+  # attrsets, so we have to provide a real attrset of skill name -> path)
+  commonSkillsDir = ../../../common/skills;
+  shopifySkillsDir = ../skills;
+  mergedSkills =
+    (lib.genAttrs
+      (builtins.attrNames (builtins.readDir commonSkillsDir))
+      (name: commonSkillsDir + "/${name}"))
+    // (lib.genAttrs
+      (builtins.attrNames (builtins.readDir shopifySkillsDir))
+      (name: shopifySkillsDir + "/${name}"));
 
   # Shopify-specific settings to merge (adds MCP tool permissions)
   shopifySettings = {
@@ -161,19 +165,16 @@
   shopifySettingsFile = pkgs.writeText "claude-settings-shopify.json" (builtins.toJSON shopifySettings);
 in {
   programs.claude-code = {
-    # Override memory with combined personal + shopify content
-    memory = {
-      source = lib.mkForce null;
-      text = ''
-        ${personalMemory}
+    # Override context with combined personal + shopify content
+    context = lib.mkForce ''
+      ${personalMemory}
 
-        ${shopifyMemory}
-      '';
-    };
+      ${shopifyMemory}
+    '';
 
     # Use merged directories for commands and skills
     commandsDir = lib.mkForce mergedCommands;
-    skillsDir = lib.mkForce mergedSkills;
+    skills = lib.mkForce mergedSkills;
     # agents stay as common (no Shopify-specific agents)
   };
 

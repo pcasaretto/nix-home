@@ -38,10 +38,10 @@ in {
     enable = true;
     package = null; # Managed externally (not via nix)
 
-    memory.source = ./memory-personal.md;
+    context = ./memory-personal.md;
 
     commandsDir = ./commands;
-    skillsDir = ../skills;
+    skills = ../skills;
     agentsDir = ./agents;
   };
 
