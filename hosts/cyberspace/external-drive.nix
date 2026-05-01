@@ -3,7 +3,7 @@ let
   driveUuid = "cc461254-dbd7-43fb-9d5d-06c4ccec15f7";
   mountpoint = "/mnt/external";
   mountUnit = "mnt-external.mount";
-  dependentServices = "jellyfin sonarr radarr transmission phpfpm-nextcloud";
+  dependentServices = "jellyfin sonarr radarr transmission";
 
   watchdogScript = pkgs.writeShellScript "external-drive-watchdog" ''
     # Only check if the mount is supposed to be active
@@ -70,7 +70,6 @@ in
   # Ensure the mount point and subdirectories exist with proper permissions
   systemd.tmpfiles.rules = [
     "d ${mountpoint} 0775 root external -"
-    "d ${mountpoint}/nextcloud 0750 nextcloud nextcloud -"
     "d ${mountpoint}/media 0775 pcasaretto external -"
     "d ${mountpoint}/downloads 0775 pcasaretto external -"
   ];

@@ -43,12 +43,6 @@ let
     hash = "sha256-VxfwdVZeNFzlLGMxibMSXVGQ8cmuZ21u5mNvwKpHQb4=";
   };
 
-  # Fetch Nextcloud dashboard
-  nextcloudDashboard = pkgs.fetchurl {
-    url = "https://grafana.com/api/dashboards/11033/revisions/1/download";
-    hash = "sha256-Ju7xO4t1zmK0LOQMizJODqEvrYv9HY0wRcOiUzld6pg=";
-  };
-
   # Fetch Home Assistant System dashboard
   homeAssistantDashboard = pkgs.fetchurl {
     url = "https://grafana.com/api/dashboards/15832/revisions/1/download";
@@ -160,8 +154,6 @@ in
     "L+ /var/lib/grafana/dashboards/lidarr-dashboard.json - - - - ${lidarrDashboard}"
     "L+ /var/lib/grafana/dashboards/prowlarr-dashboard.json - - - - ${prowlarrDashboard}"
     "L+ /var/lib/grafana/dashboards/transmission-dashboard.json - - - - ${transmissionDashboard}"
-
-    "L+ /var/lib/grafana/dashboards/nextcloud-dashboard.json - - - - ${nextcloudDashboard}"
     "L+ /var/lib/grafana/dashboards/home-assistant-dashboard.json - - - - ${homeAssistantDashboard}"
     "L+ /var/lib/grafana/dashboards/loki-dashboard.json - - - - ${lokiDashboard}"
     "L+ /var/lib/grafana/dashboards/logging-dashboard.json - - - - ${loggingDashboard}"

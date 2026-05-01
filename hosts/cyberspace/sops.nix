@@ -57,24 +57,6 @@
     mode = "0400";
   };
 
-
-  # Nextcloud admin credentials
-  sops.secrets.nextcloud-admin-password = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    owner = "nextcloud";
-    group = "nextcloud";
-    mode = "0400";
-  };
-
-  # Nextcloud exporter credentials (reuses admin password)
-  sops.secrets.nextcloud-exporter-password = {
-    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
-    key = "nextcloud-admin-password";
-    owner = "nextcloud-exporter";
-    group = "nextcloud-exporter";
-    mode = "0400";
-  };
-
   # Cloudflare API token for Caddy DNS-01 challenge (Let's Encrypt wildcard certs)
   sops.secrets.cloudflare-api-token = {
     sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";

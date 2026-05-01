@@ -135,13 +135,6 @@
             default = 9711;
             description = "Transmission exporter port";
           };
-
-
-          nextcloud = lib.mkOption {
-            type = lib.types.int;
-            default = 9714;
-            description = "Nextcloud exporter port";
-          };
         };
 
         # Smart Home / IoT Services (10000-10999)
