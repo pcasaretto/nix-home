@@ -17,14 +17,16 @@
     # https://github.com/NixOS/nixpkgs/issues/513543
     # Remove once nixpkgs-unstable includes PR #513971.
     zsh = prev.zsh.overrideAttrs (old: {
-      postPatch = (old.postPatch or "") + ''
-        # Fix K&R handler prototype for C23 compatibility in sigsuspend probe
-        sed -i '/void handler(sig)/{N;s/void handler(sig)\n    int sig;/void handler(int sig)/;}' configure.ac
-      '';
+      postPatch =
+        (old.postPatch or "")
+        + ''
+          # Fix K&R handler prototype for C23 compatibility in sigsuspend probe
+          sed -i '/void handler(sig)/{N;s/void handler(sig)\n    int sig;/void handler(int sig)/;}' configure.ac
+        '';
     });
 
     pcasaretto = import inputs.nixpkgs-pcasaretto {
-      system = final.system;
+      system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
     };
   };
@@ -33,17 +35,16 @@
   # be accessible through 'pkgs.unstable'
   unstable-packages = final: _prev: {
     unstable = import inputs.nixpkgs-unstable {
-      system = final.system;
+      system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
     };
   };
 
   # Add access to x86 packages when system is running Apple Silicon
   apple-silicon = final: prev:
-    inputs.nixpkgs.lib.optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
+    inputs.nixpkgs.lib.optionalAttrs (prev.stdenv.hostPlatform.system == "aarch64-darwin") {
       pkgs-x86 = import inputs.nixpkgs-unstable {
         system = "x86_64-darwin";
       };
     };
-
 }

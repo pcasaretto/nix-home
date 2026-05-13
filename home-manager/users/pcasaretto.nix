@@ -15,6 +15,10 @@
 
   home.stateVersion = "23.05";
 
+  # Disable Home Manager's generated manpage to avoid an upstream
+  # options.json store-path context warning during evaluation.
+  manual.manpages.enable = false;
+
   nixpkgs = {
     overlays =
       builtins.attrValues outputs.overlays
@@ -35,6 +39,9 @@
   catppuccin.nvim.enable = true;
   programs.neovim = {
     enable = true;
+    # Keep the pre-26.05 defaults explicit while home.stateVersion is older.
+    withRuby = true;
+    withPython3 = true;
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;

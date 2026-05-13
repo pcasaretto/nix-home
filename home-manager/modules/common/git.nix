@@ -46,6 +46,9 @@ in {
   programs.git = {
     enable = true;
 
+    # Keep the pre-25.05 default explicit while home.stateVersion is older.
+    signing.format = "openpgp";
+
     settings = {
       alias = {
         root = "rev-parse --show-toplevel";

@@ -5,11 +5,13 @@
   ...
 }: {
   home.packages = [
-    (inputs.qmd.packages.${pkgs.system}.default.overrideAttrs (old: {
-      nativeBuildInputs = old.nativeBuildInputs ++ [
-        pkgs.python3
-        pkgs.darwin.cctools
-      ];
+    (inputs.qmd.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      nativeBuildInputs =
+        old.nativeBuildInputs
+        ++ [
+          pkgs.python3
+          pkgs.darwin.cctools
+        ];
     }))
   ];
 }
