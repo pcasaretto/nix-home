@@ -5,8 +5,8 @@
  * This wraps the Claude Code safety net for use with Pi.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { spawn } from "child_process";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { spawn } from "node:child_process";
 
 const SAFETY_NET_BINARY = "@safetyNetBinary@";
 
@@ -81,10 +81,10 @@ export default function (pi: ExtensionAPI) {
   pi.on("tool_call", async (event, ctx) => {
     if (event.toolName !== "bash") return undefined;
 
-    const command = event.input.command as string;
-    const cwd = process.cwd();
+    const command = event.input.command;
+    if (typeof command !== "string") return undefined;
 
-    const result = await checkCommand(command, cwd);
+    const result = await checkCommand(command, ctx.cwd);
 
     if (result.blocked) {
       return { block: true, reason: result.reason };

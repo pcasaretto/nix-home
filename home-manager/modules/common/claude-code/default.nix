@@ -7,6 +7,15 @@
 }: let
   cc-safety-net = pkgs.callPackage ../../../../pkgs/cc-safety-net {};
 
+  commonSkillsDir = ../skills;
+  safetyNetSkillNames = ["set-custom-rules" "verify-custom-rules"];
+  safetyNetSkills = lib.genAttrs safetyNetSkillNames (name: "${cc-safety-net}/share/cc-safety-net/skills/${name}");
+  commonSkills =
+    (lib.genAttrs
+      (builtins.attrNames (builtins.readDir commonSkillsDir))
+      (name: commonSkillsDir + "/${name}"))
+    // safetyNetSkills;
+
   # Settings we want to control via nix (merged with existing settings.json)
   nixSettings = {
     model = "opus";
@@ -41,7 +50,7 @@ in {
     context = ./memory-personal.md;
 
     commandsDir = ./commands;
-    skills = ../skills;
+    skills = commonSkills;
     agentsDir = ./agents;
   };
 

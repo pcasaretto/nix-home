@@ -22,18 +22,21 @@
     ];
   };
 
-  # Merge skill directories (common + shopify) as an attrset
+  # Merge skill directories (common + shopify + safety-net) as an attrset
   # (the new programs.claude-code.skills option treats derivations as
   # attrsets, so we have to provide a real attrset of skill name -> path)
   commonSkillsDir = ../../../common/skills;
   shopifySkillsDir = ../skills;
+  safetyNetSkillNames = ["set-custom-rules" "verify-custom-rules"];
+  safetyNetSkills = lib.genAttrs safetyNetSkillNames (name: "${cc-safety-net}/share/cc-safety-net/skills/${name}");
   mergedSkills =
     (lib.genAttrs
       (builtins.attrNames (builtins.readDir commonSkillsDir))
       (name: commonSkillsDir + "/${name}"))
     // (lib.genAttrs
       (builtins.attrNames (builtins.readDir shopifySkillsDir))
-      (name: shopifySkillsDir + "/${name}"));
+      (name: shopifySkillsDir + "/${name}"))
+    // safetyNetSkills;
 
   # Shopify-specific settings to merge (adds MCP tool permissions)
   shopifySettings = {
