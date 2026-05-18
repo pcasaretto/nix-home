@@ -1,5 +1,11 @@
 # Global Agent Instructions
 
+## Hard Rule: Do Not Write From the Root World Worktree
+
+Never create, modify, delete, format, generate, or otherwise write files from the root `world` worktree. This includes direct tool writes (`write`, `edit`), shell redirection, code generators, package manager scripts, formatters, tests or commands with write side effects, and any other operation that can change files.
+
+Before any write-capable operation in a Shopify `world` checkout, verify that the current working directory is not the root `world` worktree. If it is the root `world` worktree, stop and move the work to an appropriate feature worktree or explicitly non-root worktree before making changes.
+
 ## Asking the User Questions
 
 Your behavior here depends on whether the `ask_user_question` tool is in your available tools for this session.
