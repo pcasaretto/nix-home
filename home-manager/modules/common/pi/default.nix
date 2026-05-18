@@ -26,10 +26,6 @@
       name = "ask-user-question.ts";
       path = ./extensions/ask-user-question.ts;
     }
-    {
-      name = "spawn.ts";
-      path = ./extensions/spawn.ts;
-    }
   ];
 
   # Settings we want to control via nix (merged with existing settings.json)
