@@ -473,7 +473,7 @@ Before finalizing:
 
 ## Post-Enhancement Options
 
-After writing the enhanced plan, use the **ask_user_question tool** to present these options:
+After writing the enhanced plan, use the **`ask` tool** to present these options:
 
 **Question:** "Plan deepened at `[plan_path]`. What would you like to do next?"
 

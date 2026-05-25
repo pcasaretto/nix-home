@@ -198,7 +198,7 @@ Pause for human input when testing touches:
 | Camera/Photos | "Grant permissions and verify camera works" |
 | Location | "Allow location access and verify map updates" |
 
-Use ask_user_question:
+Use `ask`:
 ```markdown
 **Human Verification Needed**
 

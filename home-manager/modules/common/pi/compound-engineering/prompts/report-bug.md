@@ -9,7 +9,7 @@ Report bugs encountered while using the compound-engineering plugin. This comman
 
 ## Step 1: Gather Bug Information
 
-Use the ask_user_question tool to collect the following information:
+Use the `ask` tool to collect the following information:
 
 **Question 1: Bug Category**
 - What type of issue are you experiencing?

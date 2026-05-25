@@ -32,7 +32,7 @@ Evaluate whether brainstorming is needed based on the feature description.
 - Constrained, well-defined scope
 
 **If requirements are already clear:**
-Use **ask_user_question tool** to suggest: "Your requirements seem detailed enough to proceed directly to planning. Should I run `/workflows-plan` instead, or would you like to explore the idea further?"
+Use **the `ask` tool** to suggest: "Your requirements seem detailed enough to proceed directly to planning. Should I run `/workflows-plan` instead, or would you like to explore the idea further?"
 
 ### Phase 1: Understand the Idea
 
@@ -46,7 +46,7 @@ Focus on: similar features, established patterns, CLAUDE.md guidance.
 
 #### 1.2 Collaborative Dialogue
 
-Use the **ask_user_question tool** to ask questions **one at a time**.
+Use the **`ask` tool** to ask questions **one at a time**.
 
 **Guidelines (see `brainstorming` skill for detailed techniques):**
 - Prefer multiple choice when natural options exist
@@ -67,7 +67,7 @@ For each approach, provide:
 
 Lead with your recommendation and explain why. Apply YAGNI—prefer simpler solutions.
 
-Use **ask_user_question tool** to ask which approach the user prefers.
+Use **the `ask` tool** to ask which approach the user prefers.
 
 ### Phase 3: Capture the Design
 
@@ -77,11 +77,11 @@ Write a brainstorm document to `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.m
 
 Ensure `docs/brainstorms/` directory exists before writing.
 
-**IMPORTANT:** Before proceeding to Phase 4, check if there are any Open Questions listed in the brainstorm document. If there are open questions, YOU MUST ask the user about each one using ask_user_question before offering to proceed to planning. Move resolved questions to a "Resolved Questions" section.
+**IMPORTANT:** Before proceeding to Phase 4, check if there are any Open Questions listed in the brainstorm document. If there are open questions, YOU MUST ask the user about each one using `ask` before offering to proceed to planning. Move resolved questions to a "Resolved Questions" section.
 
 ### Phase 4: Handoff
 
-Use **ask_user_question tool** to present next steps:
+Use **the `ask` tool** to present next steps:
 
 **Question:** "Brainstorm captured. What would you like to do next?"
 

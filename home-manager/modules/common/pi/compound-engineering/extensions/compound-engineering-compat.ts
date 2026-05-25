@@ -169,7 +169,7 @@ function formatSubagentSummary(results: SubagentResult[]): string {
 }
 
 export default function (pi: ExtensionAPI) {
-  // Note: ask_user_question tool is provided by the separate ask-user-question extension
+  // Note: `ask` tool is provided by the separate `ask` extension
 
   const subagentTaskSchema = Type.Object({
     agent: Type.String({ description: "Skill/agent name to invoke" }),

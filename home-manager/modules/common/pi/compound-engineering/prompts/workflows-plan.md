@@ -50,11 +50,11 @@ ls -la docs/brainstorms/*.md 2>/dev/null | head -10
 7. **Do not omit brainstorm content** — if the brainstorm discussed it, the plan must address it (even if briefly). Scan each brainstorm section before finalizing the plan to verify nothing was dropped.
 
 **If multiple brainstorms could match:**
-Use **ask_user_question tool** to ask which brainstorm to use, or whether to proceed without one.
+Use **the `ask` tool** to ask which brainstorm to use, or whether to proceed without one.
 
 **If no brainstorm found (or not relevant), run idea refinement:**
 
-Refine the idea through collaborative dialogue using the **ask_user_question tool**:
+Refine the idea through collaborative dialogue using the **`ask` tool**:
 
 - Ask questions one at a time to understand the idea fully
 - Prefer multiple choice questions when natural options exist
@@ -543,7 +543,7 @@ Use the Write tool to save the complete plan to `docs/plans/YYYY-MM-DD-<type>-<d
 
 Confirm: "Plan written to docs/plans/[filename]"
 
-**Pipeline mode:** If invoked from an automated workflow (LFG, SLFG, or any `disable-model-invocation` context), skip all ask_user_question calls. Make decisions automatically and proceed to writing the plan without interactive prompts.
+**Pipeline mode:** If invoked from an automated workflow (LFG, SLFG, or any `disable-model-invocation` context), skip all `ask` calls. Make decisions automatically and proceed to writing the plan without interactive prompts.
 
 ## Output Format
 
@@ -564,7 +564,7 @@ Examples:
 
 ## Post-Generation Options
 
-After writing the plan file, use the **ask_user_question tool** to present these options:
+After writing the plan file, use the **`ask` tool** to present these options:
 
 **Question:** "Plan ready at `docs/plans/YYYY-MM-DD-<type>-<name>-plan.md`. What would you like to do next?"
 
