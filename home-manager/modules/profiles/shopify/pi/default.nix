@@ -16,10 +16,6 @@
   # Shopify-specific skills (shared with Claude Code)
   shopifySkills = [
     {
-      name = "observe-dashboard-generator";
-      path = ../skills/observe-dashboard-generator;
-    }
-    {
       name = "verdict-flags";
       path = ../skills/verdict-flags;
     }
