@@ -52,7 +52,7 @@ in {
     {
       ".pi/agent/AGENTS.md".source = ./AGENTS.md;
       # Directory extensions (multi-file)
-      ".pi/agent/extensions/vim-mode".source = ./extensions/vim-mode;
+      # ".pi/agent/extensions/vim-mode".source = ./extensions/vim-mode;
       # cc-safety-net custom rules
       ".cc-safety-net/config.json".source = safetyNetConfigFile;
     }
