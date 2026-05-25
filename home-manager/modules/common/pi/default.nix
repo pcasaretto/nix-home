@@ -7,6 +7,21 @@
 }: let
   cc-safety-net = pkgs.callPackage ../../../../pkgs/cc-safety-net {};
 
+  # Custom rules for cc-safety-net (shared with Claude Code)
+  safetyNetConfig = {
+    version = 1;
+    rules = [
+      {
+        name = "gt-submit-force";
+        command = "gt";
+        subcommand = "submit";
+        block_args = ["--force"];
+        reason = "gt submit --force overwrites remote PRs without confirmation";
+      }
+    ];
+  };
+  safetyNetConfigFile = pkgs.writeText "cc-safety-net-config.json" (builtins.toJSON safetyNetConfig);
+
   # Generate safety-net.ts with the correct binary path
   safetyNetExtension = pkgs.replaceVars ./extensions/safety-net.ts {
     safetyNetBinary = "${cc-safety-net}/bin/cc-safety-net";
@@ -42,6 +57,8 @@ in {
       ".pi/agent/AGENTS.md".source = ./AGENTS.md;
       # Directory extensions (multi-file)
       ".pi/agent/extensions/vim-mode".source = ./extensions/vim-mode;
+      # cc-safety-net custom rules
+      ".cc-safety-net/config.json".source = safetyNetConfigFile;
     }
     # Common extensions
     // builtins.listToAttrs (map (ext: {
