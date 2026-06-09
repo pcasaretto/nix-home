@@ -36,45 +36,70 @@ local function shorten_path(path)
   return path
 end
 
+local WORLD_CWD_CACHE_TTL_SECONDS = 300
+local world_cwd_cache = {}
+
+local function is_world_tree_path(path)
+  local home = os.getenv("HOME") or ""
+  local world_trees_root = home .. "/world/trees/"
+  return home ~= "" and path:sub(1, #world_trees_root) == world_trees_root
+end
+
 -- Helper: get world-aware cwd display (Shopify tec gps)
 local function get_world_cwd(cwd)
-  local tec_path = os.getenv("HOME") .. "/.local/state/tec/profiles/base/current/global/bin/tec"
-  local tec_ok, success, stdout = pcall(wezterm.run_child_process, {tec_path, "gps", "--json", cwd})
-  if tec_ok and success and stdout and stdout ~= "" then
-    local ok, gps = pcall(wezterm.json_parse, stdout)
-    if ok and gps and gps.zone_path and gps.zone_path:match("^//") then
-      local zone_path = gps.zone_path:gsub("^//", "")
+  local now = os.time()
+  local cached = world_cwd_cache[cwd]
+  if cached and (now - cached.updated_at) < WORLD_CWD_CACHE_TTL_SECONDS then
+    return cached.value
+  end
 
-      local parts = {}
-      for part in zone_path:gmatch("[^/]+") do
-        table.insert(parts, part)
-      end
-      local substrate = ""
-      if #parts > 1 then
-        local abbrev = {}
-        for i = 1, #parts - 1 do
-          table.insert(abbrev, parts[i]:sub(1, 1))
-        end
-        substrate = table.concat(abbrev, "/") .. "/" .. parts[#parts]
-      elseif #parts == 1 then
-        substrate = parts[1]
-      end
+  local result = nil
 
-      local project = ""
-      if gps.path_in_zone and gps.path_in_zone ~= "" then
-        local proj_parts = {}
-        for part in gps.path_in_zone:gmatch("[^/]+") do
-          table.insert(proj_parts, part)
-        end
-        if #proj_parts > 0 then
-          project = "/" .. proj_parts[#proj_parts]
-        end
-      end
+  if is_world_tree_path(cwd) then
+    local tec_path = os.getenv("HOME") .. "/.local/state/tec/profiles/base/current/global/bin/tec"
+    local tec_ok, success, stdout = pcall(wezterm.run_child_process, { tec_path, "gps", "--json", cwd })
+    if tec_ok and success and stdout and stdout ~= "" then
+      local ok, gps = pcall(wezterm.json_parse, stdout)
+      if ok and gps and gps.zone_path and gps.zone_path:match("^//") then
+        local zone_path = gps.zone_path:gsub("^//", "")
 
-      return { text = " //" .. substrate .. project, is_world = true }
+        local parts = {}
+        for part in zone_path:gmatch("[^/]+") do
+          table.insert(parts, part)
+        end
+        local substrate = ""
+        if #parts > 1 then
+          local abbrev = {}
+          for i = 1, #parts - 1 do
+            table.insert(abbrev, parts[i]:sub(1, 1))
+          end
+          substrate = table.concat(abbrev, "/") .. "/" .. parts[#parts]
+        elseif #parts == 1 then
+          substrate = parts[1]
+        end
+
+        local project = ""
+        if gps.path_in_zone and gps.path_in_zone ~= "" then
+          local proj_parts = {}
+          for part in gps.path_in_zone:gmatch("[^/]+") do
+            table.insert(proj_parts, part)
+          end
+          if #proj_parts > 0 then
+            project = "/" .. proj_parts[#proj_parts]
+          end
+        end
+
+        result = { text = " //" .. substrate .. project, is_world = true }
+      end
     end
   end
-  return { text = shorten_path(cwd), is_world = false }
+
+  if not result then
+    result = { text = shorten_path(cwd), is_world = false }
+  end
+
+  world_cwd_cache[cwd] = { value = result, updated_at = now }
+  return result
 end
 
 -- Helper: get git worktree name (replicating tmux-git-worktree logic)
