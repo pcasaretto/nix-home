@@ -99,9 +99,23 @@
     # Reusable nixos modules you might want to export
     # These are usually stuff you would upstream into nixpkgs
     nixosModules = import ./modules/nixos;
-    # Reusable home-manager modules you might want to export
-    # These are usually stuff you would upstream into home-manager
-    # homeManagerModules = import ./modules/home-manager;
+
+    # Reusable home-manager modules consumed by downstream flakes
+    # (e.g. a private Shopify overlay flake). Profiles under
+    # home-manager/modules/profiles/ are deliberately NOT exposed here —
+    # they are per-environment leaves, not reusable building blocks.
+    homeManagerModules = {
+      common = ./home-manager/modules/common;
+      darwin = ./home-manager/modules/darwin;
+      base-user = ./home-manager/users/pcasaretto.nix;
+    };
+
+    # Reusable nix-darwin modules consumed by downstream flakes.
+    darwinModules = {
+      core = ./hosts/common/core;
+      darwin = ./hosts/common/darwin;
+      mac-app-util = ./hosts/common/darwin/mac-app-util.nix;
+    };
 
     # Standalone home-manager configurations
     # Available through 'home-manager switch --flake .#username'
