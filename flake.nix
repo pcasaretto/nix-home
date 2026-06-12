@@ -120,14 +120,9 @@
     # Standalone home-manager configurations
     # Available through 'home-manager switch --flake .#username'
     homeConfigurations = {
-      "paulo.casaretto" = home-manager.lib.homeManagerConfiguration {
-        pkgs = inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin;
-        extraSpecialArgs = {inherit inputs outputs;};
-        modules = [
-          ./home-manager/users/paulo.casaretto.nix
-        ];
-      };
-
+      # The "paulo.casaretto" (Shopify work) configuration has been moved
+      # to a private overlay flake that consumes this one as an input.
+      # See README "Consuming this flake from another flake".
       "pcasaretto@littlelover" = home-manager.lib.homeManagerConfiguration {
         pkgs = inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin;
         extraSpecialArgs = {inherit inputs outputs;};
