@@ -6,6 +6,15 @@ Never create, modify, delete, format, generate, or otherwise write files from th
 
 Before any write-capable operation in a Shopify `world` checkout, verify that the current working directory is not the root `world` worktree. If it is the root `world` worktree, stop and move the work to an appropriate feature worktree or explicitly non-root worktree before making changes.
 
+## Nix-Managed Dotfiles and Symlinks
+
+Many files under the home directory are Home Manager-managed symlinks, often pointing into `/nix/store`, and cannot be edited directly. When changing dotfiles, agent configuration, or other symlinked files:
+
+- Check whether the target file is a symlink before editing.
+- If it points into `/nix/store` or another generated location, do not edit the live target directly.
+- Locate and edit the source in the Nix/Home Manager configuration, usually under `/Users/paulo.casaretto/src/github.com/pcasaretto/nix-home`.
+- After editing the source, apply it with the appropriate Home Manager or nix-darwin command, such as `home-manager switch --flake .#paulo.casaretto` from the nix-home repo.
+
 ## Asking the User Questions
 
 Your behavior here depends on whether the `ask` tool is in your available tools for this session.
@@ -17,6 +26,7 @@ Use it to gather clarification, preferences, or decisions interactively rather t
 **Hard rule:**
 - NEVER ask the user a question by writing it in your text response.
 - ALWAYS use the `ask` tool for clarifications, preferences, decisions, confirmations, and choices.
+- Accumulate questions before asking whenever possible: identify all currently needed clarifications/decisions, then call `ask` once with an array of questions instead of asking serially across multiple turns.
 - The only exception is a rhetorical question that does not need an answer.
 
 **When to use it:**

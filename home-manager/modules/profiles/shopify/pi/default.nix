@@ -22,13 +22,11 @@
   ];
 in {
   # models.json and Shopify skills
-  home.file =
-    {".pi/agent/models.json".source = ./models.json;}
-    // builtins.listToAttrs (map (skill: {
-        name = ".pi/agent/skills/${skill.name}";
-        value = {source = skill.path;};
-      })
-      shopifySkills);
+  home.file = builtins.listToAttrs (map (skill: {
+      name = ".pi/agent/skills/${skill.name}";
+      value = {source = skill.path;};
+    })
+    shopifySkills);
 
   # Merge Shopify settings after common settings
   home.activation.mergePiSettingsShopify = lib.hm.dag.entryAfter ["mergePiSettings"] ''

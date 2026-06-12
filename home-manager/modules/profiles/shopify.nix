@@ -8,6 +8,7 @@
 }: {
   imports = [
     ./shopify/claude-code
+    ./shopify/knowledge-publisher
     ./shopify/pi
     ./shopify/starship.nix
   ];
