@@ -6,4 +6,5 @@ pkgs: {
   transmission-exporter = pkgs.callPackage ./transmission-exporter {};
   gamecontroller-udev-rules = pkgs.callPackage ./gamecontroller-udev-rules {};
   clawdbot = pkgs.callPackage ./clawdbot {};
+  openai-tunnel-client = pkgs.callPackage ./openai-tunnel-client {};
 }

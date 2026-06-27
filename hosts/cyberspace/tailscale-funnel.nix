@@ -34,6 +34,9 @@
 
       # Expose spellbook via Funnel on port 8443 (443 is used by Caddy for internal services)
       tailscale funnel --bg --https=8443 http://localhost:8180
+
+      # Expose 5etools via Funnel on port 10000
+      tailscale funnel --bg --https=10000 http://localhost:8181
     '';
   };
 }

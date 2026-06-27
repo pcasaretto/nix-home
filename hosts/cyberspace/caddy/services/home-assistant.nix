@@ -59,6 +59,8 @@ in
           name = "Home";
           unit_system = "metric";
           time_zone = config.time.timeZone;
+          latitude = -27.825789;
+          longitude = -50.336070;
           # Allow Caddy reverse proxy
           external_url = "https://homeassistant.${domain}";
           internal_url = "http://127.0.0.1:${toString ports.smartHome.homeAssistant}";

@@ -1,7 +1,12 @@
-{ config, inputs, lib, ... }:
 {
+  config,
+  inputs,
+  lib,
+  ...
+}: {
   # Use SSH host keys for age encryption (automatically generated when openssh is enabled)
-  sops.age.sshKeyPaths = lib.filter
+  sops.age.sshKeyPaths =
+    lib.filter
     (path: lib.hasSuffix "ssh_host_ed25519_key" path)
     (builtins.map (key: key.path) config.services.openssh.hostKeys);
 
@@ -113,6 +118,22 @@
     sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
     owner = "prometheus";
     group = "prometheus";
+    mode = "0400";
+  };
+
+  # Home Assistant MCP Server token and OpenAI Secure MCP Tunnel credentials
+  sops.secrets.home-assistant-mcp-token = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    mode = "0400";
+  };
+
+  sops.secrets.openai-mcp-tunnel-api-key = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
+    mode = "0400";
+  };
+
+  sops.secrets.openai-mcp-tunnel-id = {
+    sopsFile = "${inputs.mysecrets}/secrets/cyberspace.yaml";
     mode = "0400";
   };
 }

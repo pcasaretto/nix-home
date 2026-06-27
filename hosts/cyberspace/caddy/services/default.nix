@@ -16,6 +16,7 @@
     ./pihole.nix
     ./home-assistant.nix
     ./spellbook.nix
+    ./5etools.nix
     ./planarally.nix
   ];
 }

@@ -51,6 +51,7 @@
     ./metrics
     ./clawdbot.nix
     ./external-drive.nix
+    ./ha-mcp.nix
     # No longer needed - Caddy handles TLS certs automatically:
     # ./tailscale-certs.nix
   ];
@@ -74,6 +75,7 @@
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
       outputs.overlays.spellbook
+      outputs.overlays.fiveetools
 
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default

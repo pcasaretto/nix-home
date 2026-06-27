@@ -78,6 +78,9 @@
     spellbook.url = "git+ssh://git@github.com/pcasaretto/spellbook";
     spellbook.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
+    fiveetools.url = "path:./flake-inputs/5etools";
+    fiveetools.inputs.nixpkgs.follows = "nixpkgs-nixos";
+
     mysecrets = {
        url = "git+https://github.com/pcasaretto/nix-secrets.git?shallow=1";
        flake = false;

@@ -1,6 +1,4 @@
-{ lib, ... }:
-
-{
+{lib, ...}: {
   options.services.cyberspace.ports = lib.mkOption {
     type = lib.types.submodule {
       options = {
@@ -74,7 +72,6 @@
             default = 8000;
             description = "PlanarAlly virtual tabletop service port";
           };
-
         };
 
         # Core Monitoring Services (9000-9099)
@@ -167,6 +164,18 @@
             type = lib.types.int;
             default = 11434;
             description = "Ollama AI model serving port";
+          };
+
+          haMcp = lib.mkOption {
+            type = lib.types.int;
+            default = 11583;
+            description = "Home Assistant MCP server port (localhost only)";
+          };
+
+          openaiMcpTunnelHealth = lib.mkOption {
+            type = lib.types.int;
+            default = 11584;
+            description = "OpenAI MCP tunnel-client local health/admin port (localhost only)";
           };
         };
 

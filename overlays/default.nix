@@ -37,6 +37,11 @@
     spellbook = inputs.spellbook.packages.${final.system}.default;
   };
 
+  # 5etools 2014 static site from local flake input
+  fiveetools = final: _prev: {
+    fiveetools = inputs.fiveetools.packages.${final.system}.default;
+  };
+
   # Add tmux-git-worktree plugin to tmuxPlugins
   tmux-git-worktree = final: prev: {
     tmuxPlugins =
