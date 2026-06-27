@@ -44,6 +44,13 @@ in
         "alexa"
         # Common integrations
         "default_config"
+        # Discovered BLE/USB integrations; with --skip-pip on NixOS their
+        # Python requirements must be included declaratively.
+        "xiaomi_ble"
+        "ibeacon"
+        "switchbot"
+        "kegtron"
+        "zha"
       ];
 
       config = {
