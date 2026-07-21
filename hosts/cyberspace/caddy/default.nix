@@ -79,5 +79,8 @@ in
     networking.firewall.interfaces.tailscale0 = {
       allowedTCPPorts = [ 80 443 ];
     };
+
+    # Also serve the same Caddy hostnames to clients on the local LAN.
+    networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 80 443 ];
   };
 }

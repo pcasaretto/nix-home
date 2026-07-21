@@ -28,6 +28,9 @@ in
         QUERY_LOGGING = "true";
         IPv6 = "false";
         FTLCONF_dns_listeningMode = "ALL";
+        # Pi-hole v6 supports declarative custom dnsmasq lines directly.
+        FTLCONF_misc_etc_dnsmasq_d = "false";
+        FTLCONF_misc_dnsmasq_lines = "address=/cyberspace.pcasaretto.com/192.168.4.34";
       };
 
       volumes = [
@@ -52,6 +55,7 @@ in
   ];
 
   networking.firewall.allowedTCPPorts = [ piholeDnsPort ];
+
   networking.firewall.allowedUDPPorts = [ piholeDnsPort ];
 
   # Register in service registry
