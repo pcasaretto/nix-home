@@ -15,6 +15,9 @@
       (builtins.attrNames (builtins.readDir commonSkillsDir))
       (name: commonSkillsDir + "/${name}"))
     // safetyNetSkills;
+  combinedSkillsDir = pkgs.linkFarm "claude-skills" (
+    lib.mapAttrsToList (name: path: {inherit name path;}) commonSkills
+  );
 
   # Settings we want to control via nix (merged with existing settings.json)
   nixSettings = {
@@ -47,10 +50,10 @@ in {
     enable = true;
     package = null; # Managed externally (not via nix)
 
-    context = ./memory-personal.md;
+    memory.source = ./memory-personal.md;
 
     commandsDir = ./commands;
-    skills = commonSkills;
+    skillsDir = combinedSkillsDir;
     agentsDir = ./agents;
   };
 
