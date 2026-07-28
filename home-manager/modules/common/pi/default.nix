@@ -47,10 +47,12 @@
   nixSettingsFile = pkgs.writeText "pi-settings-nix.json" (builtins.toJSON nixSettings);
 in {
   # Symlink extensions, skills, prompts, and AGENTS.md into ~/.pi/agent/
+  # (AGENTS.md is also copied to ~/.omp/agent/ so the OMP native provider loads it)
   home.file =
     # Global agent instructions
     {
       ".pi/agent/AGENTS.md".source = ./AGENTS.md;
+      ".omp/agent/AGENTS.md".source = ./AGENTS.md;
       # Directory extensions (multi-file)
       # ".pi/agent/extensions/vim-mode".source = ./extensions/vim-mode;
       # cc-safety-net custom rules
