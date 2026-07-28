@@ -127,3 +127,11 @@
         `(("\\`/[^/]*:\\([^/]*/\\)*\\([^/]*\\)\\'"
            ,(expand-file-name "tramp/" (concat doom-profile-cache-dir "autosave/")) t)
           (".*" ,(expand-file-name "" (concat doom-profile-cache-dir "autosave/")) t))))
+
+(map!
+ :nvm "k"   #'evil-previous-visual-line
+ :o   "k"   #'evil-previous-line
+ :nvm "j" #'evil-next-visual-line
+ :o   "j" #'evil-next-line
+ :nvm "<home>" #'evil-beginning-of-visual-line
+ :nvm "<end>"  #'evil-end-of-visual-line)
