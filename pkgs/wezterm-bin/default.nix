@@ -6,13 +6,13 @@
 }:
 stdenv.mkDerivation rec {
   pname = "wezterm-bin";
-  version = "20260117-154428-05343b38";
+  version = "20260716-195552-76b606ec";
 
   src = fetchurl {
     # Nightly rolling release; hash pins to a specific build.
     # To update: bump version (from zip directory name) and sha256.
     url = "https://github.com/wezterm/wezterm/releases/download/nightly/WezTerm-macos-nightly.zip";
-    sha256 = "sha256-jVSmOUXvn+0d9vCweClXtFLeq7nvLQsEgq0y9plmq8E=";
+    sha256 = "sha256-9tHgQxhEdcsnTrGV36dQXe2dDw88w5baramvdG2C71c=";
   };
 
   nativeBuildInputs = [unzip];
