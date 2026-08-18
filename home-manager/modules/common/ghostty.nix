@@ -16,7 +16,7 @@
 
       # working directory settings
       # new windows start in home, tabs/splits inherit current directory
-      window-inherit-working-directory = true;
+      window-inherit-working-directory = false;
       working-directory = "home";
 
       # Performance settings
