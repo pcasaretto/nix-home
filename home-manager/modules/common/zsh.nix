@@ -12,6 +12,7 @@
         ./zsh/functions/git-utils.zsh
         ./zsh/functions/e.zsh
         ./zsh/functions/dev.zsh
+        ./zsh/functions/ghostty-herdr.zsh
         ./zsh/correction.zsh
         ./zsh/completion.zsh
         ./zsh/history.zsh
