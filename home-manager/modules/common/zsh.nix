@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  options,
   pkgs,
   ...
 }: let
@@ -58,10 +59,14 @@ in {
     ];
   };
 
-  programs.fzf = rec {
-    enable = true;
-    defaultCommand = "fd --type f --strip-cwd-prefix";
-    fileWidgetCommand = defaultCommand;
-    enableZshIntegration = true;
-  };
+  programs.fzf =
+    (rec {
+      enable = true;
+      defaultCommand = "fd --type f --strip-cwd-prefix";
+      fileWidgetCommand = defaultCommand;
+      enableZshIntegration = true;
+    })
+    // lib.optionalAttrs (lib.hasAttrByPath ["programs" "fzf" "enableNushellIntegration"] options) {
+      enableNushellIntegration = false;
+    };
 }
