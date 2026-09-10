@@ -61,10 +61,7 @@ in {
   programs.fzf = rec {
     enable = true;
     defaultCommand = "fd --type f --strip-cwd-prefix";
-    fileWidget.command = defaultCommand;
+    fileWidgetCommand = defaultCommand;
     enableZshIntegration = true;
-    # Disabled until nixpkgs ships fzf >= 0.73.0; home-manager's nushell
-    # integration asserts on the version otherwise.
-    enableNushellIntegration = false;
   };
 }
