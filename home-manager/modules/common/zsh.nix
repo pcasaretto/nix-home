@@ -63,9 +63,16 @@ in {
     (rec {
       enable = true;
       defaultCommand = "fd --type f --strip-cwd-prefix";
-      fileWidgetCommand = defaultCommand;
       enableZshIntegration = true;
     })
+    // lib.optionalAttrs (lib.hasAttrByPath ["programs" "fzf" "fileWidget"] options) {
+      fileWidget = {
+        command = "fd --type f --strip-cwd-prefix";
+      };
+    }
+    // lib.optionalAttrs (!(lib.hasAttrByPath ["programs" "fzf" "fileWidget"] options)) {
+      fileWidgetCommand = "fd --type f --strip-cwd-prefix";
+    }
     // lib.optionalAttrs (lib.hasAttrByPath ["programs" "fzf" "enableNushellIntegration"] options) {
       enableNushellIntegration = false;
     };
