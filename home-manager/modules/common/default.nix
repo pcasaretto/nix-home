@@ -96,6 +96,7 @@
     yq-go # yaml processor
     eza # ls replacement
     bat # cat, but pretty and git aware
+    btop # resource monitor
     chafa # terminal image viewer
   ];
 
