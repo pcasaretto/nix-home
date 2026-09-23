@@ -36,6 +36,7 @@
   xdg.configFile."ghostty-herdr/config".text = ''
     config-file = ${config.home.homeDirectory}/.config/ghostty/config
 
+    keybind = cmd+n=text:\x02\x4e
     keybind = cmd+t=text:\x02\x63
     keybind = cmd+d=text:\x02\x76
     keybind = cmd+shift+d=text:\x02\x2d
