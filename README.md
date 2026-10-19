@@ -18,6 +18,11 @@ to a functional configuration using Nix. It's still a work in progress.
 
 TODO
 
+
+## Keyboards
+
+`keyboards/` holds the canonical QMK External Userspace. Enter `nix develop .#keyboards` for the compiler tools. See [`keyboards/README.md`](keyboards/README.md) for setup and build steps.
+
 ## Consuming this flake from another flake
 
 This flake exposes reusable building blocks so that a downstream flake (e.g. a
