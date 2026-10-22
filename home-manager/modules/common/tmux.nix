@@ -23,12 +23,16 @@
     plugins = with pkgs.tmuxPlugins; [
       {
         plugin = battery;
-        extraConfig = ''
-          set -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l $SHELL"
-          set -g status-right-length 100
-          set -g status-right ""
-          set -ga status-right "#{?#{e|>=:10,#{battery_percentage}},#{#[bg=#{@thm_red},fg=#{@thm_bg}]},#{#[bg=#{@thm_bg},fg=#{@thm_pink}]}} #{battery_icon} #{battery_percentage} "
-        '';
+        # reattach-to-user-namespace exists only on macOS.
+        extraConfig =
+          lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+            set -g default-command "${pkgs.reattach-to-user-namespace}/bin/reattach-to-user-namespace -l $SHELL"
+          ''
+          + ''
+            set -g status-right-length 100
+            set -g status-right ""
+            set -ga status-right "#{?#{e|>=:10,#{battery_percentage}},#{#[bg=#{@thm_red},fg=#{@thm_bg}]},#{#[bg=#{@thm_bg},fg=#{@thm_pink}]}} #{battery_icon} #{battery_percentage} "
+          '';
       }
       {
         plugin = online-status;

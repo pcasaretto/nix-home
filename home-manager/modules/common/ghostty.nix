@@ -8,7 +8,11 @@
 
   programs.ghostty = {
     enable = true;
-    package = pkgs.unstable.ghostty-bin;
+    # ghostty-bin is the signed macOS app; Linux builds from source.
+    package =
+      if pkgs.stdenv.hostPlatform.isDarwin
+      then pkgs.unstable.ghostty-bin
+      else pkgs.unstable.ghostty;
     settings = {
       # Font configuration
       font-family = "FiraCode Nerd Font Mono";

@@ -1,15 +1,19 @@
 # Base user configuration shared between personal and work machines
 # This module contains all common configuration that applies to both pcasaretto (personal) and paulo.casaretto (work)
+# It evaluates on macOS and Linux: macOS-only settings are gated on Darwin.
 {
   inputs,
   outputs,
+  lib,
   pkgs,
   ...
-}: {
+}: let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
+in {
   imports = [
     ../modules/common
-    ../modules/darwin
-    ../modules/darwin/mac-app-util.nix
+    ../modules/darwin # no-op on Linux
+    ../modules/darwin/mac-app-util.nix # disables itself on Linux
     ../modules/common/doom.nix
   ];
 
@@ -30,8 +34,8 @@
     };
   };
 
-  # 1Password SSH agent
-  home.sessionVariables = {
+  # 1Password SSH agent (macOS socket path)
+  home.sessionVariables = lib.mkIf isDarwin {
     SSH_AUTH_SOCK = "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
   };
 
@@ -58,9 +62,9 @@
 
   programs.home-manager.enable = true;
 
-  # Common packages for all machines
-  home.packages = with pkgs; [
+  # macOS utilities
+  home.packages = lib.optionals isDarwin (with pkgs; [
     m-cli
     rectangle
-  ];
+  ]);
 }

@@ -3,7 +3,11 @@
 
   programs.wezterm = {
     enable = true;
-    package = pkgs.wezterm-bin; # Use pre-built binary with proper code signing
+    # Pre-built macOS binary with proper code signing; Linux uses nixpkgs.
+    package =
+      if pkgs.stdenv.hostPlatform.isDarwin
+      then pkgs.wezterm-bin
+      else pkgs.wezterm;
     extraConfig = ''
       local config = wezterm.config_builder()
 
