@@ -2,7 +2,7 @@
   xdg.configFile."wezterm/statusbar.lua".source = ./wezterm/statusbar.lua;
 
   programs.wezterm = {
-    enable = true;
+    enable = false;
     # Pre-built macOS binary with proper code signing; Linux uses nixpkgs.
     package =
       if pkgs.stdenv.hostPlatform.isDarwin
